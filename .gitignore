@@ -1,4 +1,6 @@
+.idea
 /build
 /.vscode
 /main.dSYM
 CourtScheduler
+CourtScheduler.exe
