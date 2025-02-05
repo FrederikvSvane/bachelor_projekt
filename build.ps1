@@ -1,4 +1,2 @@
-New-Item -ItemType Directory -Path build -Force
-Set-Location build
-cmake ..
-cmake --build .
+cmake -S . -B build -G "Ninja"
+cmake --build build
