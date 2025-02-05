@@ -1,3 +1,0 @@
-/Users/frederik/Documents/CodeRepos/bachelor_projekt/build/CMakeFiles/CourtScheduler.dir
-/Users/frederik/Documents/CodeRepos/bachelor_projekt/build/CMakeFiles/edit_cache.dir
-/Users/frederik/Documents/CodeRepos/bachelor_projekt/build/CMakeFiles/rebuild_cache.dir
