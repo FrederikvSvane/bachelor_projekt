@@ -1,0 +1,139 @@
+[
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Sag i den forenklede proces",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 3",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Mette Sørensen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Aftaler, Tjenesteydelser"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Værgemål",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "14:00",
+    "Varighed": 60,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 4",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "René T. Olsen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Familieret og personlige forhold"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 3",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Lise Troelsen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Ansættelsesforhold"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Forældreansvarssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "13-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "12:00",
+    "Varighed": 165,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 7",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Jens Berg"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [
+      "Helene Alexandra Kirstine Treschow"
+    ],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [
+      "Morten Riber Nørgård"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forældreansvarslov §7"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "13-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "15:00",
+    "Varighed": 345,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 5",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Ulla Tange Christensen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Jens Robert Andersen (Andersen & Svendsen advokater)"
+    ],
+    "Sagsøgtes advokater": [
+      "Michael Kjær Lauritsen"
+    ],
+    "Sagsøger": [
+      "Hilkka Annikki Lehtonen-Jensen"
+    ],
+    "Sagsøgers advokater": [
+      "Ronnie Varberg"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Aftaler"
+  }
+]

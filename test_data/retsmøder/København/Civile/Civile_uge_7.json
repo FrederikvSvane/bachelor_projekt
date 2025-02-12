@@ -1,0 +1,913 @@
+[
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 1",
+    "Retsmødet er offentligt": true,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 1",
+    "Retsmødet er offentligt": true,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "12:00",
+    "Varighed": 150,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 4",
+    "Retsmødet er offentligt": true,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 1",
+    "Retsmødet er offentligt": true,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Boligretssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Anette Burkø"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Vivi Krogh"
+    ],
+    "Sagsøgtes advokater": [
+      "Jakob Brandgård Busse"
+    ],
+    "Sagsøger": [
+      "Heimstaden Kanalhuset ApS"
+    ],
+    "Sagsøgers advokater": [
+      "Katja Lykke Paludan"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Lejeret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Boligretssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Anette Burkø"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Nikolaj Mossberg Davidsen"
+    ],
+    "Sagsøgtes advokater": [
+      "Jakob Brandgård Busse"
+    ],
+    "Sagsøger": [
+      "Heimstaden Kanalhuset ApS"
+    ],
+    "Sagsøgers advokater": [
+      "Katja Lykke Paludan"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Lejeret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Boligretssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Anette Burkø"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Luiz Wilhelm Karlsen",
+      "Nina Lea Helledie"
+    ],
+    "Sagsøgtes advokater": [
+      "Jakob Brandgård Busse",
+      "Jakob Brandgård Busse"
+    ],
+    "Sagsøger": [
+      "Heimstaden Kanalhuset ApS"
+    ],
+    "Sagsøgers advokater": [
+      "Katja Lykke Paludan"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Lejeret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Boligretssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Anette Burkø"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Thomas Dyhr Carlsen",
+      "Mette Mourier"
+    ],
+    "Sagsøgtes advokater": [
+      "Jakob Brandgård Busse",
+      "Jakob Brandgård Busse"
+    ],
+    "Sagsøger": [
+      "Heimstaden Kanalhuset ApS"
+    ],
+    "Sagsøgers advokater": [
+      "Katja Lykke Paludan"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Lejeret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Boligretssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Anette Burkø"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Ulla Caroline Tychsen",
+      "Keld Ipsen"
+    ],
+    "Sagsøgtes advokater": [
+      "Jakob Brandgård Busse",
+      "Jakob Brandgård Busse"
+    ],
+    "Sagsøger": [
+      "Heimstaden Kanalhuset ApS"
+    ],
+    "Sagsøgers advokater": [
+      "Katja Lykke Paludan"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Lejeret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 1",
+    "Retsmødet er offentligt": true,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 1",
+    "Retsmødet er offentligt": true,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 5",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Benedikte Gersing"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "N.O.S. Brands"
+    ],
+    "Sagsøgtes advokater": [
+      "Kiran Fatma Iqbal"
+    ],
+    "Sagsøger": [
+      "BDNORDIC ApS"
+    ],
+    "Sagsøgers advokater": [
+      "Steffen Christian Nielsen"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Aftaler"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 1",
+    "Retsmødet er offentligt": true,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Sag i den forenklede proces",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "12:00",
+    "Varighed": 150,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 11",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Emil Lykke Gregersen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "sale e Pepe v/Osman Bakbak"
+    ],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [
+      "Standout A/S"
+    ],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Aftaler, Køb"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Forbud og påbud",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 18",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Stine Fink Hansen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "E/F Stavangergade 4",
+      "Mariusz Wojciech Kajetan Skronski",
+      "Carina Skronski",
+      "Poul Erik Bech",
+      "René Efraim Rechtman",
+      "Eva Kathrine Schepelern"
+    ],
+    "Sagsøgtes advokater": [
+      "Jan Børjesson",
+      "Jan Børjesson",
+      "Jan Børjesson",
+      "Jan Børjesson",
+      "Jan Børjesson",
+      "Jan Børjesson"
+    ],
+    "Sagsøger": [
+      "Ovaflex Invest ApS"
+    ],
+    "Sagsøgers advokater": [
+      "Søren Nørkær Hansen"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Fast ejendom og pant"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 1",
+    "Retsmødet er offentligt": true,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Boligretssag i den forenklede proces",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 42",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Emil Lykke Gregersen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Jannick Peter Kjeldgaard Jensen"
+    ],
+    "Sagsøgtes advokater": [
+      "Jakob Brandgård Busse"
+    ],
+    "Sagsøger": [
+      "Boligforeningen AAB v/ afdeling 68"
+    ],
+    "Sagsøgers advokater": [
+      "Michael Armin Varandili Hansen"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Lejeret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Sag i den forenklede proces",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "N. B. Hansen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Iberia LAE Operadora SA Unipersonal"
+    ],
+    "Sagsøgtes advokater": [
+      "Anders K. Worsøe"
+    ],
+    "Sagsøger": [
+      "Simone Nikander"
+    ],
+    "Sagsøgers advokater": [
+      "Flyhjælp ApS"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Erstatning og godtgørelse"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "11-02-2025",
+    "Starttid": "13:15",
+    "Sluttid": "15:45",
+    "Varighed": 150,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 26",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Anne Berg"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forvaltningssag"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "12-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "15:30",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 18",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Emil Folker"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "PFA Pension, Forsikringsaktieselskab."
+    ],
+    "Sagsøgtes advokater": [
+      "Marcus Wils Lorenzen"
+    ],
+    "Sagsøger": [
+      "Rikard Osmundsen"
+    ],
+    "Sagsøgers advokater": [
+      "Simon Eilrich"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forsikring"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "12-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Elisabeth Larsen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Norrecco A/S"
+    ],
+    "Sagsøgtes advokater": [
+      "Heidi Lund Bloch"
+    ],
+    "Sagsøger": [
+      "A"
+    ],
+    "Sagsøgers advokater": [
+      "Christian Riewe"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Arbejdsskade"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Boligretssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "12-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Mette Undall-Behrend"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "København City ApS"
+    ],
+    "Sagsøgtes advokater": [
+      "Henrik Reippurt Brummerstedt Tvinnemose Nielsen"
+    ],
+    "Sagsøger": [
+      "Michael Berg"
+    ],
+    "Sagsøgers advokater": [
+      "Klaus Ellis Henriques"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Erhverv, Lejeret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "13-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "12:00",
+    "Varighed": 150,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 18",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Emil Folker"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "PFA Pension, Forsikringsaktieselskab."
+    ],
+    "Sagsøgtes advokater": [
+      "Marcus Wils Lorenzen"
+    ],
+    "Sagsøger": [
+      "Rikard Osmundsen"
+    ],
+    "Sagsøgers advokater": [
+      "Simon Eilrich"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forsikring"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling med sagkyndige dommere, Tvangsfjernelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "13-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "12:00",
+    "Varighed": 150,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 9",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Benjamin Juul Johansen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Familieret og personlige forhold"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Sag i den forenklede proces",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "13-02-2025",
+    "Starttid": "09:30",
+    "Sluttid": "12:00",
+    "Varighed": 150,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 19",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Lise Dyrby Hansen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Caroline Sascha Cogez"
+    ],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [
+      "Mads Heldtberg"
+    ],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Almindelige emner, Fogedret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "13-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Merete Engholm"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forvaltningssag"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Adm. frihedsberøvelse",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "13-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Merete Engholm"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forvaltningssag"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "14-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:10",
+    "Varighed": 10,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Lone Bach Nielsen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Henjo Real Estate ApS"
+    ],
+    "Sagsøgtes advokater": [
+      "Lasse Thore Stjernholm Detlevsen"
+    ],
+    "Sagsøger": [
+      "A/B Nørre Farimagsgade 44-46",
+      "A/B Nørre Farimagsgade 50-52"
+    ],
+    "Sagsøgers advokater": [
+      "Søren Lindahl",
+      "Søren Lindahl"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Aftaler, Fast ejendom og pant"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Boligretssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "14-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Benjamin Juul Johansen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Simon Sønderbæk Bro"
+    ],
+    "Sagsøgtes advokater": [
+      "Henrik Palmkvist"
+    ],
+    "Sagsøger": [
+      "Larslejsstræde 15 ApS"
+    ],
+    "Sagsøgers advokater": [
+      "Kim Krarup"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Lejeret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "14-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Kim Gabriel"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Ocean ApS"
+    ],
+    "Sagsøgtes advokater": [
+      "Anne Marie Abrahamson"
+    ],
+    "Sagsøger": [
+      "A"
+    ],
+    "Sagsøgers advokater": [
+      "Frank Peter Kanlund"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Ansættelsesforhold"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "",
+    "Starttid": "",
+    "Sluttid": "",
+    "Varighed": 0,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+  }
+]

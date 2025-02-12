@@ -1,0 +1,23 @@
+{
+    "Sagstype": "",
+    "Kategori": "",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "",
+    "Starttid": "",
+    "Sluttid": "",
+    "Varighed": 0,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": ""
+}

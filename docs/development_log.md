@@ -1,4 +1,4 @@
-# Weekly development log
+# Weekly dev log
 
 ## Week 1 (3. feb to 10. feb)
 

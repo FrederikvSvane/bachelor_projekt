@@ -1,0 +1,165 @@
+[
+  {
+    "Sagstype": "Straffe",
+    "Kategori": "Straffesag, Grundlovssager, Almindelige",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "10-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:30",
+    "Varighed": 30,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 6",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Casper Klindt Sølbeck"
+    ],
+    "Foged": "",
+    "Advokater": [
+      "Snorre Andreas Kehler"
+    ],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "fristforlængelse"
+  },
+  {
+    "Sagstype": "Straffe",
+    "Kategori": "Straffesag, Sager , Almindelige",
+    "Lægdommere": true,
+    "Domsmænd": true,
+    "Dato": "12-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "15:00",
+    "Varighed": 345,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 1",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Casper Klindt Sølbeck"
+    ],
+    "Foged": "",
+    "Advokater": [
+      "Janus Malcolm Pedersen"
+    ],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Grov vold i Hillerød"
+  },
+  {
+    "Sagstype": "Straffe",
+    "Kategori": "Straffesag, Grundlovssager, Almindelige",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "12-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "13:30",
+    "Varighed": 30,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 6",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Lise Troelsen"
+    ],
+    "Foged": "",
+    "Advokater": [
+      "Peter Secher"
+    ],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Fristforlængelse"
+  },
+  {
+    "Sagstype": "Straffe",
+    "Kategori": "Straffesag, Grundlovssager, Almindelige",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "12-02-2025",
+    "Starttid": "13:30",
+    "Sluttid": "14:00",
+    "Varighed": 30,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 6",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Lise Troelsen"
+    ],
+    "Foged": "",
+    "Advokater": [
+      "Eddie Omar Rosenberg Khawaja"
+    ],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Fristforlængelse video"
+  },
+  {
+    "Sagstype": "Straffe",
+    "Kategori": "Straffesag, Grundlovssager, Almindelige",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "13-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "10:15",
+    "Varighed": 60,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 8",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Margrete Nissen"
+    ],
+    "Foged": "",
+    "Advokater": [
+      "Peter Kragh",
+      "Poul Hauch Fenger"
+    ],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "fristforlængelse"
+  },
+  {
+    "Sagstype": "Straffe",
+    "Kategori": "Straffesag, Sager , Almindelige",
+    "Lægdommere": true,
+    "Domsmænd": true,
+    "Dato": "14-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "15:00",
+    "Varighed": 345,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 1",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Casper Klindt Sølbeck"
+    ],
+    "Foged": "",
+    "Advokater": [
+      "Janus Malcolm Pedersen"
+    ],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Grov vold i Hillerød"
+  }
+]
