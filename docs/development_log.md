@@ -10,14 +10,4 @@
 
 ## Week 2 (10. feb to 17. feb )
 
-- Made a webscraper in python to extract publically available data from the court of Hillerød. In short we now have a bunch of real-world test data for our project
-
-
-
-
-
-
-
-
-
-
+- Made a webscraper in python to extract publically available data of future court cases in Denmark. In short we now have a bunch of real-world test data for our project.
