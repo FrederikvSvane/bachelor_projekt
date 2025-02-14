@@ -41,5 +41,15 @@ The solution will use:
     Hard constraints (no double bookings, capacity requirements)
     Soft constraints (minimizing room changes, preferred rooms)
 
+- 12. February 2025
+
+Made a first version of how to model our mvp. Consisting of scheduling meetings, court rooms and judges, in as few timeslots as possible.
+
+The general idea will be:
+
+    Initial construction of cases, with judges, court_rooms and  meetings, solved via bipartite maxing. From here on applying a graph coloring algorithm (DSatur) so put the meetings into as few timeslots as possible.
+
+
+
 
 

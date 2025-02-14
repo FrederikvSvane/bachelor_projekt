@@ -8,6 +8,11 @@
 
 - Created docs and setup c++ dev environment, with all the git and cmake bells and wistles
 
+## Week 2 (10. feb to 17. feb )
+
+- Made a webscraper in python to extract publically available data from the court of Hillerød. In short we now have a bunch of real-world test data for our project
+
+
 
 
 
