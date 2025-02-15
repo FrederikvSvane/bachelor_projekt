@@ -6,6 +6,7 @@
 #include <tuple>
 #include <variant>
 #include <vector>
+#include <memory>
 
 #include "judge.hpp"
 #include "meeting.hpp"
@@ -52,10 +53,9 @@ class Graph {
 };
 
 // Til k-coloring
-template <typename... T>
 struct UndirectedGraph {
     int n_nodes;
-    vector<Edge<T...>> edges;
+    vector<Edge> edges;
     vector<vector<int>> adj_matrix;
 };
 
