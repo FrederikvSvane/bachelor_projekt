@@ -1,6 +1,6 @@
 # Specific description of problem
 
-## Clear version:
+### Clear version:
 
 We define the court scheduling problem as follows:
 
@@ -33,9 +33,9 @@ We define the court scheduling problem as follows:
 
 The problem then becomes: given the named inputs, produce a valid schedule.
 
+___
 
-
-## Alternative, more coherent version:
+### Alternative, more coherent version:
 
 We define the court scheduling problem as follows:
 
