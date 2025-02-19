@@ -1,10 +1,12 @@
 #ifndef graph_hpp
 #define graph_hpp
 
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <tuple>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -44,6 +46,7 @@ class DirectedGraph {
   public:
     DirectedGraph(int n) : adj_list(n) {
         nodes.reserve(n);
+        edges.reserve(n * n);
     }
 
     template <typename NodeType>
@@ -72,6 +75,57 @@ class DirectedGraph {
             return it->second;                            // return the Edge* (value) associated with the iterator (to, Edge*)
         }
         return nullptr; // if the edge doesn't exist, return nullptr
+    }
+
+    void initialize_flow_graph(int n_meetings, int n_judges, int n_rooms) {
+        Node source(0);
+        addNode(source);
+
+        // meeting nodes (ids: 1 to n_meetings)
+        for (int i = 1; i <= n_meetings; ++i) {
+            Meeting m(i);
+            MeetingNode m_node(i, m);
+            addNode(m_node);
+        }
+
+        // judge-room nodes (ids: n_meetings + 1 to n_meetings + (n_judges * n_rooms))
+        for (int i = 1; i <= n_judges; ++i) {
+            Judge j(i);
+            for (int k = 1; k <= n_rooms; ++k) {
+                Room r(k);
+                const int node_id = n_meetings + (i - 1) * n_rooms + k;
+                JudgeRoomNode judge_room_node(node_id, j, r);
+                addNode(judge_room_node);
+            }
+        }
+
+        // sink node as the last node
+        const int sink_id = 1 + n_meetings + (n_judges * n_rooms);
+        Node sink(sink_id);
+        addNode(sink);
+
+        // edges from source to all meeting nodes
+        for (int i = 1; i <= n_meetings; ++i) {
+            addEdge(0, i, 1);
+        }
+
+        // edges from meeting nodes to judge-room nodes
+        const int first_meeting_id    = 1;
+        const int last_meeting_id     = n_meetings;
+        const int first_judge_room_id = n_meetings + 1;
+        const int last_judge_room_id  = sink_id - 1;
+
+        for (int from = first_meeting_id; from <= last_meeting_id; ++from) {
+            for (int to = first_judge_room_id; to <= last_judge_room_id; ++to) {
+                addEdge(from, to, 1);
+            }
+        }
+
+        // edges from judge-room nodes to sink
+        const int capacity = ceil(static_cast<double>(n_meetings) / (n_judges * n_rooms));
+        for (int i = first_judge_room_id; i <= last_judge_room_id; ++i) {
+            addEdge(i, sink_id, capacity);
+        }
     }
 
     // Add this to the DirectedGraph class in graph.hpp
