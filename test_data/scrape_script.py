@@ -197,16 +197,20 @@ def calculate_durations(cases):
 def main():
     # Liste af URLs til scraping (find manuelt)
     urls = [
-        "https://www.domstol.dk/hilleroed/retslister/2025/2/straffesager-uge-8/",
-        "https://www.domstol.dk/hilleroed/retslister/2025/2/civile-sager-uge-8/",
-        "https://www.domstol.dk/hilleroed/retslister/2025/2/tvangsauktioner-uge-8/",
-        "https://www.domstol.dk/hilleroed/retslister/2025/1/straffesager-7/",
-        "https://www.domstol.dk/hilleroed/retslister/2025/1/civile-sager-uge-7/",
-        "https://www.domstol.dk/hilleroed/retslister/2025/1/tvangsauktioner-uge-7/",
-        "https://www.domstol.dk/koebenhavn/retslister/2025/2/straffesager-uge-8/",
-        "https://www.domstol.dk/koebenhavn/retslister/2025/2/civile-sager-uge-8/",
-        "https://www.domstol.dk/koebenhavn/retslister/2025/2/straffesager-uge-7/",
-        "https://www.domstol.dk/koebenhavn/retslister/2025/2/civile-sager-uge-7/",
+        # "https://www.domstol.dk/hilleroed/retslister/2025/2/straffesager-uge-8/",
+        # "https://www.domstol.dk/hilleroed/retslister/2025/2/civile-sager-uge-8/",
+        # "https://www.domstol.dk/hilleroed/retslister/2025/2/tvangsauktioner-uge-8/",
+        # "https://www.domstol.dk/hilleroed/retslister/2025/1/straffesager-7/",
+        # "https://www.domstol.dk/hilleroed/retslister/2025/1/civile-sager-uge-7/",
+        # "https://www.domstol.dk/hilleroed/retslister/2025/1/tvangsauktioner-uge-7/",
+        # "https://www.domstol.dk/koebenhavn/retslister/2025/2/straffesager-uge-8/",
+        # "https://www.domstol.dk/koebenhavn/retslister/2025/2/civile-sager-uge-8/",
+        # "https://www.domstol.dk/koebenhavn/retslister/2025/2/straffesager-uge-7/",
+        # "https://www.domstol.dk/koebenhavn/retslister/2025/2/civile-sager-uge-7/",
+        "https://www.domstol.dk/hilleroed/retslister/2025/2/straffesager-uge-9/",
+        "https://www.domstol.dk/hilleroed/retslister/2025/2/civile-sager-uge-9/",
+        "https://www.domstol.dk/koebenhavn/retslister/2025/2/civile-sager-uge-9/",
+        "https://www.domstol.dk/koebenhavn/retslister/2025/2/straffesager-uge-9/"
     ]
 
     for url in urls:

@@ -1,0 +1,304 @@
+[
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Forberedende møde, Forældreansvarssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "24-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "12:00",
+    "Varighed": 165,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "René T. Olsen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [
+      "Millemaxine Isolde Cornelia Albrektsen"
+    ],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [
+      "Cecilie Elisa Dahlstrøm"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forældreansvarslov §7"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Sag i den forenklede proces",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "24-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "12:00",
+    "Varighed": 165,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 4",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Mette Sørensen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Lucas Risør Pichard"
+    ],
+    "Sagsøgtes advokater": [
+      "Claes Hahn Balle"
+    ],
+    "Sagsøger": [
+      "Laura Følbæk Madsen"
+    ],
+    "Sagsøgers advokater": [
+      "Birgitte Schack"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Aftaler"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Forældreansvarssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "24-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "15:00",
+    "Varighed": 120,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "René T. Olsen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [
+      "Marianne Wittenkamp"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forældreansvarslov §7"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "25-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "15:15",
+    "Varighed": 360,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 4",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Kristian Lind Jensen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Frederikssund Kommune"
+    ],
+    "Sagsøgtes advokater": [
+      "Anders Nørgaard Jensen"
+    ],
+    "Sagsøger": [
+      "Benny Juul Neis",
+      "Hansine Andrea Larsen"
+    ],
+    "Sagsøgers advokater": [
+      "Eva Verbik",
+      "Eva Verbik"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Erstatning uden for kontrakt, Forvaltningssag, Sager med"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Retsmøde, Forældreansvarssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "26-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "14:00",
+    "Varighed": 285,
+    "Fortsat sag": false,
+    "Lokale": "",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Niels Juhl"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [
+      "Brit Elling"
+    ],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [
+      "Karen Thirup Kastholm Romundstad"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forældreansvarslov §7"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "26-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "15:00",
+    "Varighed": 345,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 8",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Nicolas Roy-Bonde",
+      "Margrete Nissen",
+      "Anders Herping Nielsen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Region Hovedstaden"
+    ],
+    "Sagsøgtes advokater": [
+      "Peter Lund Meyer"
+    ],
+    "Sagsøger": [
+      "MED-EL NORDIC AB"
+    ],
+    "Sagsøgers advokater": [
+      "Andreas Christensen"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forvaltningssag, Sager med en værdi over 1 mio kr., Udbud"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Forberedende møde, Forældreansvarssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "26-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "12:00",
+    "Varighed": 165,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 7",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Casper Klindt Sølbeck"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [
+      "Mette Rude Clemmensen"
+    ],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [
+      "Michael Nauman"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forældreansvarslov §7"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Hovedforhandling, Almindelig civil sag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "27-02-2025",
+    "Starttid": "09:15",
+    "Sluttid": "15:00",
+    "Varighed": 345,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 5",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Ulla Tange Christensen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [
+      "Funder & Schultz ApS"
+    ],
+    "Sagsøgtes advokater": [
+      "Casper Vahr Glorvigen"
+    ],
+    "Sagsøger": [
+      "KV Svejs ApS"
+    ],
+    "Sagsøgers advokater": [
+      "Jakob Brix Kvols"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Entreprise og håndværkere"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Domsafsigelse, Boligretssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "27-02-2025",
+    "Starttid": "12:00",
+    "Sluttid": "12:05",
+    "Varighed": 5,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 3",
+    "Retsmødet er offentligt": true,
+    "Dommer": [
+      "Ulla Tange Christensen"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Lejeret"
+  },
+  {
+    "Sagstype": "Civile",
+    "Kategori": "Borgerlig sag, Forberedende møde, Forældreansvarssag",
+    "Lægdommere": false,
+    "Domsmænd": false,
+    "Dato": "28-02-2025",
+    "Starttid": "13:00",
+    "Sluttid": "16:00",
+    "Varighed": 180,
+    "Fortsat sag": false,
+    "Lokale": "Retssal 7",
+    "Retsmødet er offentligt": false,
+    "Dommer": [
+      "Niels Juhl"
+    ],
+    "Foged": "",
+    "Advokater": [],
+    "Sagsøgte": [],
+    "Sagsøgtes advokater": [],
+    "Sagsøger": [],
+    "Sagsøgers advokater": [
+      "Mette Mygind"
+    ],
+    "Rekvirent": "",
+    "Skyldner": "",
+    "Sagen drejer sig om": "Forældreansvarslov §7"
+  }
+]
