@@ -8,6 +8,20 @@ project(Bachelor
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}) # stores the binary in the root folder instead of the build folder
 
-include_directories(.)
+  include_directories(${CMAKE_SOURCE_DIR}/src)
 
-add_executable(CourtScheduler src/main.cpp)
+  # Collect all source files
+  set(SOURCES
+      src/main.cpp
+  )
+  
+  # Collect all header files
+  set(HEADERS
+      src/meeting.hpp
+      src/room.hpp
+      src/graph.hpp
+      src/node.hpp
+      src/judge.hpp
+  )
+  
+  add_executable(CourtCaseScheduler ${SOURCES} ${HEADERS})
