@@ -7,7 +7,7 @@ import re
 
 
 def load_template():
-    with open("test_data/møde_data_template.json", "r", encoding="utf-8") as f:
+    with open("test/scraper/møde_data_template.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -158,7 +158,7 @@ def parse_url_info(url):
 def get_output_path(url):
     court, case_type, week = parse_url_info(url)
 
-    path = os.path.join("test_data", "../data/retsmøder", court, case_type)
+    path = os.path.join("test/data/retsmøder", court, case_type)
     filename = f"{case_type}_uge_{week}.json"
 
     # Laver mapper hvis de ikke findes
