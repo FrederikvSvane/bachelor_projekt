@@ -1,7 +1,7 @@
 #ifndef coloring_hpp
 #define coloring_hpp
 
-#include "graph.hpp"
+#include "../../domain/graph/graph.hpp"
 #include <set>
 
 namespace coloring {

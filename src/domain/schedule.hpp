@@ -5,7 +5,7 @@
 #include <sstream>
 
 #include "appointment.hpp"
-#include "graph.hpp"
+#include "graph/graph.hpp"
 
 using namespace std;
 

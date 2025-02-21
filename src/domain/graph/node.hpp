@@ -1,9 +1,9 @@
 #ifndef node_hpp
 #define node_hpp
 
-#include "judge.hpp"
-#include "meeting.hpp"
-#include "room.hpp"
+#include "../judge.hpp"
+#include "../meeting.hpp"
+#include "../room.hpp"
 
 class Node { // For inheritance og source / sink nodes
   protected:

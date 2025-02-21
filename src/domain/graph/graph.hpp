@@ -11,10 +11,10 @@
 #include <variant>
 #include <vector>
 
-#include "judge.hpp"
-#include "meeting.hpp"
+#include "../judge.hpp"
+#include "../meeting.hpp"
 #include "node.hpp"
-#include "room.hpp"
+#include "../room.hpp"
 
 using namespace std;
 
