@@ -1,19 +1,18 @@
-#ifndef schedule_hpp
-#define schedule_hpp
+#pragma once
 
-#include <vector>
-#include <sstream>
-#include <string>
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <unordered_map>
-#include <algorithm>
+#include <vector>
 
+#include "../utils/parser.hpp"
 #include "appointment.hpp"
 #include "graph/graph.hpp"
-#include "service/graph/matching.hpp"
 #include "service/graph/coloring.hpp"
-#include "../utils/parser.hpp"
+#include "service/graph/matching.hpp"
 
 using namespace std;
 
@@ -30,7 +29,7 @@ struct Schedule {
 
     // Generate appointments using the node "color" as timeslot.
     void generateScheduleFromColoredGraph(const UndirectedGraph& graph) {
-        for (int i = 0; i < graph.n_nodes; i++){
+        for (int i = 0; i < graph.n_nodes; i++) {
             MeetingJudgeRoomNode* mjr_node = dynamic_cast<MeetingJudgeRoomNode*>(graph.nodes[i].get());
             // Determine the day based on timeslot (color) and timeslots per day
             int day = (mjr_node->getColor() / timeslots_per_work_day);
@@ -41,9 +40,9 @@ struct Schedule {
     // Converts a timeslot index into a time string based on granularity.
     string getTimeFromTimeslot(int timeslot) const {
         int day_timeslot = timeslot % timeslots_per_work_day;
-        int minutes = day_timeslot * granularity;
-        int hours = minutes / 60;
-        minutes = minutes % 60;
+        int minutes      = day_timeslot * granularity;
+        int hours        = minutes / 60;
+        minutes          = minutes % 60;
 
         stringstream ss;
         ss << setfill('0') << setw(2) << hours << ":" << setfill('0') << setw(2) << minutes;
@@ -107,19 +106,19 @@ struct Schedule {
     }
 };
 
-Schedule generateSchedule(const parser::ParsedData &parsed_data) {
+Schedule generateScheduleUsingGraphs(const parser::ParsedData& parsed_data) {
     // Extract input parameters
-    int work_days = parsed_data.work_days;
+    int work_days            = parsed_data.work_days;
     int minutes_per_work_day = parsed_data.min_per_work_day;
-    int granularity = parsed_data.granularity;
+    int granularity          = parsed_data.granularity;
 
     std::vector<Meeting> meetings = parsed_data.meetings;
-    std::vector<Judge> judges = parsed_data.judges;
-    std::vector<Room> rooms = parsed_data.rooms;
+    std::vector<Judge> judges     = parsed_data.judges;
+    std::vector<Room> rooms       = parsed_data.rooms;
 
     int n_meetings = static_cast<int>(meetings.size());
-    int n_judges = static_cast<int>(judges.size());
-    int n_rooms = static_cast<int>(rooms.size());
+    int n_judges   = static_cast<int>(judges.size());
+    int n_rooms    = static_cast<int>(rooms.size());
 
     // Initialize the graph
     DirectedGraph graph(n_meetings + n_judges * n_rooms);
@@ -130,7 +129,7 @@ Schedule generateSchedule(const parser::ParsedData &parsed_data) {
 
     // Construct solution graph
     DirectedGraph sol_graph(static_cast<int>(assigned_meetings.size()));
-    for (const auto &appointment : assigned_meetings) {
+    for (const auto& appointment : assigned_meetings) {
         sol_graph.addNode(appointment);
     }
 
@@ -146,4 +145,3 @@ Schedule generateSchedule(const parser::ParsedData &parsed_data) {
 
     return schedule;
 }
-#endif

@@ -1,5 +1,4 @@
-#ifndef appointment_hpp
-#define appointment_hpp
+#pragma once
 
 #include "judge.hpp"
 #include "meeting.hpp"
@@ -16,5 +15,3 @@ struct Appointment {
     Appointment(Meeting m, Judge j, Room r, int d, int ts, int td)
         : meeting(m), judge(j), room(r), day(d), timeslot_start(ts), timeslots_duration(td) {}
 };
-
-#endif

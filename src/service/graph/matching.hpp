@@ -1,5 +1,4 @@
-#ifndef matching_hpp
-#define matching_hpp
+#pragma once
 
 #include "../../domain/graph/graph.hpp"
 #include <random>
@@ -93,5 +92,3 @@ vector<MeetingJudgeRoomNode> assign_meetings_to_judge_room_pairs(DirectedGraph& 
 }
 
 } // namespace matching
-
-#endif

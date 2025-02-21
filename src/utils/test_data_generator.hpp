@@ -9,6 +9,12 @@ using json = nlohmann::json;
 using namespace std;
 namespace test_data_generator {
 
+// we create this because we want a special normal distribution.
+// the duration of meetings are distributed between [5, 360] minutes
+// with most of them being 30 min. We generate numbers that adhere to this distribution by creating
+// a normal distribution with mean=30, sd=80 and truncating it at 5 and 360.
+// we then apply some neat CDF, error and inverse error function math to transform the truncated normal dist
+// into a valid normal dist with a total area under the curve that =1.
 class TruncatedNormalDistribution {
   private:
     double mu;    // mean
@@ -17,34 +23,33 @@ class TruncatedNormalDistribution {
     double b;     // upper bound
     std::uniform_real_distribution<double> uniform{0.0, 1.0};
 
-    float erfinv(float x){ // snupset direkte fra https://stackoverflow.com/questions/27229371/inverse-error-function-in-c
+    float erfinv(float x) { // snupset direkte fra https://stackoverflow.com/questions/27229371/inverse-error-function-in-c
         float tt1, tt2, lnx, sgn;
         sgn = (x < 0) ? -1.0f : 1.0f;
-     
-        x = (1 - x)*(1 + x);        // x = 1 - x*x;
-        lnx = logf(x);
-     
-        tt1 = 2/(M_PI*0.147) + 0.5f * lnx;
-        tt2 = 1/(0.147) * lnx;
-     
-        return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
-     }
 
-    // Standard normal CDF (Phi function)
+        x   = (1 - x) * (1 + x); // x = 1 - x*x;
+        lnx = logf(x);
+
+        tt1 = 2 / (M_PI * 0.147) + 0.5f * lnx;
+        tt2 = 1 / (0.147) * lnx;
+
+        return (sgn * sqrtf(-tt1 + sqrtf(tt1 * tt1 - tt2)));
+    }
+
+    // Standard normal CDF
     double standard_normal_cdf(double x) {
         return 0.5 * (1 + std::erf(x / std::sqrt(2.0)));
     }
 
     // Inverse CDF method for sampling
     double sample(std::mt19937& gen) {
-        // Calculate Phi((a-mu)/sigma) and Phi((b-mu)/sigma)
         double alpha = standard_normal_cdf((a - mu) / sigma);
         double beta  = standard_normal_cdf((b - mu) / sigma);
 
-        // Generate uniform random number between alpha and beta
+        // uniform random number between alpha and beta
         double u = uniform(gen) * (beta - alpha) + alpha;
 
-        // Return inverse CDF
+        // return the inverse CDF (using the inverse error function)
         return mu + sigma * std::sqrt(2.0) * erfinv(2.0 * u - 1.0);
     }
 
@@ -52,17 +57,15 @@ class TruncatedNormalDistribution {
     TruncatedNormalDistribution(double mean, double stddev, double min, double max)
         : mu(mean), sigma(stddev), a(min), b(max) {}
 
-    double operator()(std::mt19937& gen) {
+    double operator()(std::mt19937& gen) { // this enables generating a number from the dist simply by TruncatedNormalDist(gen)
         return sample(gen);
     }
 };
 
-
 static random_device rd;
-static mt19937 gen(rd());
+static mt19937 gen(rd()); // for generating random int between 0 and UINT32_MAX
 
-static TruncatedNormalDistribution duration_dist(30.0, 180.0, 5.0, 360.0);
-
+static TruncatedNormalDistribution duration_dist(30.0, 80.0, 5.0, 360.0);
 
 int generate_duration() {
     double raw_duration = duration_dist(gen);
@@ -108,7 +111,7 @@ json generate_constraints() {
     json hard = json::array();
     json soft = json::array();
 
-    // Always add all constraints as true
+    // for now all constraints as true
     hard.push_back({{"no overlaps", true}});
     hard.push_back({{"coverage", true}});
     soft.push_back({{"judge movement", true}});
@@ -129,16 +132,13 @@ json generate_request(
     bool normal_request = true) {
     json request;
 
-    // Generate meetings based on type
     request["meetings"] = normal_request ? generate_random_meetings(n_meetings) : generate_fixed_meetings(n_meetings, granularity);
+    request["Judges"]           = generate_judges(n_judges);
+    request["CourtRooms"]       = generate_court_rooms(n_rooms);
+    request["work_days"]        = num_days;
+    request["granularity"]      = granularity;
+    request["min_per_work_day"] = min_pr_day;
 
-    request["Judges"]      = generate_judges(n_judges);
-    request["CourtRooms"]  = generate_court_rooms(n_rooms);
-    request["work_days"]    = num_days;
-    request["granularity"] = granularity;
-    request["min_per_work_day"]  = min_pr_day;
-
-    // Generate constraints with default probabilities
     json constraints = json::array();
     constraints.push_back(generate_constraints());
     request["constraints"] = constraints;

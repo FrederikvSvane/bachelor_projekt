@@ -1,5 +1,4 @@
-#ifndef coloring_hpp
-#define coloring_hpp
+#pragma once
 
 #include "../../domain/graph/graph.hpp"
 #include <set>
@@ -93,5 +92,3 @@ void colorConflictGraph(UndirectedGraph& graph) {
 }
 
 } // namespace coloring
-
-#endif

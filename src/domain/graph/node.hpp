@@ -1,5 +1,4 @@
-#ifndef node_hpp
-#define node_hpp
+#pragma once
 
 #include "../judge.hpp"
 #include "../meeting.hpp"
@@ -57,5 +56,3 @@ class MeetingJudgeRoomNode : public Node {
     const Judge& getJudge() const { return judge; }
     const Room& getRoom() const { return room; }
 };
-
-#endif

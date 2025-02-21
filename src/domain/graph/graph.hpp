@@ -1,5 +1,4 @@
-#ifndef graph_hpp
-#define graph_hpp
+#pragma once
 
 #include <cmath>
 #include <iomanip>
@@ -13,8 +12,8 @@
 
 #include "../judge.hpp"
 #include "../meeting.hpp"
-#include "node.hpp"
 #include "../room.hpp"
+#include "node.hpp"
 
 using namespace std;
 
@@ -104,7 +103,7 @@ class DirectedGraph {
 
         // meeting nodes (ids: 1 to n_meetings)
         for (int i = 1; i <= n_meetings; ++i) {
-            Meeting m(i,1);
+            Meeting m(i, 1);
             MeetingNode m_node(i, m);
             addNode(m_node);
         }
@@ -151,7 +150,7 @@ class DirectedGraph {
 
     void initialize_bipartite_graph(const vector<Meeting>& meetings, const vector<Judge>& judges, const vector<Room>& rooms) {
         // Set the number of meetings, judges, and rooms from the passed vectors.
-        if(meetings.size() > UINT32_MAX || judges.size() > UINT32_MAX || rooms.size() > UINT32_MAX) {
+        if (meetings.size() > UINT32_MAX || judges.size() > UINT32_MAX || rooms.size() > UINT32_MAX) {
             throw invalid_argument("Too many meetings, judges, or rooms");
         }
         num_meetings = (int)meetings.size();
@@ -186,7 +185,6 @@ class DirectedGraph {
             }
         }
     }
-
 
     void visualize() const {
         cout << "\nGraph Visualization:\n";
@@ -421,5 +419,3 @@ struct UndirectedGraph {
         cout << "\n";
     }
 };
-
-#endif
