@@ -1,44 +1,45 @@
-#include "service/graph/coloring.hpp"
 #include "domain/graph/graph.hpp"
-#include "utils/json.hpp"
-#include "service/graph/matching.hpp"
 #include "domain/schedule.hpp"
-#include <fstream>
-#include "utils/parser.hpp"
-#include <filesystem>
+#include "service/graph/coloring.hpp"
+#include "service/graph/matching.hpp"
 #include "utils/argparse.hpp"
+#include "utils/json.hpp"
+#include "utils/parser.hpp"
+#include "utils/test_data_generator.hpp"
+#include <filesystem>
+#include <fstream>
 
 using json = nlohmann::json;
 using namespace ::parser;
 using namespace ::std;
 namespace fs = filesystem;
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char const* argv[]) {
     argparse::ArgumentParser program("CourtCaseScheduler");
 
     program.add_argument("-i", "--input")
-            .help("Path to the input JSON file")
-            .default_value(string(""));
+        .help("Path to the input JSON file")
+        .default_value(string(""));
 
     program.add_argument("-o", "--output")
-            .help("Path to the output JSON file")
-            .default_value(string("output.json"));
+        .help("Path to the output JSON file")
+        .default_value(string("output.json"));
 
     program.add_argument("--test")
-            .help("Use the test input file")
-            .default_value(false)
-            .implicit_value(true);
+        .help("Use the test input file")
+        .default_value(false)
+        .implicit_value(true);
 
     try {
         program.parse_args(argc, argv);
-    } catch (const exception &e) {
+    } catch (const exception& e) {
         cerr << "Argument parsing error: " << e.what() << endl;
         return 1;
     }
 
     ParsedData parsed_data;
     bool useTestFile = program.get<bool>("--test");
-    auto fileToRead = program.get<string>("--input");
+    auto fileToRead  = program.get<string>("--input");
     auto fileToWrite = program.get<string>("--output");
     json output_json;
 
@@ -65,26 +66,26 @@ int main(int argc, char const *argv[]) {
 
     try {
         parsed_data = parseJsonFile(data);
-    } catch (const exception &e) {
+    } catch (const exception& e) {
         cerr << e.what() << endl;
         return 1;
     }
 
     // Variables:
-    int work_days = parsed_data.work_days;
+    int work_days            = parsed_data.work_days;
     int minutes_per_work_day = parsed_data.min_per_work_day;
-    int granularity = parsed_data.granularity;
+    int granularity          = parsed_data.granularity;
     int n_meetings;
     int n_judges;
     int n_rooms;
 
     vector<Meeting> meetings = parsed_data.meetings;
-    vector<Judge> judges = parsed_data.judges;
-    vector<Room> rooms = parsed_data.rooms;
+    vector<Judge> judges     = parsed_data.judges;
+    vector<Room> rooms       = parsed_data.rooms;
 
     n_meetings = static_cast<int>(meetings.size());
-    n_judges = static_cast<int>(judges.size());
-    n_rooms = static_cast<int>(rooms.size());
+    n_judges   = static_cast<int>(judges.size());
+    n_rooms    = static_cast<int>(rooms.size());
 
     // Create graph with space for nodes
     DirectedGraph graph(n_meetings + n_judges * n_rooms);
@@ -94,7 +95,7 @@ int main(int argc, char const *argv[]) {
     vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_meetings_to_judge_room_pairs(graph);
 
     DirectedGraph sol_graph(static_cast<int>(assigned_meetings.size()));
-    for (const auto &appointment: assigned_meetings) {
+    for (const auto& appointment : assigned_meetings) {
         sol_graph.addNode(appointment);
     }
     UndirectedGraph conflict_graph = matching::constructConflictGraph(assigned_meetings);
@@ -103,6 +104,31 @@ int main(int argc, char const *argv[]) {
     Schedule schedule(work_days, minutes_per_work_day, granularity);
     schedule.generateScheduleFromColoredGraph(conflict_graph);
     schedule.visualize();
+
+    json normal_req = test_data_generator::generate_request(
+        50,  // 5 meetings
+        2,   // 2 judges
+        2,   // 2 rooms
+        2,   // 2 days
+        30,  // 30 min granularity
+        480, // 480 min per day (8 hours)
+        true // normal request
+    );
+
+    // Test fixed request
+    // json fixed_req = test_data_generator::generate_request(
+    //     5,      // 5 meetings
+    //     2,      // 2 judges
+    //     2,      // 2 rooms
+    //     2,      // 2 days
+    //     30,     // 30 min granularity
+    //     480,    // 480 min per day
+    //     false   // fixed request
+    // );
+
+    cout << "Normal Request:\n"
+         << normal_req.dump(2) << "\n\n";
+    // cout << "Fixed Request:\n" << fixed_req.dump(2) << "\n";
 
     // Always write the output file to the root folder (current working directory)
     fs::path p(fileToWrite);
@@ -113,6 +139,5 @@ int main(int argc, char const *argv[]) {
         cerr << "Error opening output file: " << outputFilename << "\n";
         return 1;
     }
-
     return 0;
 }
