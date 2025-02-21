@@ -158,7 +158,7 @@ def parse_url_info(url):
 def get_output_path(url):
     court, case_type, week = parse_url_info(url)
 
-    path = os.path.join("test_data", "retsmøder", court, case_type)
+    path = os.path.join("test_data", "../data/retsmøder", court, case_type)
     filename = f"{case_type}_uge_{week}.json"
 
     # Laver mapper hvis de ikke findes

@@ -1,0 +1,36 @@
+{
+  "meetings": [
+    {
+      "id": 1,
+      "duration": 1
+    }
+
+  ],
+  "Judges": [
+    {
+     "id": 1
+    }
+
+  ],
+  "CourtRooms": [
+    {
+      "id": 1
+    }
+  ],
+  "Num_days": 5,
+  "Granularity": 5,
+  "min_pr_day": 300,
+
+  "contraints": [
+    {
+      "hard": [
+        {"no overlaps": true},
+        {"coverage": true}
+
+      ],
+      "soft": [
+        {"judge movement": true}
+      ]
+    }
+  ]
+}
