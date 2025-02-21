@@ -27,7 +27,9 @@ project(Bachelor
     src/service/graph/coloring.hpp
     src/service/graph/matching.hpp
     src/utils/json.hpp
-)
+    src/utils/parser.hpp
+    src/utils/argparse.hpp)
+  )
 
   set(CMAKE_BUILD_TYPE Debug)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")

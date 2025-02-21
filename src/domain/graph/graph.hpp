@@ -149,35 +149,36 @@ class DirectedGraph {
         }
     }
 
-    void initialize_bipartite_graph(int n_meetings, int n_judges, int n_rooms) {
-        num_meetings = n_meetings;
-        num_judges   = n_judges;
-        num_rooms    = n_rooms;
-        num_jr_pairs = n_judges * n_rooms;
+    void initialize_bipartite_graph(const vector<Meeting>& meetings, const vector<Judge>& judges, const vector<Room>& rooms) {
+        // Set the number of meetings, judges, and rooms from the passed vectors.
+        if(meetings.size() > UINT32_MAX || judges.size() > UINT32_MAX || rooms.size() > UINT32_MAX) {
+            throw invalid_argument("Too many meetings, judges, or rooms");
+        }
+        num_meetings = (int)meetings.size();
+        num_judges   = (int)judges.size();
+        num_rooms    = (int)rooms.size();
+        num_jr_pairs = num_judges * num_rooms;
 
-        // meeting nodes (ids: 1 to n_meetings)
-        for (int i = 0; i < n_meetings; ++i) {
-            Meeting m(i,1);
-            MeetingNode m_node(i, m);
+        // Create meeting nodes. Each meeting node is added with its meeting_id and corresponding Meeting.
+        for (const Meeting& m : meetings) {
+            MeetingNode m_node(m.meeting_id, m);
             addNode(m_node);
         }
 
-        // judge-room nodes (ids: n_meetings + 1 to n_meetings + (n_judges * n_rooms))
-        for (int i = 0; i < n_judges; ++i) {
-            Judge j(i);
-            for (int k = 0; k < n_rooms; ++k) {
-                Room r(k);
-                const int node_id = n_meetings + i * n_rooms + k;
+        // Create judge-room nodes. The node_id is computed based on the meeting count, judge id, and room id.
+        for (const Judge& j : judges) {
+            for (const Room& r : rooms) {
+                const int node_id = num_meetings + j.judge_id * num_rooms + r.room_id;
                 JudgeRoomNode judge_room_node(node_id, j, r);
                 addNode(judge_room_node);
             }
         }
 
-        // edges from meeting nodes to judge-room nodes
+        // Set up edges from each meeting node to every judge-room node.
         const int first_meeting_id    = 0;
-        const int last_meeting_id     = n_meetings - 1;
-        const int first_judge_room_id = n_meetings;
-        const int last_judge_room_id  = n_meetings + num_jr_pairs - 1;
+        const int last_meeting_id     = num_meetings - 1;
+        const int first_judge_room_id = num_meetings;
+        const int last_judge_room_id  = num_meetings + num_jr_pairs - 1;
 
         for (int from = first_meeting_id; from <= last_meeting_id; ++from) {
             for (int to = first_judge_room_id; to <= last_judge_room_id; ++to) {
@@ -185,6 +186,7 @@ class DirectedGraph {
             }
         }
     }
+
 
     void visualize() const {
         cout << "\nGraph Visualization:\n";
