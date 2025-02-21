@@ -1,7 +1,7 @@
 #ifndef matching_hpp
 #define matching_hpp
 
-#include "graph.hpp"
+#include "../../domain/graph/graph.hpp"
 #include <random>
 
 using namespace std;

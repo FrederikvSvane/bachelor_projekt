@@ -17,12 +17,17 @@ project(Bachelor
   
   # Collect all header files
   set(HEADERS
-      src/meeting.hpp
-      src/room.hpp
-      src/graph.hpp
-      src/node.hpp
-      src/judge.hpp
-  )
+    src/domain/meeting.hpp
+    src/domain/room.hpp
+    src/domain/judge.hpp
+    src/domain/appointment.hpp
+    src/domain/schedule.hpp
+    src/domain/graph/graph.hpp
+    src/domain/graph/node.hpp
+    src/service/graph/coloring.hpp
+    src/service/graph/matching.hpp
+    src/utils/json.hpp
+)
 
   set(CMAKE_BUILD_TYPE Debug)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
