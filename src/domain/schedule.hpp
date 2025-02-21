@@ -94,7 +94,7 @@ struct Schedule {
                          << setw(10) << app.meeting.meeting_id << " | "
                          << setw(10) << app.judge.judge_id << " | "
                          << setw(10) << app.room.room_id << " | "
-                         << setw(10) << app.timeslots_duration * granularity << " min\n";
+                         << setw(10) << app.timeslots_duration << " min\n";
                 }
             } else {
                 cout << "No appointments scheduled\n";

@@ -28,7 +28,7 @@ project(Bachelor
     src/service/graph/matching.hpp
     src/utils/json.hpp
     src/utils/parser.hpp
-    src/utils/argparse.hpp)
+    src/utils/argparse.hpp
   )
 
   set(CMAKE_BUILD_TYPE Debug)

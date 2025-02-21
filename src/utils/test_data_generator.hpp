@@ -134,9 +134,9 @@ json generate_request(
 
     request["Judges"]      = generate_judges(n_judges);
     request["CourtRooms"]  = generate_court_rooms(n_rooms);
-    request["Num_days"]    = num_days;
-    request["Granularity"] = granularity;
-    request["min_pr_day"]  = min_pr_day;
+    request["work_days"]    = num_days;
+    request["granularity"] = granularity;
+    request["min_per_work_day"]  = min_pr_day;
 
     // Generate constraints with default probabilities
     json constraints = json::array();

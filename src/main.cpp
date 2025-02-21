@@ -45,12 +45,15 @@ int main(int argc, char const* argv[]) {
 
     json data;
     if (useTestFile) {
-        ifstream f("test/data/request/input_skabelon.json");
-        if (!f.is_open()) {
-            cerr << "Error opening test file: test/data/request/input_skabelon.json\n";
-            return 1;
-        }
-        data = json::parse(f);
+        data = test_data_generator::generate_request(
+            50,   // 5 meetings
+            2,    // 2 judges
+            2,    // 2 rooms
+            2,    // 2 days
+            30,   // 30 min granularity
+            480,  // 480 min per day
+            true // fixed request
+        );
     } else {
         if (fileToRead.empty()) {
             cerr << "No input file specified. Use -i <file_path>.\n";
@@ -71,64 +74,28 @@ int main(int argc, char const* argv[]) {
         return 1;
     }
 
-    // Variables:
-    int work_days            = parsed_data.work_days;
-    int minutes_per_work_day = parsed_data.min_per_work_day;
-    int granularity          = parsed_data.granularity;
-    int n_meetings;
-    int n_judges;
-    int n_rooms;
-
     vector<Meeting> meetings = parsed_data.meetings;
     vector<Judge> judges     = parsed_data.judges;
     vector<Room> rooms       = parsed_data.rooms;
 
-    n_meetings = static_cast<int>(meetings.size());
-    n_judges   = static_cast<int>(judges.size());
-    n_rooms    = static_cast<int>(rooms.size());
+    int work_days            = parsed_data.work_days;
+    int minutes_per_work_day = parsed_data.min_per_work_day;
+    int granularity          = parsed_data.granularity;
+    int n_meetings           = static_cast<int>(meetings.size());
+    int n_judges             = static_cast<int>(judges.size());
+    int n_rooms              = static_cast<int>(rooms.size());
 
-    // Create graph with space for nodes
+
     DirectedGraph graph(n_meetings + n_judges * n_rooms);
-
-    // Initialize graph with meetings, judges, and rooms
     graph.initialize_bipartite_graph(meetings, judges, rooms);
     vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_meetings_to_judge_room_pairs(graph);
 
-    DirectedGraph sol_graph(static_cast<int>(assigned_meetings.size()));
-    for (const auto& appointment : assigned_meetings) {
-        sol_graph.addNode(appointment);
-    }
     UndirectedGraph conflict_graph = matching::constructConflictGraph(assigned_meetings);
     coloring::colorConflictGraph(conflict_graph);
 
     Schedule schedule(work_days, minutes_per_work_day, granularity);
     schedule.generateScheduleFromColoredGraph(conflict_graph);
     schedule.visualize();
-
-    json normal_req = test_data_generator::generate_request(
-        50,  // 5 meetings
-        2,   // 2 judges
-        2,   // 2 rooms
-        2,   // 2 days
-        30,  // 30 min granularity
-        480, // 480 min per day (8 hours)
-        true // normal request
-    );
-
-    // Test fixed request
-    // json fixed_req = test_data_generator::generate_request(
-    //     5,      // 5 meetings
-    //     2,      // 2 judges
-    //     2,      // 2 rooms
-    //     2,      // 2 days
-    //     30,     // 30 min granularity
-    //     480,    // 480 min per day
-    //     false   // fixed request
-    // );
-
-    cout << "Normal Request:\n"
-         << normal_req.dump(2) << "\n\n";
-    // cout << "Fixed Request:\n" << fixed_req.dump(2) << "\n";
 
     // Always write the output file to the root folder (current working directory)
     fs::path p(fileToWrite);
