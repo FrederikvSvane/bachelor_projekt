@@ -1,19 +1,16 @@
 #include "domain/graph/graph.hpp"
 #include "domain/schedule.hpp"
 #include "service/graph/coloring.hpp"
-#include "service/graph/matching.hpp"
 #include "utils/argparse.hpp"
 #include "utils/json.hpp"
 #include "utils/main_inlines.hpp"
 #include "utils/parser.hpp"
-#include "utils/test_data_generator.hpp"
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 
 using json = nlohmann::json;
 using namespace std;
-namespace fs = std::filesystem;
+namespace fs = filesystem;
 
 int main(int argc, char const* argv[]) {
     argparse::ArgumentParser program("CourtCaseScheduler");
