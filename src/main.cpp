@@ -7,14 +7,19 @@ int main(int argc, char const* argv[]) {
     const int n_meetings = 95;
     const int n_judges   = 17;
     const int n_rooms    = 4;
-    // const int n_meetings = 9;
-    // const int n_judges   = 3;
-    // const int n_rooms    = 3;
+    /*const int n_meetings = 9;
+    const int n_judges   = 3;
+    const int n_rooms    = 3;*/
 
+    //Read input from json file
+    //Make meetings, judges and rooms based on the input file
+
+    //Make the graph based on how many meetings, judges and rooms there are
     DirectedGraph graph(n_meetings + n_judges * n_rooms);
 
+    //graph initializer should instead of integers take in the meetings, judges and rooms already made
     graph.initialize_bipartite_graph(n_meetings, n_judges, n_rooms);
-    graph.visualize();
+    //graph.visualize();
     
     vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_meetings_to_judge_room_pairs(graph);
 
@@ -22,13 +27,13 @@ int main(int argc, char const* argv[]) {
     for(const auto& appointment : assigned_meetings) {
         sol_graph.addNode(appointment);
     }
-    sol_graph.visualize();
-    
+    //sol_graph.visualize();
+
     UndirectedGraph conflict_graph = matching::constructConflictGraph(assigned_meetings);
-    conflict_graph.visualize();
+    //conflict_graph.visualize();
 
     coloring::colorConflictGraph(conflict_graph);
-    conflict_graph.visualize();
+    //conflict_graph.visualize();
     
     Schedule schedule(5, 300, 30);
     schedule.generateScheduleFromColoredGraph(conflict_graph);

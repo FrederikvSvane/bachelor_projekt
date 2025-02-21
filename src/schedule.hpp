@@ -31,9 +31,8 @@ struct Schedule {
             MeetingJudgeRoomNode* mjr_node = dynamic_cast<MeetingJudgeRoomNode*>(graph.nodes[i].get());
             // Determine the day based on timeslot (color) and timeslots per day
             int day = (mjr_node->getColor() / timeslots_per_work_day);
-            appointments.emplace_back(mjr_node->getMeeting(), mjr_node->getJudge(), mjr_node->getRoom(), day, mjr_node->getColor(), 5);
+            appointments.emplace_back(mjr_node->getMeeting(), mjr_node->getJudge(), mjr_node->getRoom(), day, mjr_node->getColor(), mjr_node->getMeeting().meeting_duration);
         }
-        return;
     }
 
     // Converts a timeslot index into a time string based on granularity.

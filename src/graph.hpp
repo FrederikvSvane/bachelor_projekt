@@ -104,7 +104,7 @@ class DirectedGraph {
 
         // meeting nodes (ids: 1 to n_meetings)
         for (int i = 1; i <= n_meetings; ++i) {
-            Meeting m(i);
+            Meeting m(i,1);
             MeetingNode m_node(i, m);
             addNode(m_node);
         }
@@ -157,7 +157,7 @@ class DirectedGraph {
 
         // meeting nodes (ids: 1 to n_meetings)
         for (int i = 0; i < n_meetings; ++i) {
-            Meeting m(i);
+            Meeting m(i,1);
             MeetingNode m_node(i, m);
             addNode(m_node);
         }
