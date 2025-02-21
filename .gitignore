@@ -1,0 +1,9 @@
+.idea
+/build
+/cmake-build-debug
+/.vscode
+/test
+CourtCaseScheduler.DS_Store
+CourtCaseScheduler
+*.json
+.DS_Store
