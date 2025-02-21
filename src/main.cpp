@@ -37,8 +37,8 @@ int main(int argc, char const* argv[]) {
 
     coloring::colorConflictGraph(conflict_graph);
     conflict_graph.visualize();
-
-    Schedule schedule(20, 300, 30);
+    
+    Schedule schedule(5, 300, 30);
     schedule.generateScheduleFromColoredGraph(conflict_graph);
     schedule.visualize();
 
