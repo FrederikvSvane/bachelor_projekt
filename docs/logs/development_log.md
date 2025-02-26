@@ -15,3 +15,4 @@
 ## Week 3 (17. feb to 24. feb)
 
 - Made some core implementations in form of domain/model components i.e. appointment, jduge, meeting, room and schedule classes. Furthermore we made a prototype to version 1 of the solution, which were modelled a little oversimplified.
+- Refactored the project for better structure
