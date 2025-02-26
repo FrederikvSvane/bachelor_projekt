@@ -18,12 +18,12 @@ int main(int argc, char const* argv[]) {
 
     // reads input file, modifies parsed_data in memory and returns 0 if it fails. hacky.
     parser::ParsedData parsed_data;
-    if (!handleInput(program, parsed_data, 500, true)) {
+    if (!handleInput(program, parsed_data, 5, false)) {
         return 1;
     }
 
     Schedule schedule = generateScheduleUsingGraphs(parsed_data);
-    schedule.visualize();
+    //schedule.visualize();
 
     auto fileToWrite = program.get<string>("--output");
     writeOutputFile(fileToWrite, json::object());

@@ -37,7 +37,9 @@ ParsedData parseJsonFile(json data) {
         for (const auto& meeting_json : data["meetings"]) {
             int id       = meeting_json["id"].get<int>();
             int duration = meeting_json["duration"].get<int>();
-            result.meetings.emplace_back(id, duration);
+            Sagstype sagstype = meeting_json["sagstype"].get<Sagstype>();
+            bool virtual_meeting = meeting_json["virtual"].get<bool>();
+            result.meetings.emplace_back(id, duration, sagstype, virtual_meeting);
         }
     } else {
         std::cerr << "JSON does not contain a valid 'meetings' array.\n";
@@ -47,7 +49,8 @@ ParsedData parseJsonFile(json data) {
     if (data.contains("CourtRooms") && data["CourtRooms"].is_array()) {
         for (const auto& court_room_json : data["CourtRooms"]) {
             int id = court_room_json["id"].get<int>();
-            result.rooms.emplace_back(id);
+            bool virtual_room = court_room_json["virtual"].get<bool>();
+            result.rooms.emplace_back(id, virtual_room);
         }
     } else {
         std::cerr << "JSON does not contain a valid 'CourtRooms' array.\n";
@@ -57,7 +60,9 @@ ParsedData parseJsonFile(json data) {
     if (data.contains("Judges") && data["Judges"].is_array()) {
         for (const auto& judge_json : data["Judges"]) {
             int id = judge_json["id"].get<int>();
-            result.judges.emplace_back(id);
+            vector<Sagstype> sagstypes = judge_json["skills"].get<vector<Sagstype>>();
+            bool virtual_judge = judge_json["virtual"].get<bool>();
+            result.judges.emplace_back(id, sagstypes, virtual_judge);
         }
     } else {
         std::cerr << "JSON does not contain a valid 'Judges' array.\n";
