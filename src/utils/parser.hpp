@@ -100,7 +100,7 @@ bool handleInput(const argparse::ArgumentParser& program, ParsedData& parsed_dat
     if (useTestFile) {
         data = test_data_generator::generate_request(
             n_meetings, // meetings
-            5,          // judges
+            10,          // judges
             7,          // rooms
             10,         // days
             30,         // _ min granularity

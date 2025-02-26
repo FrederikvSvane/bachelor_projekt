@@ -69,6 +69,10 @@ public:
         return dynamic_cast<T *>(nodes[id].get());
     }
 
+    int getNumNodes() {
+        return nodes.size();
+    }
+
     vector<MeetingNode *> getMeetingNodes() {
         vector<MeetingNode *> meeting_nodes;
         for (const auto &node: nodes) {
@@ -97,6 +101,10 @@ public:
             return it->second;                            // return the Edge* (value) associated with the iterator (to, Edge*)
         }
         return nullptr; // if the edge doesn't exist, return nullptr
+    }
+
+    const vector<unordered_map<int, Edge *>> get_adj_list() const {
+        return adj_list;
     }
 
 
@@ -192,7 +200,7 @@ public:
         }
         //Edge from all judge aggregate nodes to sink
         for (int i = first_judge_aggregate_node; i <= sink_id - 1; ++i) {
-            addEdge(i, sink_id, num_rooms);
+            addEdge(i, sink_id, num_meetings / num_judges);
         }
 
     }

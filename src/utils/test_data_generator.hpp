@@ -164,8 +164,6 @@ namespace test_data_generator {
         constraints.push_back(generate_constraints());
         request["constraints"] = constraints;
 
-        cout << request << endl;
-
         return request;
     }
 

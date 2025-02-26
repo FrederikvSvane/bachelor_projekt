@@ -122,13 +122,14 @@ Schedule generateScheduleUsingGraphs(const parser::ParsedData& parsed_data) {
     int n_rooms    = static_cast<int>(rooms.size());
 
     // Initialize the graph
-    DirectedGraph graph(n_meetings + (n_judges * n_rooms) + n_judges + 2);
+    DirectedGraph graph(n_meetings + (n_judges * n_rooms) + n_judges + n_rooms + 2);
     graph.initialize_flow_graph(meetings, judges, rooms);
 
-    graph.visualize();
+    //graph.visualize();
 
-    /*// Assign meetings to judge-room pairs
-    std::vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_meetings_to_judge_room_pairs(graph);
+    // Assign meetings to judge-room pairs
+    //std::vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_meetings_to_judge_room_pairs(graph);
+    std::vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_meetings_to_judge_rooms_pairs_flow(graph);
 
     // Construct solution graph
     DirectedGraph sol_graph(static_cast<int>(assigned_meetings.size()));
@@ -144,8 +145,7 @@ Schedule generateScheduleUsingGraphs(const parser::ParsedData& parsed_data) {
 
     // Generate schedule
     Schedule schedule(work_days, minutes_per_work_day, granularity);
-    schedule.generateScheduleFromColoredGraph(conflict_graph);*/
-    Schedule schedule(work_days, minutes_per_work_day, granularity);
+    schedule.generateScheduleFromColoredGraph(conflict_graph);
 
     return schedule;
 }

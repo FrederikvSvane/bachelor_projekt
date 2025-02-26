@@ -8,10 +8,9 @@ class Node { // For inheritance og source / sink nodes
   protected:
     int id;
     int color;
-    bool visited;
 
   public:
-    Node(int _id) : id(_id), color(-1), visited(false) {}
+    Node(int _id) : id(_id), color(-1) {}
     virtual ~Node() = default;
 
     int getId() const { return id; }
