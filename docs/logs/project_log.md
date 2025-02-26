@@ -56,6 +56,17 @@ The general idea will be:
 
     Initial construction of cases, with judges, court_rooms and  meetings, solved via bipartite maxing. From here on applying a graph coloring algorithm (DSatur) so put the meetings into as few timeslots as possible.
 
+## 14. February 2025
+
+Prepared everything for first meeting.
+
+## 19. February 2025
+
+Spent entire day developing core foundation for graph solution, and a over-simplified graph representation.
+
+## 21. February 2025
+
+Used for final touches for first meeting and improving the structure of the project
 
 
 
