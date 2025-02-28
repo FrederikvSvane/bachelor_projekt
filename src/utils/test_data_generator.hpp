@@ -86,6 +86,21 @@ namespace test_data_generator {
         }
     }
 
+    std::vector<Sagstype> generate_judge_skills(int num_skills = 2) {
+        std::vector<Sagstype> skills;
+        std::vector<Sagstype> all_types = {Sagstype::Straffe, Sagstype::Civile, Sagstype::Tvang};
+
+        // Shuffle the types to get random but unique skills
+        std::shuffle(all_types.begin(), all_types.end(), gen);
+
+        // Take the first num_skills elements (default 2)
+        for (int i = 0; i < std::min(num_skills, static_cast<int>(all_types.size())); i++) {
+            skills.push_back(all_types[i]);
+        }
+
+        return skills;
+    }
+
 
     json generate_fixed_meetings(int n, int fixed_duration) {
         json meetings = json::array();
@@ -110,8 +125,10 @@ namespace test_data_generator {
     json generate_judges(int n) {
         json judges = json::array();
         for (int i = 1; i <= n; i++) {
+            std::vector<Sagstype> judge_skills = generate_judge_skills();
+
             judges.push_back({{"id", i,},
-                              {"skills", {generate_sagstype(), generate_sagstype()}},
+                              {"skills", {judge_skills[0], judge_skills[1]}},
                               {"virtual", false}});
         }
         return judges;

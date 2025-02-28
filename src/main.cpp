@@ -18,11 +18,14 @@ int main(int argc, char const* argv[]) {
 
     // reads input file, modifies parsed_data in memory and returns 0 if it fails. hacky.
     parser::ParsedData parsed_data;
-    if (!handleInput(program, parsed_data, 100, false)) {
+    if (!handleInput(program, parsed_data, 20, false)) {
         return 1;
     }
 
-    Schedule schedule = generateScheduleUsingGraphs(parsed_data);
+    /*Schedule schedule = generateScheduleUsingGraphs(parsed_data);
+    schedule.visualize();*/
+
+    Schedule schedule = generateScheduleUsingTwoStepApproach(parsed_data);
     schedule.visualize();
 
     auto fileToWrite = program.get<string>("--output");

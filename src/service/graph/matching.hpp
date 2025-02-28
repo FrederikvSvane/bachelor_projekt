@@ -2,10 +2,19 @@
 
 #include "../../domain/graph/graph.hpp"
 #include <random>
+#include <queue>
 
 using namespace std;
 
 namespace matching {
+
+    struct AugmentingPath {
+        int judge_node;
+        int meeting_node;
+        int room_node;
+        int flow;
+    };
+
 
     UndirectedGraph constructConflictGraph(vector<MeetingJudgeRoomNode> assigned_meetings) {
         UndirectedGraph conflict_graph(assigned_meetings.size());
@@ -31,94 +40,441 @@ namespace matching {
     }
 
 
-    bool dfs(DirectedGraph &graph, int current, int sink, vector<bool> &visited, vector<int> &parent,
-             const vector<unordered_map<int, Edge *>> &adj_list) {
-        //Sets the current node to visited
-        visited[current] = true;
-        if (current == sink) return true;
+    // Add this to the matching namespace in matching.hpp
 
-        // Iterate over all outgoing edges from the current node.
-        for (auto &edgePair: adj_list[current]) {
-            // Get the next node and the edge object.
-            int next = edgePair.first;
-            Edge *edge = edgePair.second;
-            // If the next node is not visited and the residual capacity is positive, recursively call DFS.
-            int residual_capacity = edge->getCapacity() - edge->getFlow(); //How much flow can still be sent through
-            if (!visited[next] && residual_capacity > 0) {
-                parent[next] = current;
-                if (dfs(graph, next, sink, visited, parent, adj_list))
-                    return true; //Returns true if augmenting path is found
+    bool bfs(DirectedGraph& graph, int source, int sink, vector<int>& parent) {
+        // Initialize all vertices as not visited
+        vector<bool> visited(graph.getNumNodes(), false);
+
+        // Create a queue, enqueue source vertex
+        queue<int> q;
+        q.push(source);
+        visited[source] = true;
+        parent[source] = -1;
+
+        // Standard BFS Loop
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+
+            vector<unordered_map<int, Edge*>> adj_list = graph.get_adj_list();
+            // Get all adjacent vertices
+            for (const auto& [v, edge] : adj_list[u]) {
+                // If not visited and has remaining capacity
+                if (!visited[v] && edge->getCapacity() > edge->getFlow()) {
+                    // Add to queue and mark as visited
+                    q.push(v);
+                    parent[v] = u;
+                    visited[v] = true;
+                }
             }
         }
-        return false;
+
+        // If we reached sink in BFS starting from source, return true
+        return visited[sink];
     }
 
-    //Using ford fulkerson approach with dfs to find augmenting paths and create the mjr nodes
-    vector<MeetingJudgeRoomNode> assign_meetings_to_judge_rooms_pairs_flow(DirectedGraph &graph) {
-        vector<MeetingJudgeRoomNode> assigned_meetings;
-
-        // Define the source and sink node IDs based on your graph construction.
+// Function to extract judge-meeting pairs from the first flow solution
+    vector<MeetingJudgeNode> assign_judges_to_meetings(DirectedGraph &graph) {
         int source = 0;
         int sink = graph.getNumNodes() - 1;
         int total_flow = 0;
 
-        // Parent vector to store the augmenting path.
         vector<int> parent(graph.getNumNodes(), -1);
+        vector<MeetingJudgeNode> assigned_pairs;
 
-        // Run Ford-Fulkerson: while an augmenting path exists, send flow.
-        while (true) {
-            vector<bool> visited(graph.getNumNodes(), false);
-            fill(parent.begin(), parent.end(), -1);
+        cout << "\n=== Assigning Judges to Meetings ===" << endl;
 
-            // Try to find an augmenting path using DFS.
-            if (!dfs(graph, source, sink, visited, parent, graph.get_adj_list()))
-                break;  // No augmenting path found: maximum flow reached.
-
-            // Determine the bottleneck capacity along the found path. By looping over all nodes in the path and checking their edges
-            int path_flow = numeric_limits<int>::max(); //Sets path flow to max int value
+        // Run Ford-Fulkerson
+        while (bfs(graph, source, sink, parent)) {
+            // Find bottleneck capacity
+            int path_flow = numeric_limits<int>::max();
             for (int v = sink; v != source; v = parent[v]) {
                 int u = parent[v];
-                Edge *edge = graph.getEdge(u, v);
+                Edge* edge = graph.getEdge(u, v);
                 if (edge) {
-                    path_flow = min(path_flow, edge->getCapacity() -
-                                               edge->getFlow()); //Finds the minimum flow that can be sent through the path
+                    path_flow = min(path_flow, edge->getCapacity() - edge->getFlow());
                 }
             }
 
-            // Augment the flow along the path, set the flow all the edges in the path
+            // Extract judge and meeting nodes from this path
+            int judge_node = -1;
+            int meeting_node = -1;
+
             for (int v = sink; v != source; v = parent[v]) {
                 int u = parent[v];
-                Edge *edge = graph.getEdge(u, v);
+
+                // Check if u is a judge node (1 to num_judges)
+                if (u >= 1 && u <= graph.num_judges) {
+                    judge_node = u;
+                }
+
+                // Check if v is a meeting node (num_judges+1 to num_judges+num_meetings)
+                if (v > graph.num_judges && v <= graph.num_judges + graph.num_meetings) {
+                    meeting_node = v;
+                }
+
+                // Update flow values
+                Edge* edge = graph.getEdge(u, v);
                 if (edge) {
                     edge->setFlow(edge->getFlow() + path_flow);
                 }
             }
+
+            // If we identified both a judge and a meeting, create a pair
+            if (judge_node != -1 && meeting_node != -1) {
+                auto* judge_node_ptr = graph.getNode<JudgeNode>(judge_node);
+                auto* meeting_node_ptr = graph.getNode<MeetingNode>(meeting_node);
+
+                if (judge_node_ptr && meeting_node_ptr) {
+                    MeetingJudgeNode pair(
+                            assigned_pairs.size(),  // Use index as ID
+                            meeting_node_ptr->getMeeting(),
+                            judge_node_ptr->getJudge()
+                    );
+                    assigned_pairs.push_back(pair);
+
+                    cout << "Assignment " << assigned_pairs.size() << ": Meeting "
+                         << meeting_node_ptr->getMeeting().meeting_id << " -> Judge "
+                         << judge_node_ptr->getJudge().judge_id << endl;
+                }
+            }
+
             total_flow += path_flow;
         }
 
-        if (total_flow != graph.num_meetings) {
-            throw runtime_error("Not all meetings were assigned");
+        // Check if all meetings were assigned
+        if (total_flow < graph.num_meetings) {
+            throw runtime_error("Not all meetings could be assigned judges: flow = "
+                                + to_string(total_flow) + ", meetings = " + to_string(graph.num_meetings));
         }
 
+        cout << "Total Meetings Assigned: " << assigned_pairs.size() << endl;
+        cout << "================================" << endl;
 
-        vector<unordered_map<int, Edge *>> adj_list = graph.get_adj_list();
-        // After maximum flow is reached, extract the assignments.
-        // Loop over all meeting nodes and check their outgoing edges.
-        for (int meetingId = 1; meetingId <= graph.num_meetings; ++meetingId) {
-            for (auto &edgePair: adj_list[meetingId]) {
-                int jr_node_id = edgePair.first;
-                Edge *edge = edgePair.second;
-                //When we find an edge with flow, we know that the meeting is assigned to the corresponding judge-room pair.
-                //Effectively following the residual graph (even though we are not explicitly constructing it)
-                if (edge->getFlow() > 0) {
-                    auto *meetingNode = graph.getNode<MeetingNode>(meetingId);
-                    auto *jrNode = graph.getNode<JudgeRoomNode>(jr_node_id);
-                    if (meetingNode && jrNode) {
-                        MeetingJudgeRoomNode assignment(meetingId, meetingNode->getMeeting(), jrNode->getJudge(),
-                                                        jrNode->getRoom());
-                        assigned_meetings.push_back(assignment);
+        return assigned_pairs;
+    }
+
+// Function to assign rooms to judge-meeting pairs
+    vector<MeetingJudgeRoomNode> assign_rooms_to_jm_pairs(DirectedGraph &graph) {
+        int source = 0;
+        int sink = graph.getNumNodes() - 1;
+        int total_flow = 0;
+
+        vector<int> parent(graph.getNumNodes(), -1);
+        vector<MeetingJudgeRoomNode> assigned_meetings;
+
+        cout << "\n=== Assigning Rooms to Judge-Meeting Pairs ===" << endl;
+
+        // Run Ford-Fulkerson
+        while (bfs(graph, source, sink, parent)) {
+            // Find bottleneck capacity
+            int path_flow = numeric_limits<int>::max();
+            for (int v = sink; v != source; v = parent[v]) {
+                int u = parent[v];
+                Edge* edge = graph.getEdge(u, v);
+                if (edge) {
+                    path_flow = min(path_flow, edge->getCapacity() - edge->getFlow());
+                }
+            }
+
+            // Extract room and jm-pair nodes from this path
+            int room_node = -1;
+            int jm_node = -1;
+
+            for (int v = sink; v != source; v = parent[v]) {
+                int u = parent[v];
+
+                // Check if u is a room node (1 to num_rooms)
+                if (u >= 1 && u <= graph.num_rooms) {
+                    room_node = u;
+                }
+
+                // Check if v is a jm-pair node (num_rooms+1 to num_rooms+jm_pairs.size())
+                if (v > graph.num_rooms && v <= graph.num_rooms + graph.num_meetings) {
+                    jm_node = v;
+                }
+
+                // Update flow values
+                Edge* edge = graph.getEdge(u, v);
+                if (edge) {
+                    edge->setFlow(edge->getFlow() + path_flow);
+                }
+            }
+
+            // If we identified both a room and a jm-pair, create an assignment
+            if (room_node != -1 && jm_node != -1) {
+                auto* room_node_ptr = graph.getNode<RoomNode>(room_node);
+                auto* jm_node_ptr = graph.getNode<MeetingJudgeNode>(jm_node - graph.num_rooms);
+
+                if (room_node_ptr && jm_node_ptr) {
+                    MeetingJudgeRoomNode assignment(
+                            assigned_meetings.size(),  // Use index as ID
+                            jm_node_ptr->getMeeting(),
+                            jm_node_ptr->getJudge(),
+                            room_node_ptr->getRoom()
+                    );
+                    assigned_meetings.push_back(assignment);
+
+                    cout << "Assignment " << assigned_meetings.size() << ": Meeting "
+                         << jm_node_ptr->getMeeting().meeting_id << " -> Judge "
+                         << jm_node_ptr->getJudge().judge_id << " -> Room "
+                         << room_node_ptr->getRoom().room_id << endl;
+                }
+            }
+
+            total_flow += path_flow;
+        }
+
+        // Check if all jm-pairs were assigned
+        if (total_flow < graph.num_meetings) {
+            throw runtime_error("Not all judge-meeting pairs could be assigned rooms: flow = "
+                                + to_string(total_flow) + ", pairs = " + to_string(graph.num_meetings));
+        }
+
+        cout << "Total Assignments: " << assigned_meetings.size() << endl;
+        cout << "================================" << endl;
+
+        return assigned_meetings;
+    }
+
+
+
+    // BFS-based augmenting path finder for Ford-Fulkerson
+    bool bfs_v1(DirectedGraph &graph, int source, int sink, vector<int> &parent) {
+        int n = graph.getNumNodes();
+        vector<bool> visited(n, false);
+        queue<int> q;
+
+        // Start at source
+        q.push(source);
+        visited[source] = true;
+        parent[source] = -1;
+
+        // BFS loop
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+
+            vector<unordered_map<int, Edge *>> adj_list = graph.get_adj_list();
+            // Check all neighbors of current node
+            for (const auto &[v, edge] : adj_list[u]) {
+                // Check if v is a meeting node and if its capacity is reached
+                bool meetingNodeCapacityReached = false;
+                if (v > graph.num_judges && v <= graph.num_judges + graph.num_meetings) {
+                    auto* meetingNode = graph.getNode<MeetingNode>(v);
+                    if (meetingNode && meetingNode->getFlow() >= meetingNode->getCapacity()) {
+                        meetingNodeCapacityReached = true;
                     }
                 }
+
+                // If not visited, has remaining edge capacity, and meeting node capacity not reached
+                if (!visited[v] && edge->getCapacity() > edge->getFlow() && !meetingNodeCapacityReached) {
+                    q.push(v);
+                    visited[v] = true;
+                    parent[v] = u;
+
+                    if (v == sink)
+                        return true; // Found path to sink
+                }
+            }
+        }
+
+        // No path to sink found
+        return false;
+    }
+
+    // Extract the judge, meeting, and room from an augmenting path
+    AugmentingPath extractPathInfo(const vector<int> &parent, DirectedGraph &graph, int source, int sink, int path_flow) {
+        AugmentingPath path = {-1, -1, -1, path_flow};
+
+        // Reconstruct the path from sink to source
+        for (int v = sink; v != source; v = parent[v]) {
+            int u = parent[v];
+
+            // Identify node types along the path
+
+            // Check if u is a judge node (1 to num_judges)
+            if (u >= 1 && u <= graph.num_judges) {
+                path.judge_node = u;
+            }
+
+                // Check if u is a meeting node (num_judges+1 to num_judges+num_meetings)
+            else if (u > graph.num_judges && u <= graph.num_judges + graph.num_meetings) {
+                path.meeting_node = u;
+            }
+
+            // Check if v is a room node (num_judges+num_meetings+1 to num_judges+num_meetings+num_rooms)
+            if (v > graph.num_judges + graph.num_meetings &&
+                v <= graph.num_judges + graph.num_meetings + graph.num_rooms) {
+                path.room_node = v;
+            }
+        }
+
+        return path;
+    }
+
+    void printAugmentingPath(const AugmentingPath& path, DirectedGraph& graph, int pathNum) {
+        cout << "Augmenting Path #" << pathNum << ":" << endl;
+        cout << "  Flow Amount: " << path.flow << endl;
+
+        if (path.judge_node != -1) {
+            auto *judge_node = graph.getNode<JudgeNode>(path.judge_node);
+            if (judge_node) {
+                const Judge &judge = judge_node->getJudge();
+                cout << "  Judge: ID=" << judge.judge_id << ", Skills=[";
+                for (size_t i = 0; i < judge.judge_skills.size(); i++) {
+                    switch (judge.judge_skills[i]) {
+                        case Sagstype::Straffe:
+                            cout << "Straffe";
+                            break;
+                        case Sagstype::Civile:
+                            cout << "Civile";
+                            break;
+                        case Sagstype::Tvang:
+                            cout << "Tvang";
+                            break;
+                    }
+                    if (i < judge.judge_skills.size() - 1) cout << ", ";
+                }
+                cout << "]" << endl;
+            }
+        }
+
+        if (path.meeting_node != -1) {
+            auto *meeting_node = graph.getNode<MeetingNode>(path.meeting_node);
+            if (meeting_node) {
+                const Meeting &meeting = meeting_node->getMeeting();
+                cout << "  Meeting: ID=" << meeting.meeting_id << ", Duration=" << meeting.meeting_duration;
+                cout << ", Type=";
+                switch (meeting.meeting_sagstype) {
+                    case Sagstype::Straffe:
+                        cout << "Straffe";
+                        break;
+                    case Sagstype::Civile:
+                        cout << "Civile";
+                        break;
+                    case Sagstype::Tvang:
+                        cout << "Tvang";
+                        break;
+                }
+                cout << endl;
+            }
+        }
+
+        if (path.room_node != -1) {
+            auto *room_node = graph.getNode<RoomNode>(path.room_node);
+            if (room_node) {
+                const Room &room = room_node->getRoom();
+                cout << "  Room: ID=" << room.room_id << ", Virtual=" << (room.room_virtual ? "Yes" : "No") << endl;
+            }
+        }
+
+        cout << "  Path: Source -> ";
+        if (path.judge_node != -1) cout << "Judge(" << path.judge_node << ") -> ";
+        if (path.meeting_node != -1) cout << "Meeting(" << path.meeting_node << ") -> ";
+        if (path.room_node != -1) cout << "Room(" << path.room_node << ") -> ";
+        cout << "Sink" << endl;
+        cout << "----------------------------------------" << endl;
+
+    }
+    // Main Ford-Fulkerson implementation with path tracking
+    vector<MeetingJudgeRoomNode> ford_fulkerson_v1(DirectedGraph &graph) {
+        // Define source and sink
+        int source = 0;
+        int sink = graph.getNumNodes() - 1;
+        int total_flow = 0;
+
+        // Parent array for storing augmenting paths
+        vector<int> parent(graph.getNumNodes(), -1);
+
+        // Keep track of all augmenting paths
+        vector<AugmentingPath> augmenting_paths;
+
+        cout << "\n=== Ford-Fulkerson Augmenting Paths ===" << endl;
+        cout << "========================================" << endl;
+        int pathCounter = 1;
+
+        // Run Ford-Fulkerson algorithm
+        while (bfs(graph, source, sink, parent)) {
+            // Find bottleneck capacity along the path
+            int path_flow = numeric_limits<int>::max();
+            for (int v = sink; v != source; v = parent[v]) {
+                int u = parent[v];
+                Edge* edge = graph.getEdge(u, v);
+                if (edge) {
+                    path_flow = min(path_flow, edge->getCapacity() - edge->getFlow());
+                }
+            }
+
+            // Extract the judge, meeting, and room from this path
+            AugmentingPath path_info = extractPathInfo(parent, graph, source, sink, path_flow);
+
+            // Only record valid paths (should have all three nodes)
+            if (path_info.judge_node != -1 && path_info.meeting_node != -1 && path_info.room_node != -1) {
+                // Print path information
+                printAugmentingPath(path_info, graph, pathCounter++);
+                augmenting_paths.push_back(path_info);
+            }
+
+            // Update residual capacities
+            for (int v = sink; v != source; v = parent[v]) {
+                int u = parent[v];
+
+                // Update meeting node flow if u is a meeting node
+                if (u > graph.num_judges && u <= graph.num_judges + graph.num_meetings) {
+                    auto* meetingNode = graph.getNode<MeetingNode>(u);
+                    if (meetingNode) {
+                        meetingNode->setFlow(meetingNode->getFlow() + path_flow);
+                    }
+                }
+
+                Edge* edge = graph.getEdge(u, v);
+                if (edge) {
+                    edge->setFlow(edge->getFlow() + path_flow);
+                }
+
+                // Handle reverse edge (for residual graph)
+                Edge* rev_edge = graph.getEdge(v, u);
+                if (rev_edge) {
+                    rev_edge->setFlow(rev_edge->getFlow() - path_flow);
+                }
+            }
+
+            total_flow += path_flow;
+        }
+
+        // Check if all meetings were assigned
+        if (total_flow < graph.num_meetings) {
+            throw runtime_error("Not all meetings could be assigned: flow = "
+                                + to_string(total_flow) + ", meetings = " + to_string(graph.num_meetings));
+        }
+
+        cout << "\n=== Summary of Assignments ===" << endl;
+        cout << "Total Flow: " << total_flow << " (Should equal number of meetings: " << graph.num_meetings << ")" << endl;
+        cout << "Total Paths Found: " << augmenting_paths.size() << endl;
+        cout << "================================" << endl;
+
+        // Convert augmenting paths to MeetingJudgeRoomNode objects
+        vector<MeetingJudgeRoomNode> assigned_meetings;
+        for (const auto& path : augmenting_paths) {
+            auto* meeting_node = graph.getNode<MeetingNode>(path.meeting_node);
+            auto* judge_node = graph.getNode<JudgeNode>(path.judge_node);
+            auto* room_node = graph.getNode<RoomNode>(path.room_node);
+
+            if (meeting_node && judge_node && room_node) {
+                MeetingJudgeRoomNode assignment(
+                        assigned_meetings.size(),  // Use index as ID
+                        meeting_node->getMeeting(),
+                        judge_node->getJudge(),
+                        room_node->getRoom()
+                );
+                assigned_meetings.push_back(assignment);
+
+                cout << "Assignment " << assigned_meetings.size() << ": Meeting "
+                     << meeting_node->getMeeting().meeting_id << " -> Judge "
+                     << judge_node->getJudge().judge_id << " -> Room "
+                     << room_node->getRoom().room_id << endl;
             }
         }
 

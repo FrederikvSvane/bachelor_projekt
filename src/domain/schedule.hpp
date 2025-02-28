@@ -107,6 +107,55 @@ struct Schedule {
 };
 
 
+Schedule generateScheduleUsingTwoStepApproach(const parser::ParsedData& parsed_data) {
+    // Extract input parameters
+    int work_days = parsed_data.work_days;
+    int minutes_per_work_day = parsed_data.min_per_work_day;
+    int granularity = parsed_data.granularity;
+
+    std::vector<Meeting> meetings = parsed_data.meetings;
+    std::vector<Judge> judges = parsed_data.judges;
+    std::vector<Room> rooms = parsed_data.rooms;
+
+    int n_meetings = static_cast<int>(meetings.size());
+    int n_judges = static_cast<int>(judges.size());
+    int n_rooms = static_cast<int>(rooms.size());
+
+    // Step 1: Assign judges to meetings based on skills
+    cout << "\n=== Step 1: Assigning Judges to Meetings ===" << endl;
+    DirectedGraph judge_case_graph(n_meetings + n_judges + 2);  // +2 for source and sink
+    judge_case_graph.initialize_judge_case_graph(meetings, judges, rooms);
+
+    judge_case_graph.visualize();
+
+    vector<MeetingJudgeNode> meeting_judge_pairs = matching::assign_judges_to_meetings(judge_case_graph);
+
+    // Step 2: Assign rooms to meeting-judge pairs
+    cout << "\n=== Step 2: Assigning Rooms to Judge-Meeting Pairs ===" << endl;
+    DirectedGraph jm_room_graph(meeting_judge_pairs.size() + n_rooms + 2);  // +2 for source and sink
+    jm_room_graph.initialize_jm_graph(meeting_judge_pairs, rooms);
+
+    jm_room_graph.visualize();
+
+    vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_rooms_to_jm_pairs(jm_room_graph);
+
+    // Construct conflict graph
+    cout << "\n=== Step 3: Creating Conflict Graph ===" << endl;
+    UndirectedGraph conflict_graph = matching::constructConflictGraph(assigned_meetings);
+
+    // Perform graph coloring
+    cout << "\n=== Step 4: Coloring Conflict Graph ===" << endl;
+    coloring::colorConflictGraph(conflict_graph);
+    conflict_graph.visualize();
+
+    // Generate schedule
+    cout << "\n=== Step 5: Generating Final Schedule ===" << endl;
+    Schedule schedule(work_days, minutes_per_work_day, granularity);
+    schedule.generateScheduleFromColoredGraph(conflict_graph);
+
+    return schedule;
+}
+
 Schedule generateScheduleUsingGraphs(const parser::ParsedData& parsed_data) {
     // Extract input parameters
     int work_days            = parsed_data.work_days;
@@ -122,14 +171,13 @@ Schedule generateScheduleUsingGraphs(const parser::ParsedData& parsed_data) {
     int n_rooms    = static_cast<int>(rooms.size());
 
     // Initialize the graph
-    DirectedGraph graph(n_meetings + (n_judges * n_rooms) + n_judges + n_rooms + 2);
+    DirectedGraph graph(n_meetings + n_judges + n_rooms + 2);
     graph.initialize_flow_graph(meetings, judges, rooms);
 
-    //graph.visualize();
+    graph.visualize();
 
     // Assign meetings to judge-room pairs
-    //std::vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_meetings_to_judge_room_pairs(graph);
-    std::vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_meetings_to_judge_rooms_pairs_flow(graph);
+    std::vector<MeetingJudgeRoomNode> assigned_meetings = matching::ford_fulkerson_v1(graph);
 
     // Construct solution graph
     DirectedGraph sol_graph(static_cast<int>(assigned_meetings.size()));
