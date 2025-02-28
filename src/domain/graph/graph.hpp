@@ -108,7 +108,6 @@ public:
         return adj_list;
     }
 
-
     void initialize_judge_case_graph(const vector<Meeting> &meetings, const vector<Judge> &judges, const vector<Room> &rooms) {
         if (meetings.size() > UINT32_MAX || judges.size() > UINT32_MAX || rooms.size() > UINT32_MAX) {
             throw invalid_argument("Too many meetings, judges, or rooms");
@@ -222,8 +221,7 @@ public:
         }
     }
 
-    void
-    initialize_flow_graph(const vector<Meeting> &meetings, const vector<Judge> &judges, const vector<Room> &rooms) {
+    void initialize_v1_graph(const vector<Meeting> &meetings, const vector<Judge> &judges, const vector<Room> &rooms) {
         // Set the number of meetings, judges, and rooms from the passed vectors.
         if (meetings.size() > UINT32_MAX || judges.size() > UINT32_MAX || rooms.size() > UINT32_MAX) {
             throw invalid_argument("Too many meetings, judges, or rooms");
@@ -317,45 +315,6 @@ public:
     }
 
 
-    void initialize_bipartite_graph(const vector<Meeting> &meetings, const vector<Judge> &judges,
-                                    const vector<Room> &rooms) {
-        // Set the number of meetings, judges, and rooms from the passed vectors.
-        if (meetings.size() > UINT32_MAX || judges.size() > UINT32_MAX || rooms.size() > UINT32_MAX) {
-            throw invalid_argument("Too many meetings, judges, or rooms");
-        }
-        num_meetings = (int) meetings.size();
-        num_judges = (int) judges.size();
-        num_rooms = (int) rooms.size();
-        num_jr_pairs = num_judges * num_rooms;
-
-        // Create meeting nodes. Each meeting node is added with its meeting_id and corresponding Meeting.
-        for (const Meeting &m: meetings) {
-            MeetingNode m_node(m.meeting_id, 1, m);
-            addNode(m_node);
-        }
-
-        // Create judge-room nodes. The node_id is computed based on the meeting count, judge id, and room id.
-        for (const Judge &j: judges) {
-            for (const Room &r: rooms) {
-                const int node_id = num_meetings + j.judge_id * num_rooms + r.room_id;
-                JudgeRoomNode judge_room_node(node_id, j, r);
-                addNode(judge_room_node);
-            }
-        }
-
-        // Set up edges from each meeting node to every judge-room node.
-        const int first_meeting_id = 0;
-        const int last_meeting_id = num_meetings - 1;
-        const int first_judge_room_id = num_meetings;
-        const int last_judge_room_id = num_meetings + num_jr_pairs - 1;
-
-        for (int from = first_meeting_id; from <= last_meeting_id; ++from) {
-            for (int to = first_judge_room_id; to <= last_judge_room_id; ++to) {
-                addEdge(from, to, 1);
-            }
-        }
-    }
-
     void visualize() const {
         cout << "\nGraph Visualization:\n";
         cout << "==================\n\n";
@@ -434,7 +393,7 @@ public:
                 int room_id = nodeId - (num_meetings + num_judges * num_rooms + num_judges) + 1;
                 cout << "Room Aggregate Node (Room ID: " << room_id << ")";
             }
-                // Check for sink node (assuming it was added last with id computed in initialize_flow_graph)
+                // Check for sink node (assuming it was added last with id computed in initialize_v1_graph)
             else if (nodeId == 1 + num_meetings + num_judges * num_rooms + num_judges + num_rooms) {
                 cout << "Sink Node";
             }

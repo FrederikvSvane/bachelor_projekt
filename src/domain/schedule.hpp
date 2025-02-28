@@ -12,7 +12,8 @@
 #include "appointment.hpp"
 #include "graph/graph.hpp"
 #include "service/graph/coloring.hpp"
-#include "service/graph/matching.hpp"
+#include "service/graph/matching/matching_v1.hpp"
+#include "service/graph/matching/matching_v2.hpp"
 
 using namespace std;
 
@@ -128,7 +129,7 @@ Schedule generateScheduleUsingTwoStepApproach(const parser::ParsedData& parsed_d
 
     judge_case_graph.visualize();
 
-    vector<MeetingJudgeNode> meeting_judge_pairs = matching::assign_judges_to_meetings(judge_case_graph);
+    vector<MeetingJudgeNode> meeting_judge_pairs = matching_v2::assign_judges_to_meetings(judge_case_graph);
 
     // Step 2: Assign rooms to meeting-judge pairs
     cout << "\n=== Step 2: Assigning Rooms to Judge-Meeting Pairs ===" << endl;
@@ -137,11 +138,11 @@ Schedule generateScheduleUsingTwoStepApproach(const parser::ParsedData& parsed_d
 
     jm_room_graph.visualize();
 
-    vector<MeetingJudgeRoomNode> assigned_meetings = matching::assign_rooms_to_jm_pairs(jm_room_graph);
+    vector<MeetingJudgeRoomNode> assigned_meetings = matching_v2::assign_rooms_to_jm_pairs(jm_room_graph);
 
     // Construct conflict graph
     cout << "\n=== Step 3: Creating Conflict Graph ===" << endl;
-    UndirectedGraph conflict_graph = matching::constructConflictGraph(assigned_meetings);
+    UndirectedGraph conflict_graph = matching_v2::constructConflictGraph(assigned_meetings);
 
     // Perform graph coloring
     cout << "\n=== Step 4: Coloring Conflict Graph ===" << endl;
@@ -172,12 +173,12 @@ Schedule generateScheduleUsingGraphs(const parser::ParsedData& parsed_data) {
 
     // Initialize the graph
     DirectedGraph graph(n_meetings + n_judges + n_rooms + 2);
-    graph.initialize_flow_graph(meetings, judges, rooms);
+    graph.initialize_v1_graph(meetings, judges, rooms);
 
     graph.visualize();
 
     // Assign meetings to judge-room pairs
-    std::vector<MeetingJudgeRoomNode> assigned_meetings = matching::ford_fulkerson_v1(graph);
+    std::vector<MeetingJudgeRoomNode> assigned_meetings = matching_v1::ford_fulkerson_v1(graph);
 
     // Construct solution graph
     DirectedGraph sol_graph(static_cast<int>(assigned_meetings.size()));
@@ -186,7 +187,7 @@ Schedule generateScheduleUsingGraphs(const parser::ParsedData& parsed_data) {
     }
 
     // Construct conflict graph
-    UndirectedGraph conflict_graph = matching::constructConflictGraph(assigned_meetings);
+    UndirectedGraph conflict_graph = matching_v1::constructConflictGraph(assigned_meetings);
 
     // Perform graph coloring
     coloring::colorConflictGraph(conflict_graph);

@@ -25,10 +25,11 @@ project(Bachelor
     src/domain/graph/graph.hpp
     src/domain/graph/node.hpp
     src/service/graph/coloring.hpp
-    src/service/graph/matching.hpp
+          src/service/graph/matching/matching_v1.hpp
     src/utils/json.hpp
     src/utils/parser.hpp
     src/utils/argparse.hpp
+          src/service/graph/matching/matching_v2.hpp
   )
 
   set(CMAKE_BUILD_TYPE Debug)
