@@ -27,7 +27,7 @@ class TestJudgeCapacity(unittest.TestCase):
             meeting = Meeting(
                 meeting_id=i,
                 meeting_duration=60,
-                meeting_sagstype=Sagstype.CIVILE,
+                meeting_sagstype=Sagstype.CIVIL,
                 meeting_virtual=False
             )
             meetings.append(meeting)
@@ -48,15 +48,15 @@ class TestJudgeCapacity(unittest.TestCase):
         # Create judges with different skill sets
         judges = [
             # Civil-only judges
-            Judge(judge_id=1, judge_skills=[Sagstype.CIVILE], judge_virtual=False),
-            Judge(judge_id=2, judge_skills=[Sagstype.CIVILE], judge_virtual=False),
+            Judge(judge_id=1, judge_skills=[Sagstype.CIVIL], judge_virtual=False),
+            Judge(judge_id=2, judge_skills=[Sagstype.CIVIL], judge_virtual=False),
             
             # Criminal-only judges
             Judge(judge_id=3, judge_skills=[Sagstype.STRAFFE], judge_virtual=False),
             Judge(judge_id=4, judge_skills=[Sagstype.STRAFFE], judge_virtual=False),
             
             # Versatile judge (both civil and criminal)
-            Judge(judge_id=5, judge_skills=[Sagstype.CIVILE, Sagstype.STRAFFE], judge_virtual=False)
+            Judge(judge_id=5, judge_skills=[Sagstype.CIVIL, Sagstype.STRAFFE], judge_virtual=False)
         ]
         
         # Calculate capacity for each judge

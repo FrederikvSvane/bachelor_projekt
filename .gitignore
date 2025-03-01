@@ -7,3 +7,4 @@ CourtCaseScheduler.DS_Store
 CourtCaseScheduler
 *.json
 .DS_Store
+*/__pycache__
