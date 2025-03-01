@@ -1,0 +1,224 @@
+import math
+from typing import List, Dict, Set, Optional
+from collections import defaultdict
+import json
+
+from src.models import Meeting, Judge, Room, Sagstype, Appointment
+from src.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, MeetingJudgeNode
+from src.matching import (
+    assign_judges_to_meetings, assign_rooms_to_jm_pairs, 
+    construct_conflict_graph
+)
+from src.coloring import color_conflict_graph
+
+class Schedule:
+    """Class that manages the court schedule."""
+    
+    def __init__(self, work_days: int, minutes_in_a_work_day: int, granularity: int):
+        """
+        Initialize a schedule with basic parameters.
+        
+        Args:
+            work_days: Number of working days
+            minutes_in_a_work_day: Minutes in a working day
+            granularity: Time slot granularity in minutes
+        """
+        self.appointments = []
+        self.work_days = work_days
+        self.minutes_in_a_work_day = minutes_in_a_work_day
+        self.granularity = granularity
+        self.timeslots_per_work_day = minutes_in_a_work_day // granularity - 1
+    
+    def generate_schedule_from_colored_graph(self, graph: UndirectedGraph) -> None:
+        """
+        Generate appointments using the node "color" as timeslot.
+        
+        Args:
+            graph: The colored undirected graph
+        """
+        for i in range(graph.get_num_nodes()):
+            # Get the MeetingJudgeRoomNode from the graph
+            node = graph.get_node(i)
+            if not isinstance(node, MeetingJudgeRoomNode):
+                continue
+                
+            # Determine the day based on timeslot (color) and timeslots per day
+            day = node.get_color() // self.timeslots_per_work_day
+            
+            # Create an appointment
+            appointment = Appointment(
+                node.get_meeting(),
+                node.get_judge(),
+                node.get_room(),
+                day,
+                node.get_color(),
+                node.get_meeting().meeting_duration
+            )
+            self.appointments.append(appointment)
+    
+    def get_time_from_timeslot(self, timeslot: int) -> str:
+        """
+        Convert a timeslot index into a time string.
+        
+        Args:
+            timeslot: The timeslot index
+            
+        Returns:
+            A string representation of the time (e.g., "09:30")
+        """
+        day_timeslot = timeslot % self.timeslots_per_work_day
+        minutes = day_timeslot * self.granularity
+        hours = minutes // 60
+        minutes = minutes % 60
+        
+        return f"{hours:02d}:{minutes:02d}"
+    
+    def visualize(self) -> None:
+        """Visualize the schedule in a table format."""
+        print("\nSchedule Visualization")
+        print("=====================\n")
+        
+        # Print schedule statistics
+        print("Schedule Statistics:")
+        print("-------------------")
+        print(f"Work days: {self.work_days}")
+        print(f"Minutes per work day: {self.minutes_in_a_work_day}")
+        print(f"Time slot granularity: {self.granularity} minutes")
+        print(f"Time slots per day: {self.timeslots_per_work_day}")
+        print(f"Total appointments: {len(self.appointments)}\n")
+        
+        # Map appointments by day
+        appointments_by_day = defaultdict(list)
+        for app in self.appointments:
+            appointments_by_day[app.day].append(app)
+        
+        # Print daily schedule
+        for day in range(self.work_days):
+            print(f"Day {day + 1}:")
+            print("-" * 70)
+            print(f"{'Time':10} | {'Timeslot':10} | {'Meeting':10} | "
+                  f"{'Judge':10} | {'Room':10} | {'Duration':10}")
+            print("-" * 70)
+            
+            if day in appointments_by_day:
+                # Sort appointments by timeslot
+                day_appointments = sorted(
+                    appointments_by_day[day],
+                    key=lambda a: a.timeslot_start
+                )
+                
+                # Print each appointment
+                for app in day_appointments:
+                    print(f"{self.get_time_from_timeslot(app.timeslot_start):10} | "
+                          f"{app.timeslot_start:10} | "
+                          f"{app.meeting.meeting_id:10} | "
+                          f"{app.judge.judge_id:10} | "
+                          f"{app.room.room_id:10} | "
+                          f"{app.timeslots_duration:10} min")
+            else:
+                print("No appointments scheduled")
+            
+            print("-" * 70 + "\n")
+    
+    def to_json(self) -> Dict:
+        """
+        Convert the schedule to a JSON-serializable dictionary.
+        
+        Returns:
+            A dictionary representing the schedule
+        """
+        result = {
+            "work_days": self.work_days,
+            "minutes_in_a_work_day": self.minutes_in_a_work_day,
+            "granularity": self.granularity,
+            "timeslots_per_work_day": self.timeslots_per_work_day,
+            "appointments": []
+        }
+        
+        for app in self.appointments:
+            appointment_dict = {
+                "day": app.day,
+                "timeslot_start": app.timeslot_start,
+                "time": self.get_time_from_timeslot(app.timeslot_start),
+                "timeslots_duration": app.timeslots_duration,
+                "meeting": {
+                    "id": app.meeting.meeting_id,
+                    "duration": app.meeting.meeting_duration,
+                    "type": str(app.meeting.meeting_sagstype),
+                    "virtual": app.meeting.meeting_virtual
+                },
+                "judge": {
+                    "id": app.judge.judge_id,
+                    "skills": [str(skill) for skill in app.judge.judge_skills],
+                    "virtual": app.judge.judge_virtual
+                },
+                "room": {
+                    "id": app.room.room_id,
+                    "virtual": app.room.room_virtual
+                }
+            }
+            result["appointments"].append(appointment_dict)
+        
+        return result
+
+
+def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
+    """
+    Generate a schedule using two-step approach:
+    1. Assign judges to meetings
+    2. Assign rooms to judge-meeting pairs
+    3. Construct conflict graph
+    4. Color conflict graph for time slots
+    
+    Args:
+        parsed_data: Dictionary containing parsed input data
+        
+    Returns:
+        A Schedule object with the generated appointments
+    """
+    # Extract input parameters
+    work_days = parsed_data["work_days"]
+    minutes_per_work_day = parsed_data["min_per_work_day"]
+    granularity = parsed_data["granularity"]
+    
+    meetings = parsed_data["meetings"]
+    judges = parsed_data["judges"]
+    rooms = parsed_data["rooms"]
+    
+    n_meetings = len(meetings)
+    n_judges = len(judges)
+    n_rooms = len(rooms)
+    
+    # Step 1: Assign judges to meetings based on skills
+    print("\n=== Step 1: Assigning Judges to Meetings ===")
+    judge_case_graph = DirectedGraph() 
+    judge_case_graph.initialize_judge_case_graph(meetings, judges)
+    
+    judge_case_graph.visualize()
+    
+    meeting_judge_pairs = assign_judges_to_meetings(judge_case_graph)
+    
+    # Step 2: Assign rooms to meeting-judge pairs
+    print("\n=== Step 2: Assigning Rooms to Judge-Meeting Pairs ===")
+    jm_room_graph = DirectedGraph()
+    jm_room_graph.initialize_jm_graph(meeting_judge_pairs, rooms)
+    
+    jm_room_graph.visualize()
+    
+    assigned_meetings = assign_rooms_to_jm_pairs(jm_room_graph)
+    
+    # Construct conflict graph
+    print("\n=== Step 3: Creating Conflict Graph ===")
+    conflict_graph = construct_conflict_graph(assigned_meetings)
+    
+    # Perform graph coloring
+    print("\n=== Step 4: Coloring Conflict Graph ===")
+    color_conflict_graph(conflict_graph)
+    conflict_graph.visualize()
+    
+    # Generate schedule
+    print("\n=== Step 5: Generating Final Schedule ===")
+    schedule = Schedule(work_days, minutes_per_work_day, granularity)
+    schedule.generate_schedule_from_colored_graph(conflict_graph)
+    
+    return schedule

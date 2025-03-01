@@ -1,0 +1,86 @@
+import json
+from typing import Dict, List, Any
+from pathlib import Path
+
+from src.models import Meeting, Judge, Room, Sagstype
+
+def parse_input(input_path: Path) -> Dict:
+    """
+    Parse the input JSON file into a structured data dictionary.
+    
+    Args:
+        input_path: Path to the input JSON file
+        
+    Returns:
+        Dictionary containing parsed data
+    """
+    with open(input_path, 'r') as f:
+        data = json.load(f)
+    
+    # Extract basic parameters
+    parsed_data = {
+        "work_days": data.get("work_days", 5),  # Default to 5 work days
+        "min_per_work_day": data.get("min_per_work_day", 480),  # Default to 8 hours
+        "granularity": data.get("granularity", 15)  # Default to 15-minute slots
+    }
+    
+    # Parse meetings
+    meetings = []
+    for i, meeting_data in enumerate(data.get("meetings", [])):
+        meeting_type_str = meeting_data.get("type", "Civile")
+        try:
+            meeting_type = Sagstype.from_string(meeting_type_str)
+        except ValueError:
+            print(f"Warning: Invalid meeting type '{meeting_type_str}', defaulting to Civile")
+            meeting_type = Sagstype.CIVILE
+        
+        meeting = Meeting(
+            meeting_id=meeting_data.get("id", i),
+            meeting_duration=meeting_data.get("duration", 60),
+            meeting_sagstype=meeting_type,
+            meeting_virtual=meeting_data.get("virtual", False)
+        )
+        meetings.append(meeting)
+    
+    # Parse judges
+    judges = []
+    for i, judge_data in enumerate(data.get("judges", [])):
+        # Parse skills
+        skills = []
+        for skill_str in judge_data.get("skills", ["Civile"]):
+            try:
+                skill = Sagstype.from_string(skill_str)
+                skills.append(skill)
+            except ValueError:
+                print(f"Warning: Invalid judge skill '{skill_str}', skipping")
+        
+        # Ensure judge has at least one skill
+        if not skills:
+            print(f"Warning: Judge {i} has no valid skills, adding default Civile")
+            skills.append(Sagstype.CIVILE)
+        
+        judge = Judge(
+            judge_id=judge_data.get("id", i),
+            judge_skills=skills,
+            judge_virtual=judge_data.get("virtual", False)
+        )
+        judges.append(judge)
+    
+    # Parse rooms
+    rooms = []
+    for i, room_data in enumerate(data.get("rooms", [])):
+        room = Room(
+            room_id=room_data.get("id", i),
+            room_virtual=room_data.get("virtual", False)
+        )
+        rooms.append(room)
+    
+    # Add to parsed data
+    parsed_data["meetings"] = meetings
+    parsed_data["judges"] = judges
+    parsed_data["rooms"] = rooms
+    
+    # Print summary of parsed data
+    print(f"Parsed {len(meetings)} meetings, {len(judges)} judges, {len(rooms)} rooms")
+    
+    return parsed_data
