@@ -4,17 +4,17 @@ from collections import deque
 
 from src.model import Case, Judge, Room, Attribute
 from src.graph import (
-    DirectedGraph, UndirectedGraph, Node, JudgeNode, MeetingNode, 
-    RoomNode, MeetingJudgeNode, MeetingJudgeRoomNode, Edge
+    DirectedGraph, UndirectedGraph, Node, JudgeNode, CaseNode, 
+    RoomNode, CaseJudgeNode, CaseJudgeRoomNode, Edge
 )
 
 class AugmentingPath:
     """Represents an augmenting path in the Ford-Fulkerson algorithm."""
     
-    def __init__(self, judge_node: int = -1, meeting_node: int = -1, 
+    def __init__(self, judge_node: int = -1, case_node: int = -1, 
                  room_node: int = -1, flow: int = 0):
         self.judge_node = judge_node
-        self.meeting_node = meeting_node
+        self.case_node = case_node
         self.room_node = room_node
         self.flow = flow
 
@@ -46,7 +46,7 @@ def update_flow_along_path(graph: DirectedGraph, parent: List[int], source: int,
     Update flow along the augmenting path.
     
     Returns:
-        A tuple of (meeting_node_id, judge_node_id) if identified in the path
+        A tuple of (case_node_id, judge_node_id) if identified in the path
     """
     current = sink
     
@@ -108,65 +108,65 @@ def ford_fulkerson(graph: DirectedGraph, source: int, sink: int) -> int:
     return total_flow
 
 
-def extract_case_judge_assignments(graph: DirectedGraph) -> List[MeetingJudgeNode]:
+def extract_case_judge_assignments(graph: DirectedGraph) -> List[CaseJudgeNode]:
     """
-    Extract final judge-meeting assignments from the graph after Ford-Fulkerson completes.
+    Extract final judge-case assignments from the graph after Ford-Fulkerson completes.
     
     Args:
         graph: The directed graph with flow values set
         
     Returns:
-        List of MeetingJudgeNode objects representing the final assignments
+        List of CaseJudgeNode objects representing the final assignments
     """
     assigned_pairs = []
     
-    # Look at each meeting node
-    for meeting_id in range(1, graph.num_meetings + 1):
-        meeting_node: MeetingNode = graph.get_node(meeting_id)
+    # Look at each case node
+    for case_id in range(1, graph.num_cases + 1):
+        case_node: CaseNode = graph.get_node(case_id)
         assigned = False
         
-        # Find the judge this meeting is assigned to
-        for judge_id in range(graph.num_meetings + 1, graph.num_meetings + graph.num_judges + 1):
-            edge = graph.get_edge(meeting_id, judge_id)
+        # Find the judge this case is assigned to
+        for judge_id in range(graph.num_cases + 1, graph.num_cases + graph.num_judges + 1):
+            edge = graph.get_edge(case_id, judge_id)
             
             # If this edge has positive flow, it's a final assignment
             if edge and edge.get_flow() > 0:
                 judge_node: JudgeNode = graph.get_node(judge_id)
-                pair = MeetingJudgeNode(
-                    f"jm_{meeting_node.get_meeting().meeting_id}_{judge_node.get_judge().judge_id}",
-                    meeting_node.get_meeting(),
+                pair = CaseJudgeNode(
+                    f"jm_{case_node.get_case().case_id}_{judge_node.get_judge().judge_id}",
+                    case_node.get_case(),
                     judge_node.get_judge()
                 )
                 assigned_pairs.append(pair)
-                print(f"Final Assignment: Meeting {meeting_node.get_meeting().meeting_id} → "
+                print(f"Final Assignment: Case {case_node.get_case().case_id} → "
                      f"Judge {judge_node.get_judge().judge_id}")
                 assigned = True
-                break  # Each meeting has exactly one judge
+                break  # Each case has exactly one judge
         
         if not assigned:
-            print(f"Warning: Meeting {meeting_node.get_meeting().meeting_id} was not assigned!")
+            print(f"Warning: Case {case_node.get_case().case_id} was not assigned!")
     
     return assigned_pairs
 
 
-def assign_cases_to_judges(graph: DirectedGraph) -> List[MeetingJudgeNode]:
+def assign_cases_to_judges(graph: DirectedGraph) -> List[CaseJudgeNode]:
     """
-    Assign judges to meetings using Ford-Fulkerson algorithm with residual graph.
+    Assign judges to cases using Ford-Fulkerson algorithm with residual graph.
     Extracts final assignments after algorithm completes.
     
     Args:
         graph: The directed graph with residual edges
         
     Returns:
-        List of MeetingJudgeNode objects representing the judge-meeting pairs
+        List of CaseJudgeNode objects representing the judge-case pairs
     """
     source = 0
     sink = graph.get_num_nodes() - 1
     
     # Step 1: Run the Ford-Fulkerson algorithm
-    if ford_fulkerson(graph, source, sink) != graph.num_meetings:
-        raise RuntimeError(f"Not all meetings could be assigned judges. "
-                         f"Found {len(assigned_pairs)} assignments, needed {graph.num_meetings}.")
+    if ford_fulkerson(graph, source, sink) != graph.num_cases:
+        raise RuntimeError(f"Not all cases could be assigned judges. "
+                         f"Found {len(assigned_pairs)} assignments, needed {graph.num_cases}.")
     
     # Step 2: Extract the final assignments from the flow network
     assigned_pairs = extract_case_judge_assignments(graph)
@@ -176,58 +176,58 @@ def assign_cases_to_judges(graph: DirectedGraph) -> List[MeetingJudgeNode]:
 
 
 
-def extract_c_j_room_assignments(graph: DirectedGraph) -> List[MeetingJudgeRoomNode]:
+def extract_c_j_room_assignments(graph: DirectedGraph) -> List[CaseJudgeRoomNode]:
     """
-    Extract final judge-meeting assignments from the graph after Ford-Fulkerson completes.
+    Extract final judge-case assignments from the graph after Ford-Fulkerson completes.
     
     Args:
         graph: The directed graph with flow values set
         
     Returns:
-        List of MeetingJudgeNode objects representing the final assignments
+        List of CaseJudgeNode objects representing the final assignments
     """
-    assigned_meetings = []
+    assigned_cases = []
     
-    # Look at each meeting-judge pair node
+    # Look at each case-judge pair node
     for jc_pair_id in range(1, graph.num_jm_pairs + 1):
-        jc_pair_node: MeetingJudgeNode = graph.get_node(jc_pair_id)
+        jc_pair_node: CaseJudgeNode = graph.get_node(jc_pair_id)
         assigned = False
         
-        # Find the room this judge-meeting pair is assigned to
+        # Find the room this judge-case pair is assigned to
         for room_id in range(graph.num_jm_pairs + 1, graph.num_jm_pairs + graph.num_rooms + 1):
             edge = graph.get_edge(jc_pair_id, room_id)
             
             # If this edge has positive flow, it's a final assignment
             if edge and edge.get_flow() > 0:
                 room_node: RoomNode = graph.get_node(room_id)
-                pair = MeetingJudgeRoomNode(
-                    f"jmr_{jc_pair_node.get_meeting().meeting_id}_{jc_pair_node.get_judge().judge_id}_{room_node.get_room().room_id}",
-                    jc_pair_node.get_meeting(),
+                pair = CaseJudgeRoomNode(
+                    f"jmr_{jc_pair_node.get_case().case_id}_{jc_pair_node.get_judge().judge_id}_{room_node.get_room().room_id}",
+                    jc_pair_node.get_case(),
                     jc_pair_node.get_judge(),
                     room_node.get_room()
                 )
-                assigned_meetings.append(pair)
-                print(f"Final Assignment: Meeting {jc_pair_node.get_meeting().meeting_id} → "
+                assigned_cases.append(pair)
+                print(f"Final Assignment: Case {jc_pair_node.get_case().case_id} → "
                      f"Judge {jc_pair_node.get_judge().judge_id} → Room {room_node.get_room().room_id}")
                 assigned = True
                 break
         if not assigned:
-            print(f"Warning: Meeting {jc_pair_node.get_meeting().meeting_id} was not assigned!")
+            print(f"Warning: Case {jc_pair_node.get_case().case_id} was not assigned!")
             
-    return assigned_meetings
+    return assigned_cases
         
     
 
-def assign_case_judge_pairs_to_rooms(graph: DirectedGraph) -> List[MeetingJudgeRoomNode]:
+def assign_case_judge_pairs_to_rooms(graph: DirectedGraph) -> List[CaseJudgeRoomNode]:
     """
-    Assign rooms to judge-meeting pairs using the Ford-Fulkerson algorithm.
+    Assign rooms to judge-case pairs using the Ford-Fulkerson algorithm.
     This is the second step of the two-step approach.
     
     Args:
         graph: The directed graph prepared for room assignments
         
     Returns:
-        List of MeetingJudgeRoomNode objects representing the complete assignments
+        List of CaseJudgeRoomNode objects representing the complete assignments
     """
     source = 0
     sink = graph.get_num_nodes() - 1
@@ -235,11 +235,11 @@ def assign_case_judge_pairs_to_rooms(graph: DirectedGraph) -> List[MeetingJudgeR
     max_flow = ford_fulkerson(graph, source, sink)
     
     # Step 1: Run the Ford-Fulkerson algorithm
-    if max_flow != graph.num_meetings:
-        raise RuntimeError(f"Not all judge-meeting pairs could be assigned rooms. "
+    if max_flow != graph.num_cases:
+        raise RuntimeError(f"Not all judge-case pairs could be assigned rooms. "
                          f"Found {max_flow} assignments, needed {graph.num_rooms}.")
     
     # Step 2: Extract the final assignments from the flow network
-    assigned_meetings = extract_c_j_room_assignments(graph)
+    assigned_cases = extract_c_j_room_assignments(graph)
     
-    return assigned_meetings
+    return assigned_cases

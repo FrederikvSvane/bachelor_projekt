@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Dict
 
 from src.model import Case, Judge, Room, Attribute, Appointment
-from src.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, MeetingJudgeNode, construct_conflict_graph
+from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode, CaseJudgeNode, construct_conflict_graph
 
 from src.matching import (
     assign_cases_to_judges, assign_case_judge_pairs_to_rooms, 
@@ -48,12 +48,12 @@ class Schedule:
             
             # Create an appointment
             appointment = Appointment(
-                node.get_meeting(),
+                node.get_case(),
                 node.get_judge(),
                 node.get_room(),
                 day,
                 node.get_color(),
-                node.get_meeting().meeting_duration
+                node.get_case().case_duration
             )
             self.appointments.append(appointment)
     
@@ -108,7 +108,7 @@ class Schedule:
                 for app in day_appointments:
                     print(f"{self.get_time_from_timeslot(app.timeslot_start):10} | "
                           f"{app.timeslot_start:10} | "
-                          f"{app.meeting.meeting_id:10} | "
+                          f"{app.case.case_id:10} | "
                           f"{app.judge.judge_id:10} | "
                           f"{app.room.room_id:10} | "
                           f"{app.timeslots_duration:10} min")
@@ -138,11 +138,11 @@ class Schedule:
                 "timeslot_start": app.timeslot_start,
                 "time": self.get_time_from_timeslot(app.timeslot_start),
                 "timeslots_duration": app.timeslots_duration,
-                "meeting": {
-                    "id": app.meeting.meeting_id,
-                    "duration": app.meeting.meeting_duration,
-                    "type": str(app.meeting.meeting_sagstype),
-                    "virtual": app.meeting.meeting_virtual
+                "case": {
+                    "id": app.case.case_id,
+                    "duration": app.case.case_duration,
+                    #"type": str(app.case.case_sagstype),
+                    "virtual": app.case.case_virtual
                 },
                 "judge": {
                     "id": app.judge.judge_id,
@@ -162,8 +162,8 @@ class Schedule:
 def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     """
     Generate a schedule using two-step approach:
-    1. Assign judges to meetings
-    2. Assign rooms to judge-meeting pairs
+    1. Assign judges to cases
+    2. Assign rooms to judge-case pairs
     3. Construct conflict graph
     4. Color conflict graph for time slots
     
@@ -178,23 +178,24 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     minutes_per_work_day = parsed_data["min_per_work_day"]
     granularity = parsed_data["granularity"]
     
-    meetings = parsed_data["meetings"]
+    cases = parsed_data["cases"]
     judges = parsed_data["judges"]
     rooms = parsed_data["rooms"]
     
-    # Flow 1: Assign judges to meetings based on skills
+    # Flow 1: Assign judges to cases based on skills
     judge_case_graph = DirectedGraph() 
-    judge_case_graph.initialize_case_to_judge_graph(meetings, judges)
+    judge_case_graph.initialize_case_to_judge_graph(cases, judges)
     judge_case_graph.visualize()
-    meeting_judge_pairs = assign_cases_to_judges(judge_case_graph)
+    case_judge_pairs = assign_cases_to_judges(judge_case_graph)
     
-    # Flow 2: Assign rooms to meeting-judge pairs
+    # Flow 2: Assign rooms to case-judge pairs
     jc_room_graph = DirectedGraph()
-    jc_room_graph.initialize_case_judge_pair_to_room_graph(meeting_judge_pairs, rooms)
-    assigned_meetings = assign_case_judge_pairs_to_rooms(jc_room_graph)
+    jc_room_graph.initialize_case_judge_pair_to_room_graph(case_judge_pairs, rooms)
+    jc_room_graph.visualize()
+    assigned_cases = assign_case_judge_pairs_to_rooms(jc_room_graph)
     
     # Construct conflict graph
-    conflict_graph = construct_conflict_graph(assigned_meetings)
+    conflict_graph = construct_conflict_graph(assigned_cases)
     
     # Perform graph coloring
     DSatur(conflict_graph)

@@ -24,23 +24,23 @@ def parse_input(input_path: Path) -> Dict:
         "granularity": data.get("granularity", 15)  # Default to 15-minute slots
     }
     
-    # Parse meetings
-    meetings = []
-    for i, meeting_data in enumerate(data.get("meetings", [])):
-        meeting_type_str = meeting_data.get("type", "Civile")
+    # Parse cases
+    cases = []
+    for i, case_data in enumerate(data.get("cases", [])):
+        case_type_str = case_data.get("type", "Civile")
         try:
-            meeting_type = Attribute.from_string(meeting_type_str)
+            case_type = Attribute.from_string(case_type_str)
         except ValueError:
-            print(f"Warning: Invalid meeting type '{meeting_type_str}', defaulting to Civile")
-            meeting_type = Attribute.CIVILE
+            print(f"Warning: Invalid case type '{case_type_str}', defaulting to Civile")
+            case_type = Attribute.CIVILE
         
-        meeting = Case(
-            meeting_id=meeting_data.get("id", i),
-            meeting_duration=meeting_data.get("duration", 60),
-            meeting_Attribute=meeting_type,
-            meeting_virtual=meeting_data.get("virtual", False)
+        case = Case(
+            case_id=case_data.get("id", i),
+            case_duration=case_data.get("duration", 60),
+            case_Attribute=case_type,
+            case_virtual=case_data.get("virtual", False)
         )
-        meetings.append(meeting)
+        cases.append(case)
     
     # Parse judges
     judges = []
@@ -76,11 +76,11 @@ def parse_input(input_path: Path) -> Dict:
         rooms.append(room)
     
     # Add to parsed data
-    parsed_data["meetings"] = meetings
+    parsed_data["cases"] = cases
     parsed_data["judges"] = judges
     parsed_data["rooms"] = rooms
     
     # Print summary of parsed data
-    print(f"Parsed {len(meetings)} meetings, {len(judges)} judges, {len(rooms)} rooms")
+    print(f"Parsed {len(cases)} cases, {len(judges)} judges, {len(rooms)} rooms")
     
     return parsed_data

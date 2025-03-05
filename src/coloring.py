@@ -97,6 +97,9 @@ def DSatur(graph: UndirectedGraph) -> None:
     
     Args:
         graph: The undirected graph to color
+    
+    Returns:
+        None: Modifies the graph in place using set_color()
     """
     # Initialize all nodes to have no color
     for i in range(graph.get_num_nodes()):

@@ -6,7 +6,7 @@ from typing import List, Dict, Set
 class Attribute(Enum):
     """ 
     Base enum for all Attributes of entities in the model.
-    For example, a meeting can have Attribute "STRAFFE", if it is a straffe case.
+    For example, a case can have Attribute "STRAFFE", if it is a straffe case.
     And a judge can have a Attribute "STRAFFE", if the judge is able to be assigned straffe cases.
     
     This is meant to be as general and extendable as possible, because our own imaginations bottleneck the 
@@ -29,7 +29,7 @@ class Attribute(Enum):
     # impeached is dangerous and requires security or room has facilities for security
     SECURITY = auto() # one-directional
     
-    # virtual or physical room or meeting
+    # virtual or physical room or case
     PHYSICAL = auto() # bidirectional
     VIRTUAL = auto() # bidirectional
     
@@ -40,6 +40,19 @@ class Attribute(Enum):
     
     def __str__(self):
         return self.name.capitalize()
+    
+    @classmethod
+    def from_string(cls, attribute_string: str) -> 'Attribute':
+        try:
+            return cls[attribute_string.upper()]
+        except KeyError:
+            raise ValueError(f"No attribute found for: {attribute_string}")
+        
+    @classmethod
+    def to_string(cls, attribute) -> str:
+        if not isinstance(attribute, cls):
+            raise ValueError(f"Expected an Attribute, got {type(attribute)}")
+        return str(attribute)
     
 @dataclass
 class Case:
@@ -160,7 +173,7 @@ def judge_room_compatible(judge: Judge, room: Room) -> bool:
 
 def calculate_all_judge_capacities(cases: List[Case], judges: List[Judge]) -> Dict[int, int]:
     """
-    Calculate the capacities of all judges such that the sum of their weighted capacities equals the total number of meetings.
+    Calculate the capacities of all judges such that the sum of their weighted capacities equals the total number of cases.
 
     Args:
         Cases: List of Case objects to distribute.

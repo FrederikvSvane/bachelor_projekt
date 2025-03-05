@@ -1,6 +1,6 @@
 # tests/test_models.py
 import unittest
-from src.model import Judge, Case, Sagstype, calculate_judge_capacity, calculate_all_judge_capacities
+from src.model import Judge, Case, Attribute, calculate_all_judge_capacities
 
 class TestJudgeCapacity(unittest.TestCase):
     def test_case_distribution_with_mixed_skills(self):
@@ -18,51 +18,49 @@ class TestJudgeCapacity(unittest.TestCase):
         - Each criminal-only judge gets 20 criminal cases
         - The versatile judge gets 10 civil + 10 criminal cases (20 total)
         """
-        # Create meetings: 50 civil and 50 criminal
-        meetings = []
+        # Create cases: 50 civil and 50 criminal
+        cases = []
         
-        # Create 50 civil meetings
-        civil_meetings = []
+        # Create 50 civil cases
+        civil_cases = []
         for i in range(1, 51):
-            meeting = Case(
-                meeting_id=i,
-                meeting_duration=60,
-                meeting_sagstype=Sagstype.CIVIL,
-                meeting_virtual=False
+            case = Case(
+                case_id=i,
+                case_duration=60,
+                characteristics = {Attribute.CIVIL},
+                case_virtual=False
             )
-            meetings.append(meeting)
-            civil_meetings.append(meeting)
+            cases.append(case)
+            civil_cases.append(case)
             
-        # Create 50 criminal meetings
-        criminal_meetings = []
+        # Create 50 criminal cases
+        criminal_cases = []
         for i in range(51, 101):
-            meeting = Case(
-                meeting_id=i,
-                meeting_duration=60,
-                meeting_sagstype=Sagstype.STRAFFE,
-                meeting_virtual=False
+            case = Case(
+                case_id=i,
+                case_duration=60,
+                characteristics= {Attribute.STRAFFE},
+                case_virtual=False
             )
-            meetings.append(meeting)
-            criminal_meetings.append(meeting)
+            cases.append(case)
+            criminal_cases.append(case)
         
         # Create judges with different skill sets
         judges = [
             # Civil-only judges
-            Judge(judge_id=1, judge_skills=[Sagstype.CIVIL], judge_virtual=False),
-            Judge(judge_id=2, judge_skills=[Sagstype.CIVIL], judge_virtual=False),
+            Judge(judge_id=1, characteristics={Attribute.CIVIL}, judge_virtual=False),
+            Judge(judge_id=2, characteristics={Attribute.CIVIL}, judge_virtual=False),
             
             # Criminal-only judges
-            Judge(judge_id=3, judge_skills=[Sagstype.STRAFFE], judge_virtual=False),
-            Judge(judge_id=4, judge_skills=[Sagstype.STRAFFE], judge_virtual=False),
+            Judge(judge_id=3, characteristics={Attribute.STRAFFE}, judge_virtual=False),
+            Judge(judge_id=4, characteristics={Attribute.STRAFFE}, judge_virtual=False),
             
             # Versatile judge (both civil and criminal)
-            Judge(judge_id=5, judge_skills=[Sagstype.CIVIL, Sagstype.STRAFFE], judge_virtual=False)
+            Judge(judge_id=5, characteristics={Attribute.STRAFFE, Attribute.CIVIL}, judge_virtual=False)
         ]
         
         # Calculate capacity for each judge
-        capacities = {}
-        for judge in judges:
-            capacities[judge.judge_id] = calculate_judge_capacity(meetings, judges, judge.judge_id)
+        capacities = calculate_all_judge_capacities(cases, judges)
         
         # Test total capacities
         self.assertEqual(capacities[1], 20, "First civil-only judge should get 20 cases")
@@ -76,8 +74,8 @@ class TestJudgeCapacity(unittest.TestCase):
         
         # For simplicity, assume that civil-only judges get civil cases first
         # and criminal-only judges get criminal cases first
-        remaining_civil = civil_meetings.copy()
-        remaining_criminal = criminal_meetings.copy()
+        remaining_civil = civil_cases.copy()
+        remaining_criminal = criminal_cases.copy()
         
         # Assign to civil-only judges
         civil_only_cases = remaining_civil[:capacities[1] + capacities[2]]
@@ -103,50 +101,50 @@ class TestJudgeCapacity(unittest.TestCase):
         self.assertEqual(len(criminal_only_cases) + len(versatile_criminal_cases), 50, 
                         "Total criminal cases distributed should be 50")
         
-        # Verify total capacity matches total meetings
+        # Verify total capacity matches total cases
         total_capacity = sum(capacities.values())
-        self.assertEqual(total_capacity, len(meetings), 
-                         f"Total capacity ({total_capacity}) should match total meetings ({len(meetings)})")
+        self.assertEqual(total_capacity, len(cases), 
+                         f"Total capacity ({total_capacity}) should match total cases ({len(cases)})")
     
     def test_incompatible_judge_gets_zero_capacity(self):
         """
         Test that a judge with unapplicable skill gets 0 cases assigned
         """
-        meetings = [
-            Case(1, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Case(2, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Case(3, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Case(4, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Case(5, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Case(6, 1, Sagstype.STRAFFE, meeting_virtual=False),
-            Case(7, 1, Sagstype.STRAFFE, meeting_virtual=False),
-            Case(8, 1, Sagstype.STRAFFE, meeting_virtual=False),
-            Case(9, 1, Sagstype.STRAFFE, meeting_virtual=False),
-            Case(10, 1, Sagstype.STRAFFE, meeting_virtual=False),
+        cases = [
+            Case(1, 1, Attribute.CIVIL, case_virtual=False),
+            Case(2, 1, Attribute.CIVIL, case_virtual=False),
+            Case(3, 1, Attribute.CIVIL, case_virtual=False),
+            Case(4, 1, Attribute.CIVIL, case_virtual=False),
+            Case(5, 1, Attribute.CIVIL, case_virtual=False),
+            Case(6, 1, Attribute.STRAFFE, case_virtual=False),
+            Case(7, 1, Attribute.STRAFFE, case_virtual=False),
+            Case(8, 1, Attribute.STRAFFE, case_virtual=False),
+            Case(9, 1, Attribute.STRAFFE, case_virtual=False),
+            Case(10, 1, Attribute.STRAFFE, case_virtual=False),
         ]
         judges = [
-            Judge(1, [Sagstype.TVANG], False),
-            Judge(2, [Sagstype.CIVIL, Sagstype.TVANG], False),
-            Judge(3, [Sagstype.CIVIL, Sagstype.STRAFFE, Sagstype.TVANG], judge_virtual=False),
-            Judge(4, [Sagstype.CIVIL, Sagstype.STRAFFE, Sagstype.TVANG], judge_virtual=False),
-            Judge(5, [Sagstype.CIVIL, Sagstype.STRAFFE, Sagstype.TVANG], judge_virtual=False),
+            Judge(1, [Attribute.TVANG], False),
+            Judge(2, [Attribute.CIVIL, Attribute.TVANG], False),
+            Judge(3, [Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG], judge_virtual=False),
+            Judge(4, [Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG], judge_virtual=False),
+            Judge(5, [Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG], judge_virtual=False),
         ]
         
-        capacities = calculate_all_judge_capacities(meetings, judges)
+        capacities = calculate_all_judge_capacities(cases, judges)
         
         print(capacities)
         
         # Calculated by hand
         self.assertEqual(capacities[1], 0,
-                         f"Judge 1 should get 0 meetings but got {capacities[1]}")    
+                         f"Judge 1 should get 0 cases but got {capacities[1]}")    
         self.assertEqual(capacities[2], 0.1*10,
-                         f"Judge 2 should get 1 meetings but got {capacities[2]}")    
+                         f"Judge 2 should get 1 cases but got {capacities[2]}")    
         self.assertEqual(capacities[3], 3,
-                         f"Judge 3 should get 3 meetings but got {capacities[3]}")    
+                         f"Judge 3 should get 3 cases but got {capacities[3]}")    
         self.assertEqual(capacities[4], 3,
-                         f"Judge 4 should get 3 meetings but got {capacities[4]}")    
+                         f"Judge 4 should get 3 cases but got {capacities[4]}")    
         self.assertEqual(capacities[5], 3,
-                         f"Judge 5 should get 3 meetings but got {capacities[5]}")    
+                         f"Judge 5 should get 3 cases but got {capacities[5]}")    
         
 
 if __name__ == "__main__":

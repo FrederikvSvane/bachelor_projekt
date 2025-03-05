@@ -13,7 +13,7 @@ def parse_arguments():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--input', type=str, help='Path to input JSON file')
     group.add_argument('--test', nargs='+', type=int, 
-                       help='Generate test data with [n_meetings] [n_judges] [n_rooms]')
+                       help='Generate test data with [n_cases] [n_judges] [n_rooms]')
     
     parser.add_argument('--output', type=str,
                       help='Path to output JSON file (default: output.json)',
@@ -35,13 +35,13 @@ def main():
             parsed_data = parse_input(input_path)
         else:  # Test mode
             if len(args.test) < 3:
-                print("Error: Test mode requires 3 parameters: n_meetings n_judges n_rooms")
+                print("Error: Test mode requires 3 parameters: n_cases n_judges n_rooms")
                 return 1
             
             from src.data_generator import generate_test_data_parsed
-            n_meetings, n_judges, n_rooms = args.test[:3]
-            print(f"Generating test data: {n_meetings} meetings, {n_judges} judges, {n_rooms} rooms")
-            parsed_data = generate_test_data_parsed(n_meetings, n_judges, n_rooms)
+            n_cases, n_judges, n_rooms = args.test[:3]
+            print(f"Generating test data: {n_cases} cases, {n_judges} judges, {n_rooms} rooms")
+            parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms)
         
         
         schedule = generate_schedule_using_double_flow(parsed_data)
