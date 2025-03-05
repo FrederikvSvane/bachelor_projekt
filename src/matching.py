@@ -183,7 +183,8 @@ def bfs(graph: DirectedGraph, source: int, sink: int, parent: List[int]) -> bool
 
 def assign_judges_to_meetings(graph: DirectedGraph) -> List[MeetingJudgeNode]:
     """
-    Assign judges to meetings using the Ford-Fulkerson algorithm.
+    Assign judges to meetings using a corrected Ford-Fulkerson algorithm implementation.
+    Uses an explicit residual graph matrix for better clarity and correctness.
     
     Args:
         graph: The directed graph prepared for judge-meeting assignments
@@ -191,80 +192,108 @@ def assign_judges_to_meetings(graph: DirectedGraph) -> List[MeetingJudgeNode]:
     Returns:
         List of MeetingJudgeNode objects representing the judge-meeting pairs
     """
+    # Initialize variables
     source = 0
     sink = graph.get_num_nodes() - 1
-    total_flow = 0
-    assigned_pairs = []
+    num_nodes = graph.get_num_nodes()
     
+    # Create residual capacity matrix
+    residual = [[0 for _ in range(num_nodes)] for _ in range(num_nodes)]
     
-    # Implement Ford-Fulkerson algorithm to find max flow
+    # Fill residual graph with initial capacities
+    for edge in graph.edges:
+        u = edge.get_from()
+        v = edge.get_to()
+        residual[u][v] = edge.get_capacity()
+    
+    # Function to find augmenting path using BFS
+    def find_augmenting_path():
+        parent = [-1] * num_nodes
+        visited = [False] * num_nodes
+        queue = deque([source])
+        visited[source] = True
+        
+        while queue:
+            u = queue.popleft()
+            
+            for v in range(num_nodes):
+                if not visited[v] and residual[u][v] > 0:
+                    queue.append(v)
+                    visited[v] = True
+                    parent[v] = u
+                    
+                    if v == sink:
+                        # Path found
+                        return parent
+        
+        # No path found
+        return None
+    
+    # Ford-Fulkerson algorithm implementation
+    max_flow = 0
+    assignments = []
+    
     while True:
-        # Step 1: Find an augmenting path using BFS
-        parent = [-1] * graph.get_num_nodes()
-        if not bfs(graph, source, sink, parent):
+        # Find augmenting path
+        parent = find_augmenting_path()
+        if parent is None:
             break  # No more augmenting paths
         
-        # Step 2: Calculate the bottleneck capacity
+        # Calculate path flow (bottleneck capacity)
         path_flow = float('inf')
-        current_node = sink
+        v = sink
         
-        while current_node != source:
-            previous_node = parent[current_node]
-            edge = graph.get_edge(previous_node, current_node)
-            if edge:
-                path_flow = min(path_flow, edge.get_capacity() - edge.get_flow())
-            current_node = previous_node
+        while v != source:
+            u = parent[v]
+            path_flow = min(path_flow, residual[u][v])
+            v = u
         
-        # Step 3: Update flow along the path
-        current_node = sink
-        judge_node_id = -1
-        meeting_node_id = -1
+        # Update residual capacities
+        v = sink
+        meeting_node_id = None
+        judge_node_id = None
         
-        # Traverse the path again to update flows and identify nodes
-        while current_node != source:
-            previous_node = parent[current_node]
+        while v != source:
+            u = parent[v]
             
-            # Identify the judge node (using updated indices)
-            if graph.num_meetings < previous_node < graph.num_meetings + graph.num_judges + 1:
-                judge_node_id = previous_node
+            # Identify meeting and judge nodes in this path
+            if 1 <= u <= graph.num_meetings:
+                meeting_node_id = u
+            elif graph.num_meetings < u <= graph.num_meetings + graph.num_judges:
+                judge_node_id = u
             
-            # Identify the meeting node (using updated indices)
-            if 0 < previous_node <= graph.num_meetings:
-                meeting_node_id = previous_node
+            # Update residual capacities - THIS IS THE KEY FIX
+            residual[u][v] -= path_flow  # Forward edge (decrease capacity)
+            residual[v][u] += path_flow  # Reverse edge (increase capacity)
             
-            # Update edge flow
-            edge = graph.get_edge(previous_node, current_node)
-            if edge:
-                edge.set_flow(edge.get_flow() + path_flow)
-            
-            current_node = previous_node
+            v = u
         
-        # Step 4: Record this assignment if we found both a judge and a meeting
-        if judge_node_id != -1 and meeting_node_id != -1:
-            judge_node = graph.get_node(judge_node_id, JudgeNode)
-            meeting_node = graph.get_node(meeting_node_id, MeetingNode)
+        # Record assignment if meeting and judge were identified
+        if meeting_node_id is not None and judge_node_id is not None:
+            meeting_node = graph.get_node(meeting_node_id)
+            judge_node = graph.get_node(judge_node_id)
             
-            if judge_node and meeting_node:
+            if meeting_node and judge_node:
                 pair = MeetingJudgeNode(
                     f"jm_{meeting_node.get_meeting().meeting_id}_{judge_node.get_judge().judge_id}",
                     meeting_node.get_meeting(),
                     judge_node.get_judge()
                 )
-                assigned_pairs.append(pair)
+                assignments.append(pair)
                 
-                print(f"Assignment {len(assigned_pairs)}: Meeting "
+                print(f"Assignment {len(assignments)}: Meeting "
                       f"{meeting_node.get_meeting().meeting_id} -> Judge "
                       f"{judge_node.get_judge().judge_id}")
         
-        total_flow += path_flow
+        max_flow += path_flow
     
-    # Verify we found assignments for all meetings
-    if total_flow < graph.num_meetings:
+    # Verify all meetings were assigned
+    if max_flow < graph.num_meetings:
         raise RuntimeError(f"\nNot all meetings could be assigned judges\n"
-                           f"Succesfully assgined meetings: {total_flow}\n"
-                          f"Total amount of meetings: {graph.num_meetings}")
+                           f"Successfully assigned meetings: {max_flow}\n"
+                           f"Total amount of meetings: {graph.num_meetings}")
     
-    return assigned_pairs
+    return assignments
 
 
 def assign_rooms_to_jm_pairs(graph: DirectedGraph) -> List[MeetingJudgeRoomNode]:
