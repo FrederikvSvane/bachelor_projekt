@@ -1,7 +1,8 @@
+from math import ceil
 from collections import defaultdict
 from typing import List, Dict, Optional, Type, Set
 
-from src.model import Case, Judge, Room
+from src.model import Case, Judge, Room, calculate_all_judge_capacities, case_requires_from_judge, judge_requires_from_case
 
 class Node:
     """Base class for all node types in the graph."""
@@ -201,12 +202,18 @@ class DirectedGraph:
         return [node for node in self.nodes if isinstance(node, CaseNode)]
     
     def add_edge(self, from_id: int, to_id: int, capacity: int) -> None:
-        """Add a directed edge to the graph."""
         if not (0 <= from_id < len(self.nodes) and 0 <= to_id < len(self.nodes)):
             raise ValueError(f"Invalid node id: from={from_id}, to={to_id}, nodes={len(self.nodes)}")
         
+        # Add forward edge
         self.edges.append(Edge(from_id, to_id, capacity))
         self.adj_list[from_id][to_id] = self.edges[-1]  # Store reference to the edge
+        
+        # Add reverse edge with zero capacity (for residual graph)
+        # Only add if it doesn't already exist
+        if self.adj_list[to_id].get(from_id) is None:
+            self.edges.append(Edge(to_id, from_id, 0))
+            self.adj_list[to_id][from_id] = self.edges[-1]
     
     def get_edge(self, from_id: int, to_id: int) -> Optional[Edge]:
         """Get an edge by its source and destination node IDs."""
@@ -263,61 +270,52 @@ class DirectedGraph:
             judge_capacity = judge_capacities[judges[i].judge_id]
             self.add_edge(judge_node_id, sink_id, judge_capacity)
 
-    def initialize_case_judge_pair_to_room_graph(self, cj_pairs: List[CaseJudgeNode], rooms: List[Room]) -> None:
+    def initialize_case_judge_pair_to_room_graph(self, jc_pairs: List[CaseJudgeNode], rooms: List[Room]) -> None:
         """Initialize a graph for assigning rooms to case-judge pairs."""
         # Set counts
-        self.num_meetings = len(cj_pairs)
+        self.num_meetings = len(jc_pairs)
         self.num_rooms = len(rooms)
+        self.num_jm_pairs = len(jc_pairs)
         
         # Create source node
         source_node = Node("source")
         source_id = self.add_node(source_node)
         
-        # Create nodes for each (judge, case) pair and connect to source
-        cj_node_ids = []
-        for cj_pair in cj_pairs:
-            cj_node = CaseJudgeNode(
-                f"(judge{cj_pair.get_judge().judge_id}, case{cj_pair.get_meeting().case_id})",
-                cj_pair.get_meeting(),
-                cj_pair.get_judge()
+        # Create meeting-judge pair nodes and store their IDs
+        jm_pair_ids = []
+        for jc_pair in jc_pairs:
+            jm_node = CaseJudgeNode(
+                f"jm_{jc_pair.get_meeting().meeting_id}_{jc_pair.get_judge().judge_id}", 
+                jc_pair.get_meeting(), 
+                jc_pair.get_judge()
             )
-            cj_node_id = self.add_node(cj_node)
-            cj_node_ids.append(cj_node_id)
-            self.add_edge(source_id, cj_node_id, 1)  # Every pair gets assigned once
-        
-        # Create nodes for all rooms
-        room_node_ids = []
+            jm_pair_id = self.add_node(jm_node)
+            jm_pair_ids.append(jm_pair_id)
+            
+        # Create room nodes and store their IDs
+        room_ids = []
         for room in rooms:
-            room_node = RoomNode(f"room{room.room_id}", room)
+            room_node = RoomNode(f"room_{room.room_id}", room)
             room_id = self.add_node(room_node)
-            room_node_ids.append(room_id)
+            room_ids.append(room_id)
         
         # Create sink node
         sink_node = Node("sink")
         sink_id = self.add_node(sink_node)
         
-        # Create edges from each case-judge pair to compatible rooms
-        for i, cj_node_id in enumerate(cj_node_ids):
-            cj_pair = cj_pairs[i]
-            case = cj_pair.get_meeting()
-            judge = cj_pair.get_judge()
-            
-            for j, room_id in enumerate(room_node_ids):
-                room = rooms[j]
-                # Use one-directional compatibility checks for both case-room and judge-room
-                if (case_requires_from_room(case, room) and room_requires_from_case(room, case) and
-                    judge_requires_from_room(judge, room) and room_requires_from_judge(room, judge)):
-                    self.add_edge(cj_node_id, room_id, 1)
+        # Create edges from source to judge_case pairs
+        for jm_pair_id in jm_pair_ids:
+            self.add_edge(source_id, jm_pair_id, 1)
         
-        # Calculate room capacities and add edges to sink
-        cases = [cj.get_meeting() for cj in cj_pairs]
-        room_capacities = calculate_all_room_capacities(cases, rooms)
-        for i, room_id in enumerate(room_node_ids):
-            room_capacity = room_capacities[rooms[i].room_id]
-            self.add_edge(room_id, sink_id, room_capacity)
+        # Create edges from judge_case pairs to rooms
+        for jm_pair_id in jm_pair_ids:
+            for room_id in room_ids:
+                self.add_edge(jm_pair_id, room_id, 1)
         
-        
-        
+        # Create edges from rooms to sink
+        for room_id in room_ids:
+            capacity = ceil(self.num_meetings / self.num_rooms) 
+            self.add_edge(room_id, sink_id, capacity)
     
     def visualize(self) -> None:
         """Visualize the graph structure."""
@@ -356,7 +354,7 @@ class DirectedGraph:
             # Check for judge node
             elif isinstance(node, JudgeNode):
                 j = node.get_judge()
-                print(f"Judge Node (Judge ID: {j.judge_id})")
+                print(f"Judge Node (Judge ID: {j.judge_id}), Skills: {j.judge_skills}")
             # Check for room node
             elif isinstance(node, RoomNode):
                 r = node.get_room()
@@ -755,3 +753,38 @@ class UndirectedGraph:
         """Reset the color of all nodes to -1 (uncolored)."""
         for node in self.nodes:
             node.set_color(-1)
+            
+def construct_conflict_graph(assigned_meetings: List[CaseJudgeRoomNode]):
+    """
+    Construct a conflict graph where nodes are meeting-judge-room assignments
+    and edges connect assignments that conflict (same judge or same room).
+    
+    Args:
+        assigned_meetings: List of MeetingJudgeRoomNode objects representing assignments
+        
+    Returns:
+        An UndirectedGraph representing the conflicts
+    """
+    conflict_graph = UndirectedGraph()
+    
+    # Add nodes for each assignment
+    for assigned_meeting in assigned_meetings:
+        conflict_graph.add_node(assigned_meeting)
+    
+    # Add edges for conflicts (same judge or same room)
+    for i in range(conflict_graph.get_num_nodes()):
+        for j in range(conflict_graph.get_num_nodes()):
+            if i == j:
+                continue
+                
+            # Get the assignments
+            assignment_i = assigned_meetings[i]
+            assignment_j = assigned_meetings[j]
+            
+            # Check if they share a judge or room
+            if (assignment_i.get_judge().judge_id == assignment_j.get_judge().judge_id or
+                assignment_i.get_room().room_id == assignment_j.get_room().room_id):
+                conflict_graph.add_edge(i, j)
+    
+    return conflict_graph
+        

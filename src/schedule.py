@@ -1,9 +1,11 @@
 from collections import defaultdict
 from typing import Dict
 
+from src.model import Case, Judge, Room, Attribute, Appointment
+from src.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, MeetingJudgeNode, construct_conflict_graph
+
 from src.matching import (
     assign_cases_to_judges, assign_case_judge_pairs_to_rooms, 
-    construct_conflict_graph
 )
 from src.coloring import DSatur
 from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode
