@@ -93,15 +93,13 @@ def judge_has_skill(judge: Judge, skill: Sagstype) -> bool:
     return skill in judge.judge_skills
 
 
-def calculate_all_judge_capacities(meetings: List[Meeting], judges: List[Judge], flex: int = 0) -> Dict[int, int]:
+def calculate_all_judge_capacities(meetings: List[Meeting], judges: List[Judge]) -> Dict[int, int]:
     """
     Calculate the capacities of all judges such that the sum of their capacities equals the total number of meetings.
-    Ensures that each judge has a minimum capacity of 1 and adds a flexible amount to each judge's capacity.
 
     Args:
         meetings: List of Meeting objects, each with a case type (meeting_sagstype).
         judges: List of Judge objects, each with an ID (judge_id) and skills (judge_skills).
-        flex: Additional capacity to add to each judge (default: 0).
 
     Returns:
         Dict[int, int]: A dictionary mapping each judge's ID to their calculated capacity.
@@ -141,29 +139,29 @@ def calculate_all_judge_capacities(meetings: List[Meeting], judges: List[Judge],
                 capacity += proportion * case_counts[case_type]
         float_capacities[judge.judge_id] = capacity
 
-    # Step 6: Floor the capacities and ensure a minimum of 1
-    int_capacities = {judge_id: max(1, int(cap)) for judge_id, cap in float_capacities.items()}
+    # Step 6: Floor the capacities to get initial integer values
+    int_capacities = {judge_id: int(cap) for judge_id, cap in float_capacities.items()}
 
-    # Apply the flex AFTER the distribution algorithm
-    final_capacities = {judge_id: capacity + flex for judge_id, capacity in int_capacities.items()}
-    
-    # For consistency check, calculate total assigned capacity
-    total_assigned = sum(final_capacities.values())
-    total_expected = len(meetings) + (len(judges) * flex)
-    
-    # Print capacity information for debugging
-    print(f"Total meetings: {len(meetings)}")
-    print(f"Total judges: {len(judges)}")
-    print(f"Flex per judge: {flex}")
-    print(f"Expected total capacity: {total_expected}")
-    print(f"Actual total capacity: {total_assigned}")
-    
-    # Show individual judge capacities
-    judge_caps = sorted([(j.judge_id, final_capacities[j.judge_id]) for j in judges], key=lambda x: x[0])
-    for judge_id, capacity in judge_caps:
-        print(f"Judge {judge_id}: {capacity} meetings")
+    # Step 7: Calculate remaining meetings to distribute
+    total_meetings = len(meetings)
+    current_sum = sum(int_capacities.values())
+    remaining = total_meetings - current_sum
 
-    return final_capacities
+    # Step 8: Distribute remaining meetings based on largest remainders
+    if remaining > 0:
+        # Calculate fractional remainders for each judge
+        remainders = [
+            (judge.judge_id, float_capacities[judge.judge_id] - int_capacities[judge.judge_id])
+            for judge in judges
+        ]
+        # Sort by remainder in descending order
+        remainders.sort(key=lambda x: x[1], reverse=True)
+        # Add one meeting to the top 'remaining' judges
+        for i in range(remaining):
+            judge_id = remainders[i][0]
+            int_capacities[judge_id] += 1
+
+    return int_capacities
 
 
 

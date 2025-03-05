@@ -10,3 +10,4 @@ CourtCaseScheduler
 */__pycache__
 /venv/bin/*
 /venv
+src/__pycache__

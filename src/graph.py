@@ -255,7 +255,7 @@ class DirectedGraph:
                     self.add_edge(meeting_id, judge_node_id, 1)
         
         # Create edges from each judge to the sink with balanced capacity
-        judge_capacities = calculate_all_judge_capacities(meetings, judges, flex=0)
+        judge_capacities = calculate_all_judge_capacities(meetings, judges)
         for judge_node_id, judge in zip(judge_node_ids, judges):
             judge_capacity = judge_capacities[judge.judge_id]
             self.add_edge(judge_node_id, sink_id, judge_capacity)

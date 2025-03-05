@@ -9,6 +9,6 @@ cd "$(dirname "$0")/.."
 # source venv/bin/activate
 
 # Run all tests
-python -m unittest discover -s tests -p "test_*.py" -v
+python3 -m unittest discover -s tests -p "test_*.py" -v
 
 echo "All tests completed."
