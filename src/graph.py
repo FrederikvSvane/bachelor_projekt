@@ -202,12 +202,18 @@ class DirectedGraph:
         return [node for node in self.nodes if isinstance(node, MeetingNode)]
     
     def add_edge(self, from_id: int, to_id: int, capacity: int) -> None:
-        """Add a directed edge to the graph."""
         if not (0 <= from_id < len(self.nodes) and 0 <= to_id < len(self.nodes)):
             raise ValueError(f"Invalid node id: from={from_id}, to={to_id}, nodes={len(self.nodes)}")
         
+        # Add forward edge
         self.edges.append(Edge(from_id, to_id, capacity))
         self.adj_list[from_id][to_id] = self.edges[-1]  # Store reference to the edge
+        
+        # Add reverse edge with zero capacity (for residual graph)
+        # Only add if it doesn't already exist
+        if self.adj_list[to_id].get(from_id) is None:
+            self.edges.append(Edge(to_id, from_id, 0))
+            self.adj_list[to_id][from_id] = self.edges[-1]
     
     def get_edge(self, from_id: int, to_id: int) -> Optional[Edge]:
         """Get an edge by its source and destination node IDs."""
@@ -266,17 +272,11 @@ class DirectedGraph:
         # Set counts
         self.num_meetings = len(jm_pairs)
         self.num_rooms = len(rooms)
+        self.num_jm_pairs = len(jm_pairs)
         
         # Create source node
         source_node = Node("source")
         source_id = self.add_node(source_node)
-        
-        # Create room nodes and store their IDs
-        room_ids = []
-        for room in rooms:
-            room_node = RoomNode(f"room_{room.room_id}", room)
-            room_id = self.add_node(room_node)
-            room_ids.append(room_id)
         
         # Create meeting-judge pair nodes and store their IDs
         jm_pair_ids = []
@@ -288,25 +288,31 @@ class DirectedGraph:
             )
             jm_pair_id = self.add_node(jm_node)
             jm_pair_ids.append(jm_pair_id)
+            
+        # Create room nodes and store their IDs
+        room_ids = []
+        for room in rooms:
+            room_node = RoomNode(f"room_{room.room_id}", room)
+            room_id = self.add_node(room_node)
+            room_ids.append(room_id)
         
         # Create sink node
         sink_node = Node("sink")
         sink_id = self.add_node(sink_node)
         
-        # Create edges from source to room nodes
-        for room_id in room_ids:
-            # Calculate room capacity based on even distribution
-            capacity = math.ceil(self.num_meetings / self.num_rooms)
-            self.add_edge(source_id, room_id, capacity)
-        
-        # Create edges from rooms to meeting-judge pairs
-        for room_id in room_ids:
-            for jm_pair_id in jm_pair_ids:
-                self.add_edge(room_id, jm_pair_id, 1)
-        
-        # Create edges from meeting-judge pairs to sink
+        # Create edges from source to judge_case pairs
         for jm_pair_id in jm_pair_ids:
-            self.add_edge(jm_pair_id, sink_id, 1)
+            self.add_edge(source_id, jm_pair_id, 1)
+        
+        # Create edges from judge_case pairs to rooms
+        for jm_pair_id in jm_pair_ids:
+            for room_id in room_ids:
+                self.add_edge(jm_pair_id, room_id, 1)
+        
+        # Create edges from rooms to sink
+        for room_id in room_ids:
+            capacity = math.ceil(self.num_meetings / self.num_rooms) 
+            self.add_edge(room_id, sink_id, capacity)
     
     def visualize(self) -> None:
         """Visualize the graph structure."""
@@ -744,3 +750,38 @@ class UndirectedGraph:
         """Reset the color of all nodes to -1 (uncolored)."""
         for node in self.nodes:
             node.set_color(-1)
+            
+def construct_conflict_graph(assigned_meetings: List[MeetingJudgeRoomNode]):
+    """
+    Construct a conflict graph where nodes are meeting-judge-room assignments
+    and edges connect assignments that conflict (same judge or same room).
+    
+    Args:
+        assigned_meetings: List of MeetingJudgeRoomNode objects representing assignments
+        
+    Returns:
+        An UndirectedGraph representing the conflicts
+    """
+    conflict_graph = UndirectedGraph()
+    
+    # Add nodes for each assignment
+    for assigned_meeting in assigned_meetings:
+        conflict_graph.add_node(assigned_meeting)
+    
+    # Add edges for conflicts (same judge or same room)
+    for i in range(conflict_graph.get_num_nodes()):
+        for j in range(conflict_graph.get_num_nodes()):
+            if i == j:
+                continue
+                
+            # Get the assignments
+            assignment_i = assigned_meetings[i]
+            assignment_j = assigned_meetings[j]
+            
+            # Check if they share a judge or room
+            if (assignment_i.get_judge().judge_id == assignment_j.get_judge().judge_id or
+                assignment_i.get_room().room_id == assignment_j.get_room().room_id):
+                conflict_graph.add_edge(i, j)
+    
+    return conflict_graph
+        

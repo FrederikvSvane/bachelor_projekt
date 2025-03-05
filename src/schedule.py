@@ -4,10 +4,10 @@ from collections import defaultdict
 import json
 
 from src.models import Meeting, Judge, Room, Sagstype, Appointment
-from src.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, MeetingJudgeNode
+from src.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, MeetingJudgeNode, construct_conflict_graph
+
 from src.matching import (
     assign_judges_to_meetings, assign_rooms_to_jm_pairs, 
-    construct_conflict_graph
 )
 from src.coloring import color_conflict_graph
 
