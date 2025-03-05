@@ -77,10 +77,6 @@ class Schedule:
         """Visualize the schedule in a table format."""
         print("\nSchedule Visualization")
         print("=====================\n")
-        
-        # Print schedule statistics
-        print("Schedule Statistics:")
-        print("-------------------")
         print(f"Work days: {self.work_days}")
         print(f"Minutes per work day: {self.minutes_in_a_work_day}")
         print(f"Time slot granularity: {self.granularity} minutes")
@@ -176,7 +172,7 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     Returns:
         A Schedule object with the generated appointments
     """
-    # Extract input parameters
+    # Extracting input parameters
     work_days = parsed_data["work_days"]
     minutes_per_work_day = parsed_data["min_per_work_day"]
     granularity = parsed_data["granularity"]
@@ -185,39 +181,24 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     judges = parsed_data["judges"]
     rooms = parsed_data["rooms"]
     
-    n_meetings = len(meetings)
-    n_judges = len(judges)
-    n_rooms = len(rooms)
-    
-    # Step 1: Assign judges to meetings based on skills
-    print("\n=== Step 1: Assigning Judges to Meetings ===")
+    # Flow 1: Assign judges to meetings based on skills
     judge_case_graph = DirectedGraph() 
     judge_case_graph.initialize_judge_case_graph(meetings, judges)
-    
     judge_case_graph.visualize()
-    
     meeting_judge_pairs = assign_judges_to_meetings(judge_case_graph)
     
-    # Step 2: Assign rooms to meeting-judge pairs
-    print("\n=== Step 2: Assigning Rooms to Judge-Meeting Pairs ===")
+    # Flow 2: Assign rooms to meeting-judge pairs
     jm_room_graph = DirectedGraph()
     jm_room_graph.initialize_jm_graph(meeting_judge_pairs, rooms)
-    
-    jm_room_graph.visualize()
-    
     assigned_meetings = assign_rooms_to_jm_pairs(jm_room_graph)
     
     # Construct conflict graph
-    print("\n=== Step 3: Creating Conflict Graph ===")
     conflict_graph = construct_conflict_graph(assigned_meetings)
     
     # Perform graph coloring
-    print("\n=== Step 4: Coloring Conflict Graph ===")
     color_conflict_graph(conflict_graph)
-    conflict_graph.visualize()
     
     # Generate schedule
-    print("\n=== Step 5: Generating Final Schedule ===")
     schedule = Schedule(work_days, minutes_per_work_day, granularity)
     schedule.generate_schedule_from_colored_graph(conflict_graph)
     

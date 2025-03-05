@@ -196,7 +196,6 @@ def assign_judges_to_meetings(graph: DirectedGraph) -> List[MeetingJudgeNode]:
     total_flow = 0
     assigned_pairs = []
     
-    print("\n=== Assigning Judges to Meetings ===")
     
     # Implement Ford-Fulkerson algorithm to find max flow
     while True:
@@ -261,11 +260,9 @@ def assign_judges_to_meetings(graph: DirectedGraph) -> List[MeetingJudgeNode]:
     
     # Verify we found assignments for all meetings
     if total_flow < graph.num_meetings:
-        raise RuntimeError(f"Not all meetings could be assigned judges: flow = {total_flow}, "
-                          f"meetings = {graph.num_meetings}")
-    
-    print(f"Total Meetings Assigned: {len(assigned_pairs)}")
-    print("================================")
+        raise RuntimeError(f"\nNot all meetings could be assigned judges\n"
+                           f"Succesfully assgined meetings: {total_flow}\n"
+                          f"Total amount of meetings: {graph.num_meetings}")
     
     return assigned_pairs
 

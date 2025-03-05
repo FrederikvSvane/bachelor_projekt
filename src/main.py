@@ -43,9 +43,10 @@ def main():
             print(f"Generating test data: {n_meetings} meetings, {n_judges} judges, {n_rooms} rooms")
             parsed_data = generate_test_data_parsed(n_meetings, n_judges, n_rooms)
         
-        # Generate and save schedule
+        
         schedule = generate_schedule_using_double_flow(parsed_data)
         schedule.visualize()
+        
         
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)

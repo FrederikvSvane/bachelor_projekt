@@ -1,4 +1,4 @@
-#!/Users/frederik/projects/python_migration/venv/bin/python
+#!/Users/frederik/projects/bachelor_projekt/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
