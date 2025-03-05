@@ -1,15 +1,14 @@
-import math
-from typing import List, Dict, Set, Optional
 from collections import defaultdict
-import json
+from typing import Dict
 
-from src.models import Meeting, Judge, Room, Sagstype, Appointment
-from src.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, MeetingJudgeNode
 from src.matching import (
-    assign_judges_to_meetings, assign_rooms_to_jm_pairs, 
+    assign_cases_to_judges, assign_case_judge_pairs_to_rooms, 
     construct_conflict_graph
 )
-from src.coloring import color_conflict_graph
+from src.coloring import DSatur
+from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode
+from src.model import Appointment
+
 
 class Schedule:
     """Class that manages the court schedule."""
@@ -37,9 +36,9 @@ class Schedule:
             graph: The colored undirected graph
         """
         for i in range(graph.get_num_nodes()):
-            # Get the MeetingJudgeRoomNode from the graph
+            # Get the CaseJudgeRoomNode from the graph
             node = graph.get_node(i)
-            if not isinstance(node, MeetingJudgeRoomNode):
+            if not isinstance(node, CaseJudgeRoomNode):
                 continue
                 
             # Determine the day based on timeslot (color) and timeslots per day
@@ -92,7 +91,7 @@ class Schedule:
         for day in range(self.work_days):
             print(f"Day {day + 1}:")
             print("-" * 70)
-            print(f"{'Time':10} | {'Timeslot':10} | {'Meeting':10} | "
+            print(f"{'Time':10} | {'Timeslot':10} | {'Case':10} | "
                   f"{'Judge':10} | {'Room':10} | {'Duration':10}")
             print("-" * 70)
             
@@ -183,20 +182,20 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     
     # Flow 1: Assign judges to meetings based on skills
     judge_case_graph = DirectedGraph() 
-    judge_case_graph.initialize_judge_case_graph(meetings, judges)
+    judge_case_graph.initialize_case_to_judge_graph(meetings, judges)
     judge_case_graph.visualize()
-    meeting_judge_pairs = assign_judges_to_meetings(judge_case_graph)
+    meeting_judge_pairs = assign_cases_to_judges(judge_case_graph)
     
     # Flow 2: Assign rooms to meeting-judge pairs
-    jm_room_graph = DirectedGraph()
-    jm_room_graph.initialize_jm_graph(meeting_judge_pairs, rooms)
-    assigned_meetings = assign_rooms_to_jm_pairs(jm_room_graph)
+    jc_room_graph = DirectedGraph()
+    jc_room_graph.initialize_case_judge_pair_to_room_graph(meeting_judge_pairs, rooms)
+    assigned_meetings = assign_case_judge_pairs_to_rooms(jc_room_graph)
     
     # Construct conflict graph
     conflict_graph = construct_conflict_graph(assigned_meetings)
     
     # Perform graph coloring
-    color_conflict_graph(conflict_graph)
+    DSatur(conflict_graph)
     
     # Generate schedule
     schedule = Schedule(work_days, minutes_per_work_day, granularity)

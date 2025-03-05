@@ -1,6 +1,6 @@
 # tests/test_models.py
 import unittest
-from src.models import Judge, Meeting, Sagstype, calculate_judge_capacity, calculate_all_judge_capacities
+from src.model import Judge, Case, Sagstype, calculate_judge_capacity, calculate_all_judge_capacities
 
 class TestJudgeCapacity(unittest.TestCase):
     def test_case_distribution_with_mixed_skills(self):
@@ -24,7 +24,7 @@ class TestJudgeCapacity(unittest.TestCase):
         # Create 50 civil meetings
         civil_meetings = []
         for i in range(1, 51):
-            meeting = Meeting(
+            meeting = Case(
                 meeting_id=i,
                 meeting_duration=60,
                 meeting_sagstype=Sagstype.CIVIL,
@@ -36,7 +36,7 @@ class TestJudgeCapacity(unittest.TestCase):
         # Create 50 criminal meetings
         criminal_meetings = []
         for i in range(51, 101):
-            meeting = Meeting(
+            meeting = Case(
                 meeting_id=i,
                 meeting_duration=60,
                 meeting_sagstype=Sagstype.STRAFFE,
@@ -113,16 +113,16 @@ class TestJudgeCapacity(unittest.TestCase):
         Test that a judge with unapplicable skill gets 0 cases assigned
         """
         meetings = [
-            Meeting(1, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Meeting(2, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Meeting(3, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Meeting(4, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Meeting(5, 1, Sagstype.CIVIL, meeting_virtual=False),
-            Meeting(6, 1, Sagstype.STRAFFE, meeting_virtual=False),
-            Meeting(7, 1, Sagstype.STRAFFE, meeting_virtual=False),
-            Meeting(8, 1, Sagstype.STRAFFE, meeting_virtual=False),
-            Meeting(9, 1, Sagstype.STRAFFE, meeting_virtual=False),
-            Meeting(10, 1, Sagstype.STRAFFE, meeting_virtual=False),
+            Case(1, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Case(2, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Case(3, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Case(4, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Case(5, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Case(6, 1, Sagstype.STRAFFE, meeting_virtual=False),
+            Case(7, 1, Sagstype.STRAFFE, meeting_virtual=False),
+            Case(8, 1, Sagstype.STRAFFE, meeting_virtual=False),
+            Case(9, 1, Sagstype.STRAFFE, meeting_virtual=False),
+            Case(10, 1, Sagstype.STRAFFE, meeting_virtual=False),
         ]
         judges = [
             Judge(1, [Sagstype.TVANG], False),

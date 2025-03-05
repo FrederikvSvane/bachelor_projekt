@@ -1,8 +1,7 @@
-import math
 from collections import defaultdict
 from typing import List, Dict, Optional, Type, Set
 
-from src.models import Judge, Meeting, Room, Sagstype, judge_has_skill, calculate_all_judge_capacities
+from src.model import Case, Judge, Room
 
 class Node:
     """Base class for all node types in the graph."""
@@ -35,10 +34,10 @@ class JudgeNode(Node):
         return self.judge
 
 
-class MeetingNode(Node):
+class CaseNode(Node):
     """Node representing a meeting."""
     
-    def __init__(self, identifier: str, capacity: int, meeting: Meeting):
+    def __init__(self, identifier: str, capacity: int, meeting: Case):
         super().__init__(identifier)
         self.capacity = capacity
         self.meeting = meeting
@@ -83,10 +82,10 @@ class JudgeRoomNode(Node):
         return self.room
 
 
-class MeetingJudgeNode(Node):
+class CaseJudgeNode(Node):
     """Node representing a meeting-judge assignment."""
     
-    def __init__(self, identifier: str, meeting: Meeting, judge: Judge):
+    def __init__(self, identifier: str, meeting: Case, judge: Judge):
         super().__init__(identifier)
         self.meeting = meeting
         self.judge = judge
@@ -98,10 +97,10 @@ class MeetingJudgeNode(Node):
         return self.judge
 
 
-class MeetingJudgeRoomNode(Node):
+class CaseJudgeRoomNode(Node):
     """Node representing a meeting-judge-room assignment."""
     
-    def __init__(self, identifier: str, meeting: Meeting, judge: Judge, room: Room):
+    def __init__(self, identifier: str, meeting: Case, judge: Judge, room: Room):
         super().__init__(identifier)
         self.meeting = meeting
         self.judge = judge
@@ -197,9 +196,9 @@ class DirectedGraph:
         """Get the number of nodes in the graph."""
         return len(self.nodes)
     
-    def get_meeting_nodes(self) -> List[MeetingNode]:
+    def get_meeting_nodes(self) -> List[CaseNode]:
         """Get all meeting nodes in the graph."""
-        return [node for node in self.nodes if isinstance(node, MeetingNode)]
+        return [node for node in self.nodes if isinstance(node, CaseNode)]
     
     def add_edge(self, from_id: int, to_id: int, capacity: int) -> None:
         """Add a directed edge to the graph."""
@@ -216,24 +215,24 @@ class DirectedGraph:
         
         return self.adj_list[from_id][to_id]
     
-    def initialize_judge_case_graph(self, meetings: List[Meeting], judges: List[Judge]) -> None:
-        """Initialize a graph for assigning judges to meetings."""
+    def initialize_case_to_judge_graph(self, cases: List[Case], judges: List[Judge]) -> None:
+        """Initialize a graph for assigning judges to cases."""
         # Set counts
-        self.num_meetings = len(meetings)
+        self.num_meetings = len(cases)
         self.num_judges = len(judges)
         
         # Create source node
         source_node = Node("source")
         source_id = self.add_node(source_node)
         
-        # Create meeting nodes and store their node IDs
-        meeting_ids = []
-        for meeting in meetings:
-            meeting_node = MeetingNode(f"meeting_{meeting.meeting_id}", 1, meeting)
-            meeting_id = self.add_node(meeting_node)
-            meeting_ids.append(meeting_id)
+        # Create case nodes
+        case_ids = []
+        for case in cases:
+            case_node = CaseNode(f"case_{case.case_id}", 1, case)
+            case_id = self.add_node(case_node)
+            case_ids.append(case_id)
         
-        # Create judge nodes and store their node IDs
+        # Create judge nodes
         judge_node_ids = []
         for judge in judges:
             judge_node = JudgeNode(f"judge_{judge.judge_id}", judge)
@@ -244,69 +243,81 @@ class DirectedGraph:
         sink_node = Node("sink")
         sink_id = self.add_node(sink_node)
         
-        # Create edges from source to each meeting with capacity 1
-        for meeting_id in meeting_ids:
-            self.add_edge(source_id, meeting_id, 1)
+        # Create edges from source to each case with capacity 1
+        for case_id in case_ids:
+            self.add_edge(source_id, case_id, 1)
         
-        # Create edges from each meeting to each compatible judge with capacity 1
-        for meeting_id, meeting in zip(meeting_ids, meetings):
-            for judge_node_id, judge in zip(judge_node_ids, judges):
-                if judge_has_skill(judge, meeting.meeting_sagstype):
-                    self.add_edge(meeting_id, judge_node_id, 1)
+        # Create edges from each case to compatible judges with capacity 1
+        for i, case_id in enumerate(case_ids):
+            case = cases[i]
+            for j, judge_node_id in enumerate(judge_node_ids):
+                judge = judges[j]
+                # Use one-directional compatibility checks
+                if (case_requires_from_judge(case, judge) and 
+                    judge_requires_from_case(judge, case)):
+                    self.add_edge(case_id, judge_node_id, 1)
         
         # Create edges from each judge to the sink with balanced capacity
-        judge_capacities = calculate_all_judge_capacities(meetings, judges)
-        for judge_node_id, judge in zip(judge_node_ids, judges):
-            judge_capacity = judge_capacities[judge.judge_id]
+        judge_capacities = calculate_all_judge_capacities(cases, judges)
+        for i, judge_node_id in enumerate(judge_node_ids):
+            judge_capacity = judge_capacities[judges[i].judge_id]
             self.add_edge(judge_node_id, sink_id, judge_capacity)
-    
-    
-    def initialize_jm_graph(self, jm_pairs: List[MeetingJudgeNode], rooms: List[Room]) -> None:
-        """Initialize a graph for assigning rooms to judge-meeting pairs."""
+
+    def initialize_case_judge_pair_to_room_graph(self, cj_pairs: List[CaseJudgeNode], rooms: List[Room]) -> None:
+        """Initialize a graph for assigning rooms to case-judge pairs."""
         # Set counts
-        self.num_meetings = len(jm_pairs)
+        self.num_meetings = len(cj_pairs)
         self.num_rooms = len(rooms)
         
         # Create source node
         source_node = Node("source")
         source_id = self.add_node(source_node)
         
-        # Create room nodes and store their IDs
-        room_ids = []
-        for room in rooms:
-            room_node = RoomNode(f"room_{room.room_id}", room)
-            room_id = self.add_node(room_node)
-            room_ids.append(room_id)
-        
-        # Create meeting-judge pair nodes and store their IDs
-        jm_pair_ids = []
-        for jm_pair in jm_pairs:
-            jm_node = MeetingJudgeNode(
-                f"jm_{jm_pair.get_meeting().meeting_id}_{jm_pair.get_judge().judge_id}", 
-                jm_pair.get_meeting(), 
-                jm_pair.get_judge()
+        # Create nodes for each (judge, case) pair and connect to source
+        cj_node_ids = []
+        for cj_pair in cj_pairs:
+            cj_node = CaseJudgeNode(
+                f"(judge{cj_pair.get_judge().judge_id}, case{cj_pair.get_meeting().case_id})",
+                cj_pair.get_meeting(),
+                cj_pair.get_judge()
             )
-            jm_pair_id = self.add_node(jm_node)
-            jm_pair_ids.append(jm_pair_id)
+            cj_node_id = self.add_node(cj_node)
+            cj_node_ids.append(cj_node_id)
+            self.add_edge(source_id, cj_node_id, 1)  # Every pair gets assigned once
+        
+        # Create nodes for all rooms
+        room_node_ids = []
+        for room in rooms:
+            room_node = RoomNode(f"room{room.room_id}", room)
+            room_id = self.add_node(room_node)
+            room_node_ids.append(room_id)
         
         # Create sink node
         sink_node = Node("sink")
         sink_id = self.add_node(sink_node)
         
-        # Create edges from source to room nodes
-        for room_id in room_ids:
-            # Calculate room capacity based on even distribution
-            capacity = math.ceil(self.num_meetings / self.num_rooms)
-            self.add_edge(source_id, room_id, capacity)
+        # Create edges from each case-judge pair to compatible rooms
+        for i, cj_node_id in enumerate(cj_node_ids):
+            cj_pair = cj_pairs[i]
+            case = cj_pair.get_meeting()
+            judge = cj_pair.get_judge()
+            
+            for j, room_id in enumerate(room_node_ids):
+                room = rooms[j]
+                # Use one-directional compatibility checks for both case-room and judge-room
+                if (case_requires_from_room(case, room) and room_requires_from_case(room, case) and
+                    judge_requires_from_room(judge, room) and room_requires_from_judge(room, judge)):
+                    self.add_edge(cj_node_id, room_id, 1)
         
-        # Create edges from rooms to meeting-judge pairs
-        for room_id in room_ids:
-            for jm_pair_id in jm_pair_ids:
-                self.add_edge(room_id, jm_pair_id, 1)
+        # Calculate room capacities and add edges to sink
+        cases = [cj.get_meeting() for cj in cj_pairs]
+        room_capacities = calculate_all_room_capacities(cases, rooms)
+        for i, room_id in enumerate(room_node_ids):
+            room_capacity = room_capacities[rooms[i].room_id]
+            self.add_edge(room_id, sink_id, room_capacity)
         
-        # Create edges from meeting-judge pairs to sink
-        for jm_pair_id in jm_pair_ids:
-            self.add_edge(jm_pair_id, sink_id, 1)
+        
+        
     
     def visualize(self) -> None:
         """Visualize the graph structure."""
@@ -323,9 +334,9 @@ class DirectedGraph:
             if node.get_identifier() == "source":
                 print("Source Node")
             # Check for meeting node
-            elif isinstance(node, MeetingNode):
+            elif isinstance(node, CaseNode):
                 m = node.get_meeting()
-                print(f"Meeting (ID: {m.meeting_id}, Duration: {m.meeting_duration}, "
+                print(f"Case (ID: {m.case_id}, Duration: {m.meeting_duration}, "
                     f"Sagstype: {m.meeting_sagstype}, Virtual: {m.meeting_virtual})")
             # Check for judge-room node
             elif isinstance(node, JudgeRoomNode):
@@ -336,11 +347,11 @@ class DirectedGraph:
                     f"Skills: [{skills_str}], Room ID: {r.room_id}, "
                     f"Virtual: {r.room_virtual})")
             # Check for meeting-judge-room node
-            elif isinstance(node, MeetingJudgeRoomNode):
+            elif isinstance(node, CaseJudgeRoomNode):
                 m = node.get_meeting()
                 j = node.get_judge()
                 r = node.get_room()
-                print(f"Meeting-Judge-Room (Meeting ID: {m.meeting_id}, "
+                print(f"Case-Judge-Room (Case ID: {m.case_id}, "
                     f"Judge ID: {j.judge_id}, Room ID: {r.room_id})")
             # Check for judge node
             elif isinstance(node, JudgeNode):
@@ -351,10 +362,10 @@ class DirectedGraph:
                 r = node.get_room()
                 print(f"Room Node (Room ID: {r.room_id})")
             # Check for meeting-judge node
-            elif isinstance(node, MeetingJudgeNode):
+            elif isinstance(node, CaseJudgeNode):
                 m = node.get_meeting()
                 j = node.get_judge()
-                print(f"Meeting-Judge Node (Meeting ID: {m.meeting_id}, Judge ID: {j.judge_id})")
+                print(f"Case-Judge Node (Case ID: {m.case_id}, Judge ID: {j.judge_id})")
             # Check for sink node
             elif node.get_identifier() == "sink":
                 print("Sink Node")
@@ -610,18 +621,18 @@ class UndirectedGraph:
         for i, node in enumerate(self.nodes):
             print(f"Node {i} (Color {node.get_color()}, ID: {node.get_identifier()}): ", end="")
             
-            if isinstance(node, MeetingJudgeRoomNode):
-                print(f"Meeting {node.get_meeting().meeting_id}, "
+            if isinstance(node, CaseJudgeRoomNode):
+                print(f"Case {node.get_meeting().case_id}, "
                       f"Judge {node.get_judge().judge_id}, "
                       f"Room {node.get_room().room_id}")
-            elif isinstance(node, MeetingJudgeNode):
-                print(f"Meeting {node.get_meeting().meeting_id}, "
+            elif isinstance(node, CaseJudgeNode):
+                print(f"Case {node.get_meeting().case_id}, "
                       f"Judge {node.get_judge().judge_id}")
             elif isinstance(node, JudgeRoomNode):
                 print(f"Judge {node.get_judge().judge_id}, "
                       f"Room {node.get_room().room_id}")
-            elif isinstance(node, MeetingNode):
-                print(f"Meeting {node.get_meeting().meeting_id}")
+            elif isinstance(node, CaseNode):
+                print(f"Case {node.get_meeting().case_id}")
             elif isinstance(node, JudgeNode):
                 print(f"Judge {node.get_judge().judge_id}")
             elif isinstance(node, RoomNode):

@@ -207,10 +207,10 @@ def main():
         # "https://www.domstol.dk/koebenhavn/retslister/2025/2/civile-sager-uge-8/",
         # "https://www.domstol.dk/koebenhavn/retslister/2025/2/straffesager-uge-7/",
         # "https://www.domstol.dk/koebenhavn/retslister/2025/2/civile-sager-uge-7/",
-        "https://www.domstol.dk/hilleroed/retslister/2025/2/straffesager-uge-9/",
-        "https://www.domstol.dk/hilleroed/retslister/2025/2/civile-sager-uge-9/",
-        "https://www.domstol.dk/koebenhavn/retslister/2025/2/civile-sager-uge-9/",
-        "https://www.domstol.dk/koebenhavn/retslister/2025/2/straffesager-uge-9/"
+        # "https://www.domstol.dk/hilleroed/retslister/2025/2/straffesager-uge-9/",
+        # "https://www.domstol.dk/hilleroed/retslister/2025/2/civile-sager-uge-9/",
+        # "https://www.domstol.dk/koebenhavn/retslister/2025/2/civile-sager-uge-9/",
+        # "https://www.domstol.dk/koebenhavn/retslister/2025/2/straffesager-uge-9/"
     ]
 
     for url in urls:

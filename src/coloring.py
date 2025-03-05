@@ -90,7 +90,7 @@ def get_lowest_available_color(graph: UndirectedGraph, vertex: int) -> int:
     return -1
 
 
-def color_conflict_graph(graph: UndirectedGraph) -> None:
+def DSatur(graph: UndirectedGraph) -> None:
     """
     Apply the DSatur algorithm to color the graph.
     The DSatur algorithm colors vertices in order of their saturation degree.

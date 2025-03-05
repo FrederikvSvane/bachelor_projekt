@@ -3,7 +3,7 @@ import math
 import json
 from typing import Dict, Any, List
 
-from src.models import Meeting, Judge, Room, Sagstype
+from src.model import Case, Judge, Room, Attribute
 
 class TruncatedNormalDistribution:
     """Generates a truncated normal distribution for meeting durations."""
@@ -66,7 +66,7 @@ def generate_test_data(n_meetings: int, n_judges: int, n_rooms: int,
             duration = round(raw_duration / 5.0) * 5
         
         # Generate random case type
-        case_type = random.choice(list(Sagstype))
+        case_type = random.choice(list(Attribute))
         
         # Generate meeting
         meeting = {
@@ -81,7 +81,7 @@ def generate_test_data(n_meetings: int, n_judges: int, n_rooms: int,
     judges = []
     for i in range(1, n_judges + 1):
         # Generate random skills (2 skills per judge by default)
-        all_types = list(Sagstype)
+        all_types = list(Attribute)
         gen.shuffle(all_types)
         num_skills = min(3, max(1, gen.randint(1, 3)))  # Between 1 and 3 skills
         skills = all_types[:num_skills]
@@ -140,10 +140,10 @@ def generate_test_data_parsed(n_meetings: int, n_judges: int, n_rooms: int,
     
     # Parse meetings
     for meeting_data in test_data["meetings"]:
-        meeting = Meeting(
+        meeting = Case(
             meeting_id=meeting_data["id"],
             meeting_duration=meeting_data["duration"],
-            meeting_sagstype=Sagstype.from_string(meeting_data["type"]),
+            meeting_Attribute=Attribute.from_string(meeting_data["type"]),
             meeting_virtual=meeting_data["virtual"]
         )
         parsed_data["meetings"].append(meeting)
@@ -152,7 +152,7 @@ def generate_test_data_parsed(n_meetings: int, n_judges: int, n_rooms: int,
     for judge_data in test_data["judges"]:
         judge = Judge(
             judge_id=judge_data["id"],
-            judge_skills=[Sagstype.from_string(skill) for skill in judge_data["skills"]],
+            judge_skills=[Attribute.from_string(skill) for skill in judge_data["skills"]],
             judge_virtual=judge_data["virtual"]
         )
         parsed_data["judges"].append(judge)

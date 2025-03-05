@@ -2,7 +2,7 @@ import json
 from typing import Dict, List, Any
 from pathlib import Path
 
-from src.models import Meeting, Judge, Room, Sagstype
+from src.model import Case, Judge, Room, Attribute
 
 def parse_input(input_path: Path) -> Dict:
     """
@@ -29,15 +29,15 @@ def parse_input(input_path: Path) -> Dict:
     for i, meeting_data in enumerate(data.get("meetings", [])):
         meeting_type_str = meeting_data.get("type", "Civile")
         try:
-            meeting_type = Sagstype.from_string(meeting_type_str)
+            meeting_type = Attribute.from_string(meeting_type_str)
         except ValueError:
             print(f"Warning: Invalid meeting type '{meeting_type_str}', defaulting to Civile")
-            meeting_type = Sagstype.CIVILE
+            meeting_type = Attribute.CIVILE
         
-        meeting = Meeting(
+        meeting = Case(
             meeting_id=meeting_data.get("id", i),
             meeting_duration=meeting_data.get("duration", 60),
-            meeting_sagstype=meeting_type,
+            meeting_Attribute=meeting_type,
             meeting_virtual=meeting_data.get("virtual", False)
         )
         meetings.append(meeting)
@@ -49,7 +49,7 @@ def parse_input(input_path: Path) -> Dict:
         skills = []
         for skill_str in judge_data.get("skills", ["Civile"]):
             try:
-                skill = Sagstype.from_string(skill_str)
+                skill = Attribute.from_string(skill_str)
                 skills.append(skill)
             except ValueError:
                 print(f"Warning: Invalid judge skill '{skill_str}', skipping")
@@ -57,7 +57,7 @@ def parse_input(input_path: Path) -> Dict:
         # Ensure judge has at least one skill
         if not skills:
             print(f"Warning: Judge {i} has no valid skills, adding default Civile")
-            skills.append(Sagstype.CIVILE)
+            skills.append(Attribute.CIVILE)
         
         judge = Judge(
             judge_id=judge_data.get("id", i),

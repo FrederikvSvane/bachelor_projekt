@@ -5,7 +5,7 @@
 We define the court scheduling problem as follows:
 
 **Inputs:**
-* **Meetings** $M=\{m_1,\ldots,m_k\}$, each with a total duration $d(m)\in\mathbb{N}$ (in $G$-minute intervals).
+* **cases** $M=\{m_1,\ldots,m_k\}$, each with a total duration $d(m)\in\mathbb{N}$ (in $G$-minute intervals).
 * **Judges** $J=\{j_1,\ldots,j_n\}$.
 * **Courtrooms** $R=\{r_1,\ldots,r_m\}$.
 * **Days** $D\in\mathbb{N}$, daily minutes $D_m\in\mathbb{N}$, granularity $G\in\mathbb{N}$ (slots are $G$-minutes long).
@@ -21,7 +21,7 @@ We define the court scheduling problem as follows:
   * $l\in\mathbb{N}$, such that $t_{start}+l\leq\frac{D_m}{G}$
 
 **Schedule:**
-* A set $S=\{A_1,\ldots,A_p\}$ assigning all parts of meetings to appointments.
+* A set $S=\{A_1,\ldots,A_p\}$ assigning all parts of cases to appointments.
 
 **Validity:** $S$ is valid if:
 1. **Coverage:**
@@ -39,15 +39,15 @@ ___
 
 We define the court scheduling problem as follows:
 
-Given a set of meetings $M=\{m_1,\ldots,m_k\}$, judges $J=\{j_1,\ldots,j_n\}$, courtrooms $R=\{r_1,\ldots,r_m\}$, a number of work days $D\in\mathbb{N}$, the amount of minutes in each work day $D_m\in\mathbb{N}$, and a granularity $G\in\mathbb{N}$ specifying $G$-minute intervals. Each meeting $m$ has a total duration $d(m)\in\mathbb{N}$ measured in $G$-minute intervals.
+Given a set of cases $M=\{m_1,\ldots,m_k\}$, judges $J=\{j_1,\ldots,j_n\}$, courtrooms $R=\{r_1,\ldots,r_m\}$, a number of work days $D\in\mathbb{N}$, the amount of minutes in each work day $D_m\in\mathbb{N}$, and a granularity $G\in\mathbb{N}$ specifying $G$-minute intervals. Each case $m$ has a total duration $d(m)\in\mathbb{N}$ measured in $G$-minute intervals.
 
 Each day is divided into $D_m/G$ slots. The set of all time slots across all days is defined as:
 $$T=\{(d,t)\mid d\in[1,D],t\in[0,D_m/G-1]\}$$
 
-An appointment is defined as $A=(m,j,r,d,t_{start},l)$, where $m\in M$ is a meeting, $j\in J$ is a judge, $r\in R$ is a courtroom, $d\in[1,D]$ is the day, $t_{start}\in[0,D_m/G-1]$ is the starting time slot, and $l\in\mathbb{N}$ is the length such that $t_{start}+l\leq D_m/G$.
+An appointment is defined as $A=(m,j,r,d,t_{start},l)$, where $m\in M$ is a case, $j\in J$ is a judge, $r\in R$ is a courtroom, $d\in[1,D]$ is the day, $t_{start}\in[0,D_m/G-1]$ is the starting time slot, and $l\in\mathbb{N}$ is the length such that $t_{start}+l\leq D_m/G$.
 
-A schedule $S=\{A_1,\ldots,A_p\}$ assigns all meetings to appointments. A schedule $S$ is valid if and only if:
+A schedule $S=\{A_1,\ldots,A_p\}$ assigns all cases to appointments. A schedule $S$ is valid if and only if:
 
-For every meeting $m\in M$, the sum of durations across all appointments in $S$ for $m$ equals $d(m)$. And for any two distinct appointments $A_i,A_j\in S$, if their time intervals overlap (meaning same day and overlapping slots), then they must have different judges $j_i\neq j_j$ and different courtrooms $r_i\neq r_j$.
+For every case $m\in M$, the sum of durations across all appointments in $S$ for $m$ equals $d(m)$. And for any two distinct appointments $A_i,A_j\in S$, if their time intervals overlap (meaning same day and overlapping slots), then they must have different judges $j_i\neq j_j$ and different courtrooms $r_i\neq r_j$.
 
 The problem then becomes: given the named inputs, produce a valid schedule.

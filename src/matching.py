@@ -1,10 +1,10 @@
 from collections import deque
 from typing import List, Dict, Tuple, Optional
 
-from src.models import Meeting, Judge, Room, Sagstype
+from src.model import Case, Judge, Room, Attribute
 from src.graph import (
-    DirectedGraph, UndirectedGraph, Node, JudgeNode, MeetingNode, 
-    RoomNode, MeetingJudgeNode, MeetingJudgeRoomNode, Edge
+    DirectedGraph, UndirectedGraph, Node, JudgeNode, CaseNode, 
+    RoomNode, CaseJudgeNode, CaseJudgeRoomNode, Edge
 )
 
 class AugmentingPath:
@@ -18,13 +18,13 @@ class AugmentingPath:
         self.flow = flow
 
 
-def construct_conflict_graph(assigned_meetings: List[MeetingJudgeRoomNode]) -> UndirectedGraph:
+def construct_conflict_graph(assigned_meetings: List[CaseJudgeRoomNode]) -> UndirectedGraph:
     """
     Construct a conflict graph where nodes are meeting-judge-room assignments
     and edges connect assignments that conflict (same judge or same room).
     
     Args:
-        assigned_meetings: List of MeetingJudgeRoomNode objects representing assignments
+        assigned_meetings: List of CaseJudgeRoomNode objects representing assignments
         
     Returns:
         An UndirectedGraph representing the conflicts
@@ -51,91 +51,6 @@ def construct_conflict_graph(assigned_meetings: List[MeetingJudgeRoomNode]) -> U
                 conflict_graph.add_edge(i, j)
     
     return conflict_graph
-
-def extract_path_info(parent: List[int], graph: DirectedGraph, source: int, 
-                     sink: int, path_flow: int) -> AugmentingPath:
-    """
-    Extract the judge, meeting, and room nodes from an augmenting path.
-    
-    Args:
-        parent: List of parent nodes forming the path
-        graph: The directed graph
-        source: Source node index
-        sink: Sink node index
-        path_flow: The flow value for this path
-        
-    Returns:
-        AugmentingPath object with the identified nodes and flow
-    """
-    path = AugmentingPath(flow=path_flow)
-    
-    # Reconstruct the path from sink to source
-    v = sink
-    while v != source:
-        u = parent[v]
-        
-        # Identify node types along the path
-        
-        # Check if u is a judge node (1 to num_judges)
-        if 1 <= u <= graph.num_judges:
-            path.judge_node = u
-        
-        # Check if u is a meeting node (num_judges+1 to num_judges+num_meetings)
-        elif graph.num_judges < u <= graph.num_judges + graph.num_meetings:
-            path.meeting_node = u
-        
-        # Check if v is a room node (num_judges+num_meetings+1 to num_judges+num_meetings+num_rooms)
-        if (graph.num_judges + graph.num_meetings < v <= 
-            graph.num_judges + graph.num_meetings + graph.num_rooms):
-            path.room_node = v
-        
-        v = u
-    
-    return path
-
-
-def print_augmenting_path(path: AugmentingPath, graph: DirectedGraph, path_num: int) -> None:
-    """
-    Print detailed information about an augmenting path found by Ford-Fulkerson.
-    
-    Args:
-        path: The augmenting path to print
-        graph: The directed graph
-        path_num: The sequence number of this path
-    """
-    print(f"Augmenting Path #{path_num}:")
-    print(f"  Flow Amount: {path.flow}")
-    
-    if path.judge_node != -1:
-        judge_node = graph.get_node(path.judge_node, JudgeNode)
-        if judge_node:
-            judge = judge_node.get_judge()
-            skills_str = ", ".join(str(skill) for skill in judge.judge_skills)
-            print(f"  Judge: ID={judge.judge_id}, Skills=[{skills_str}]")
-    
-    if path.meeting_node != -1:
-        meeting_node = graph.get_node(path.meeting_node, MeetingNode)
-        if meeting_node:
-            meeting = meeting_node.get_meeting()
-            print(f"  Meeting: ID={meeting.meeting_id}, Duration={meeting.meeting_duration}, "
-                  f"Type={meeting.meeting_sagstype}")
-    
-    if path.room_node != -1:
-        room_node = graph.get_node(path.room_node, RoomNode)
-        if room_node:
-            room = room_node.get_room()
-            print(f"  Room: ID={room.room_id}, Virtual={room.room_virtual}")
-    
-    print("  Path: Source -> ", end="")
-    if path.judge_node != -1:
-        print(f"Judge({path.judge_node}) -> ", end="")
-    if path.meeting_node != -1:
-        print(f"Meeting({path.meeting_node}) -> ", end="")
-    if path.room_node != -1:
-        print(f"Room({path.room_node}) -> ", end="")
-    print("Sink")
-    print("----------------------------------------")
-
 
 def bfs(graph: DirectedGraph, source: int, sink: int, parent: List[int]) -> bool:
     """
@@ -181,16 +96,16 @@ def bfs(graph: DirectedGraph, source: int, sink: int, parent: List[int]) -> bool
     return False  # No path to sink found
 
 
-def assign_judges_to_meetings(graph: DirectedGraph) -> List[MeetingJudgeNode]:
+def assign_cases_to_judges(graph: DirectedGraph) -> List[CaseJudgeNode]:
     """
-    Assign judges to meetings using a corrected Ford-Fulkerson algorithm implementation.
+    Assign judges to cases using a corrected Ford-Fulkerson algorithm implementation.
     Uses an explicit residual graph matrix for better clarity and correctness.
     
     Args:
-        graph: The directed graph prepared for judge-meeting assignments
+        graph: The directed graph prepared for judge-case assignments
         
     Returns:
-        List of MeetingJudgeNode objects representing the judge-meeting pairs
+        List of CaseJudgeNode objects representing the judge-case pairs
     """
     # Initialize variables
     source = 0
@@ -274,29 +189,29 @@ def assign_judges_to_meetings(graph: DirectedGraph) -> List[MeetingJudgeNode]:
             judge_node = graph.get_node(judge_node_id)
             
             if meeting_node and judge_node:
-                pair = MeetingJudgeNode(
-                    f"jm_{meeting_node.get_meeting().meeting_id}_{judge_node.get_judge().judge_id}",
+                pair = CaseJudgeNode(
+                    f"(judge{judge_node.get_judge().judge_id}, case{meeting_node.get_meeting().meeting_id})",
                     meeting_node.get_meeting(),
                     judge_node.get_judge()
                 )
                 assignments.append(pair)
                 
-                print(f"Assignment {len(assignments)}: Meeting "
+                print(f"Assignment {len(assignments)}: Case "
                       f"{meeting_node.get_meeting().meeting_id} -> Judge "
                       f"{judge_node.get_judge().judge_id}")
         
         max_flow += path_flow
     
-    # Verify all meetings were assigned
+    # Verify all cases were assigned
     if max_flow < graph.num_meetings:
-        raise RuntimeError(f"\nNot all meetings could be assigned judges\n"
-                           f"Successfully assigned meetings: {max_flow}\n"
-                           f"Total amount of meetings: {graph.num_meetings}")
+        raise RuntimeError(f"\nNot all cases could be assigned judges\n"
+                           f"Successfully assigned cases: {max_flow}\n"
+                           f"Total amount of cases: {graph.num_meetings}")
     
     return assignments
 
 
-def assign_rooms_to_jm_pairs(graph: DirectedGraph) -> List[MeetingJudgeRoomNode]:
+def assign_case_judge_pairs_to_rooms(graph: DirectedGraph) -> List[CaseJudgeRoomNode]:
     """
     Assign rooms to judge-meeting pairs using the Ford-Fulkerson algorithm.
     This is the second step of the two-step approach.
@@ -305,7 +220,7 @@ def assign_rooms_to_jm_pairs(graph: DirectedGraph) -> List[MeetingJudgeRoomNode]
         graph: The directed graph prepared for room assignments
         
     Returns:
-        List of MeetingJudgeRoomNode objects representing the complete assignments
+        List of CaseJudgeRoomNode objects representing the complete assignments
     """
     source = 0
     sink = graph.get_num_nodes() - 1
@@ -314,7 +229,7 @@ def assign_rooms_to_jm_pairs(graph: DirectedGraph) -> List[MeetingJudgeRoomNode]
     parent = [-1] * graph.get_num_nodes()
     assigned_meetings = []
     
-    print("\n=== Assigning Rooms to Judge-Meeting Pairs ===")
+    print("\n=== Assigning Rooms to Judge-Case Pairs ===")
     
     # Run Ford-Fulkerson
     while bfs(graph, source, sink, parent):
@@ -354,19 +269,19 @@ def assign_rooms_to_jm_pairs(graph: DirectedGraph) -> List[MeetingJudgeRoomNode]
         # If we identified both a room and a jm-pair, create an assignment
         if room_node_id != -1 and jm_node_id != -1:
             room_node = graph.get_node(room_node_id, RoomNode)
-            jm_node = graph.get_node(jm_node_id, MeetingJudgeNode)
+            jm_node = graph.get_node(jm_node_id, CaseJudgeNode)
             
             if room_node and jm_node:
-                assignment = MeetingJudgeRoomNode(
+                assignment = CaseJudgeRoomNode(
                     len(assigned_meetings),  # Use index as ID
-                    jm_node.get_meeting(),
+                    jm_node.get_case(),
                     jm_node.get_judge(),
                     room_node.get_room()
                 )
                 assigned_meetings.append(assignment)
                 
-                print(f"Assignment {len(assigned_meetings)}: Meeting "
-                      f"{jm_node.get_meeting().meeting_id} -> Judge "
+                print(f"Assignment {len(assigned_meetings)}: Case "
+                      f"{jm_node.get_case().meeting_id} -> Judge "
                       f"{jm_node.get_judge().judge_id} -> Room "
                       f"{room_node.get_room().room_id}")
         
