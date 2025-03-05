@@ -121,7 +121,7 @@ def calculate_all_judge_capacities(meetings: List[Meeting], judges: List[Judge])
         judge_weights[judge.judge_id] = {}
         for case_type in case_types:
             # Weight is m - k + 1 if the judge can handle the case type, else 0
-            judge_weights[judge.judge_id][case_type] = (m - k + 1) if case_type in judge.judge_skills else 0
+            judge_weights[judge.judge_id][case_type] = max(1, m-k+1) if case_type in judge.judge_skills else 0
 
     # Step 4: Calculate total weights per case type across all judges
     total_weights = {}

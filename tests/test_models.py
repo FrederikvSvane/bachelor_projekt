@@ -1,6 +1,6 @@
 # tests/test_models.py
 import unittest
-from src.models import Judge, Meeting, Sagstype, calculate_judge_capacity
+from src.models import Judge, Meeting, Sagstype, calculate_judge_capacity, calculate_all_judge_capacities
 
 class TestJudgeCapacity(unittest.TestCase):
     def test_case_distribution_with_mixed_skills(self):
@@ -107,6 +107,47 @@ class TestJudgeCapacity(unittest.TestCase):
         total_capacity = sum(capacities.values())
         self.assertEqual(total_capacity, len(meetings), 
                          f"Total capacity ({total_capacity}) should match total meetings ({len(meetings)})")
+    
+    def test_incompatible_judge_gets_zero_capacity(self):
+        """
+        Test that a judge with unapplicable skill gets 0 cases assigned
+        """
+        meetings = [
+            Meeting(1, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Meeting(2, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Meeting(3, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Meeting(4, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Meeting(5, 1, Sagstype.CIVIL, meeting_virtual=False),
+            Meeting(6, 1, Sagstype.STRAFFE, meeting_virtual=False),
+            Meeting(7, 1, Sagstype.STRAFFE, meeting_virtual=False),
+            Meeting(8, 1, Sagstype.STRAFFE, meeting_virtual=False),
+            Meeting(9, 1, Sagstype.STRAFFE, meeting_virtual=False),
+            Meeting(10, 1, Sagstype.STRAFFE, meeting_virtual=False),
+        ]
+        judges = [
+            Judge(1, [Sagstype.TVANG], False),
+            Judge(2, [Sagstype.CIVIL, Sagstype.TVANG], False),
+            Judge(3, [Sagstype.CIVIL, Sagstype.STRAFFE, Sagstype.TVANG], judge_virtual=False),
+            Judge(4, [Sagstype.CIVIL, Sagstype.STRAFFE, Sagstype.TVANG], judge_virtual=False),
+            Judge(5, [Sagstype.CIVIL, Sagstype.STRAFFE, Sagstype.TVANG], judge_virtual=False),
+        ]
+        
+        capacities = calculate_all_judge_capacities(meetings, judges)
+        
+        print(capacities)
+        
+        # Calculated by hand
+        self.assertEqual(capacities[1], 0,
+                         f"Judge 1 should get 0 meetings but got {capacities[1]}")    
+        self.assertEqual(capacities[2], 0.1*10,
+                         f"Judge 2 should get 1 meetings but got {capacities[2]}")    
+        self.assertEqual(capacities[3], 3,
+                         f"Judge 3 should get 3 meetings but got {capacities[3]}")    
+        self.assertEqual(capacities[4], 3,
+                         f"Judge 4 should get 3 meetings but got {capacities[4]}")    
+        self.assertEqual(capacities[5], 3,
+                         f"Judge 5 should get 3 meetings but got {capacities[5]}")    
+        
 
 if __name__ == "__main__":
     unittest.main()
