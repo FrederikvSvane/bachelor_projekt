@@ -262,7 +262,7 @@ def assign_judges_to_meetings(graph: DirectedGraph) -> List[MeetingJudgeNode]:
             elif graph.num_meetings < u <= graph.num_meetings + graph.num_judges:
                 judge_node_id = u
             
-            # Update residual capacities - THIS IS THE KEY FIX
+            # Update residual capacities
             residual[u][v] -= path_flow  # Forward edge (decrease capacity)
             residual[v][u] += path_flow  # Reverse edge (increase capacity)
             
@@ -270,8 +270,8 @@ def assign_judges_to_meetings(graph: DirectedGraph) -> List[MeetingJudgeNode]:
         
         # Record assignment if meeting and judge were identified
         if meeting_node_id is not None and judge_node_id is not None:
-            meeting_node = graph.get_node(meeting_node_id)
-            judge_node = graph.get_node(judge_node_id)
+            meeting_node: MeetingNode = graph.get_node(meeting_node_id)
+            judge_node: JudgeNode = graph.get_node(judge_node_id)
             
             if meeting_node and judge_node:
                 pair = MeetingJudgeNode(

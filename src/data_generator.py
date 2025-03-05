@@ -79,12 +79,37 @@ def generate_test_data(n_meetings: int, n_judges: int, n_rooms: int,
     
     # Generate judges
     judges = []
+    # Track which case types have been covered
+    covered_types = set()
+
     for i in range(1, n_judges + 1):
-        # Generate random skills (2 skills per judge by default)
         all_types = list(Sagstype)
-        gen.shuffle(all_types)
-        num_skills = min(3, max(1, gen.randint(1, 3)))  # Between 1 and 3 skills
-        skills = all_types[:num_skills]
+        
+        if i == n_judges and len(covered_types) < len(all_types):
+            # Last judge - ensure any remaining uncovered types are included
+            uncovered = [t for t in all_types if str(t) not in covered_types]
+            # Make sure the judge has at least one skill, up to 3 total
+            num_additional = min(3 - len(uncovered), len(all_types) - len(uncovered))
+            num_additional = max(0, num_additional)  # Ensure non-negative
+            
+            if num_additional > 0:
+                # Add some already covered types if there's room
+                covered_list = [t for t in all_types if str(t) in covered_types]
+                gen.shuffle(covered_list)
+                additional_skills = covered_list[:num_additional]
+            else:
+                additional_skills = []
+                
+            skills = uncovered + additional_skills
+        else:
+            # For judges before the last one, assign random skills
+            gen.shuffle(all_types)
+            num_skills = min(3, max(1, gen.randint(1, 3)))  # Between 1 and 3 skills
+            skills = all_types[:num_skills]
+        
+        # Update the covered types
+        for skill in skills:
+            covered_types.add(str(skill))
         
         # Generate judge
         judge = {

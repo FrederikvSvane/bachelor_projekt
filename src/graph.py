@@ -345,7 +345,7 @@ class DirectedGraph:
             # Check for judge node
             elif isinstance(node, JudgeNode):
                 j = node.get_judge()
-                print(f"Judge Node (Judge ID: {j.judge_id})")
+                print(f"Judge Node (Judge ID: {j.judge_id}), Skills: {j.judge_skills}")
             # Check for room node
             elif isinstance(node, RoomNode):
                 r = node.get_room()

@@ -152,14 +152,15 @@ def calculate_all_judge_capacities(meetings: List[Meeting], judges: List[Judge])
         # Calculate fractional remainders for each judge
         remainders = [
             (judge.judge_id, float_capacities[judge.judge_id] - int_capacities[judge.judge_id])
-            for judge in judges
+            for judge in judges if float_capacities[judge.judge_id] > 0
         ]
         # Sort by remainder in descending order
-        remainders.sort(key=lambda x: x[1], reverse=True)
         # Add one meeting to the top 'remaining' judges
-        for i in range(remaining):
-            judge_id = remainders[i][0]
+        for _ in range(remaining):
+            remainders.sort(key=lambda x: x[1], reverse=True)
+            judge_id, remainder = remainders[0]
             int_capacities[judge_id] += 1
+            remainders[0] = (judge_id, remainder - 1.0)
 
     return int_capacities
 
