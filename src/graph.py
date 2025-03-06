@@ -318,7 +318,7 @@ class DirectedGraph:
             self.add_edge(room_id, sink_id, capacity)
     
     def visualize(self) -> None:
-        """Visualize the graph structure."""
+        """Visualize the graph structure with only forward edges."""
         print("\nGraph Visualization:")
         print("==================\n")
         
@@ -334,7 +334,7 @@ class DirectedGraph:
             # Check for case node
             elif isinstance(node, CaseNode):
                 m = node.get_case()
-                print(f"Case (ID: {m.case_id}, Duration: {m.case_duration})")
+                print(f"Case (ID: {m.case_id}, Duration: {m.case_duration}, Attributes: {m.characteristics})")
             # Check for judge-room node
             elif isinstance(node, JudgeRoomNode):
                 j = node.get_judge()
@@ -370,21 +370,24 @@ class DirectedGraph:
             else:
                 print(f"Generic Node: {node.get_identifier()}")
         
+        # Filter out backward edges for display
+        forward_edges = [edge for edge in self.edges if edge.get_capacity() > 0]
+        
         # Print edges
         print("\nEdges:")
         print("------")
-        if len(self.edges) <= 50:  # Only print all edges for small graphs
-            for edge in self.edges:
+        if len(forward_edges) <= 50:  # Only print all edges for small graphs
+            for edge in forward_edges:
                 from_node = self.nodes[edge.get_from()]
                 to_node = self.nodes[edge.get_to()]
                 print(f"{edge.get_from()} ({from_node.get_identifier()}) -> {edge.get_to()} ({to_node.get_identifier()}) "
                     f"(Capacity: {edge.get_capacity()}, Flow: {edge.get_flow()})")
         else:
-            print(f"[Too many edges to display ({len(self.edges)} edges)]")
+            print(f"[Too many edges to display ({len(forward_edges)} edges)]")
             # Show a sample of edges
             print("Sample of edges:")
-            for i in range(min(10, len(self.edges))):
-                edge = self.edges[i]
+            for i in range(min(10, len(forward_edges))):
+                edge = forward_edges[i]
                 from_node = self.nodes[edge.get_from()]
                 to_node = self.nodes[edge.get_to()]
                 print(f"{edge.get_from()} ({from_node.get_identifier()}) -> {edge.get_to()} ({to_node.get_identifier()}) "
@@ -397,20 +400,30 @@ class DirectedGraph:
             for i, edges in enumerate(self.adj_list):
                 node = self.nodes[i] if i < len(self.nodes) else None
                 node_id = node.get_identifier() if node else "Unknown"
-                print(f"{i} ({node_id}, {len(edges)} outgoing edges) -> ", end="")
-                if not edges:
+                
+                # Filter out backward edges
+                forward_outgoing = {to: edge for to, edge in edges.items() if edge.get_capacity() > 0}
+                
+                print(f"{i} ({node_id}, {len(forward_outgoing)} outgoing edges) -> ", end="")
+                if not forward_outgoing:
                     print("[]")
                 else:
                     print("[ ", end="")
-                    for to, edge in edges.items():
+                    for to, edge in forward_outgoing.items():
                         to_node = self.nodes[to] if to < len(self.nodes) else None
                         to_id = to_node.get_identifier() if to_node else "Unknown"
                         print(f"{to} ({to_id}, cap:{edge.get_capacity()}, flow:{edge.get_flow()}) ", end="")
                     print("]")
         else:
             print(f"[Adjacency list too large to display ({len(self.adj_list)} vertices)]")
-            # Show highest-degree vertices
-            vertex_degrees = [(i, len(edges)) for i, edges in enumerate(self.adj_list) if i < len(self.nodes)]
+            # Show highest-degree vertices based on forward edges only
+            vertex_degrees = []
+            for i, edges in enumerate(self.adj_list):
+                if i < len(self.nodes):
+                    # Count only forward edges
+                    forward_count = sum(1 for edge in edges.values() if edge.get_capacity() > 0)
+                    vertex_degrees.append((i, forward_count))
+            
             vertex_degrees.sort(key=lambda x: x[1], reverse=True)
             print("Top 10 highest-degree vertices:")
             for i, degree in vertex_degrees[:10]:
@@ -418,15 +431,15 @@ class DirectedGraph:
                 print(f"{i} ({node.get_identifier()}, {degree} outgoing edges)")
         
         # Print flow statistics (if there's flow in the graph)
-        if any(edge.get_flow() > 0 for edge in self.edges):
+        if any(edge.get_flow() > 0 for edge in forward_edges):
             print("\nFlow Statistics:")
             print("---------------")
-            total_flow = sum(edge.get_flow() for edge in self.edges 
+            total_flow = sum(edge.get_flow() for edge in forward_edges 
                             if self.nodes[edge.get_from()].get_identifier() == "source")
             print(f"Total flow through network: {total_flow}")
             
             # Find flow bottlenecks (edges where flow = capacity)
-            bottlenecks = [edge for edge in self.edges 
+            bottlenecks = [edge for edge in forward_edges 
                         if edge.get_flow() == edge.get_capacity() and edge.get_capacity() > 0]
             if bottlenecks:
                 print("\nBottleneck Edges (Flow = Capacity):")

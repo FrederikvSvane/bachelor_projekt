@@ -162,11 +162,13 @@ def assign_cases_to_judges(graph: DirectedGraph) -> List[CaseJudgeNode]:
     """
     source = 0
     sink = graph.get_num_nodes() - 1
+
+    max_flow = ford_fulkerson(graph, source, sink)
     
     # Step 1: Run the Ford-Fulkerson algorithm
-    if ford_fulkerson(graph, source, sink) != graph.num_cases:
+    if max_flow != graph.num_cases:
         raise RuntimeError(f"Not all cases could be assigned judges. "
-                         f"Found {len(assigned_pairs)} assignments, needed {graph.num_cases}.")
+                         f"Found {max_flow} assignments, needed {graph.num_cases}.")
     
     # Step 2: Extract the final assignments from the flow network
     assigned_pairs = extract_case_judge_assignments(graph)
