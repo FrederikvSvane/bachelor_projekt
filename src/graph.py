@@ -317,9 +317,10 @@ class DirectedGraph:
                     self.add_edge(jm_pair_id, room_id, 1)
         
         # Create edges from rooms to sink
-        for room_id in room_ids:
-            capacity = ceil(self.num_cases / self.num_rooms) 
-            self.add_edge(room_id, sink_id, capacity)
+        room_capacities = calculate_all_room_capacities([jc.get_case() for jc in jc_pairs], rooms)
+        for i, room_id in enumerate(room_ids):
+            room_capacity = room_capacities[rooms[i].room_id]
+            self.add_edge(room_id, sink_id, room_capacity)
     
     def visualize(self) -> None:
         """Visualize the graph structure with only forward edges."""
@@ -361,12 +362,12 @@ class DirectedGraph:
             # Check for room node
             elif isinstance(node, RoomNode):
                 r = node.get_room()
-                print(f"Room Node (Room ID: {r.room_id})")
+                print(f"Room Node (Room ID: {r.room_id}, characteristics: {r.characteristics}, judge_reqs: {r.judge_requirements}, case_reqs: {r.case_requirements})")
             # Check for case-judge node
             elif isinstance(node, CaseJudgeNode):
                 m = node.get_case()
                 j = node.get_judge()
-                print(f"Case-Judge Node (Case ID: {m.case_id}, Judge ID: {j.judge_id})")
+                print(f"Case-Judge Node (Case ID: {m.case_id}, Judge ID: {j.judge_id}, case_room_reqs: {m.room_requirements}, judge_room_reqs: {j.room_requirements})")
             # Check for sink node
             elif node.get_identifier() == "sink":
                 print("Sink Node")
@@ -803,4 +804,5 @@ def construct_conflict_graph(assigned_cases: List[CaseJudgeRoomNode]):
                 conflict_graph.add_edge(i, j)
     
     return conflict_graph
+
         

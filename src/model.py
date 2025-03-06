@@ -314,14 +314,14 @@ def calculate_all_room_capacities(cases: List[Case], rooms: List[Room]) -> Dict[
     if remaining > 0:
         # Sort rooms by fractional remainder
         remainders = [(r.room_id, float_capacities[r.room_id] - int_capacities[r.room_id]) 
-                     for r in rooms]
-        remainders.sort(key=lambda x: x[1], reverse=True)
+                     for r in rooms if float_capacities[r.room_id] > 0]
         
         # Add one case to rooms with largest remainders
-        for i in range(remaining):
-            if i < len(remainders):  # Safety check for when we have more remaining than rooms
-                room_id = remainders[i][0]
-                int_capacities[room_id] += 1
+        for _ in range(remaining):
+            remainders.sort(key=lambda x: x[1], reverse=True)
+            room_id, remainder = remainders[0]
+            int_capacities[room_id] += 1
+            remainders[0] = (room_id, remainder - 1.0)
     
     # Safety check - ensure all cases are assigned
     if sum(int_capacities.values()) != total_cases:

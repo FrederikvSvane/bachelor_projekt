@@ -312,49 +312,6 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             judge_requirements=judge_requirements
         )
 
-        compatible = False
-        for case in parsed_data["cases"]:
-            if case_room_compatible(case, room):
-                compatible = True
-                break
-
-        if not compatible:
-            suitable_cases: list[Case] = [c for c in parsed_data["cases"] if isinstance(c, Case) and Attribute.VIRTUAL in c.characteristics]
-            if not suitable_cases:
-                suitable_cases = parsed_data["cases"]
-            
-            suitable_case: Case = suitable_cases[0]
-
-            for requirement in room.case_requirements:
-                if requirement not in suitable_case.characteristics:
-                    suitable_case.characteristics.add(requirement)
-
-            for requirement in suitable_case.room_requirements:
-                if requirement not in room.characteristics:
-                    room.characteristics.add(requirement)
-        
-        compatible = False
-        for judge in parsed_data["judges"]:
-            if judge_room_compatible(judge, room):
-                compatible = True
-                break
-
-
-        if not compatible:
-            suitable_judges: list[Judge] = [j for j in parsed_data["judges"] if isinstance(j, Judge) and Attribute.VIRTUAL in j.characteristics]
-            if not suitable_judges:
-                suitable_judges = parsed_data["judges"]
-            
-            suitable_judge: Judge = suitable_judges[0]
-
-            for requirement in room.judge_requirements:
-                if requirement not in suitable_judge.characteristics:
-                    suitable_judge.characteristics.add(requirement)
-                
-            for requirement in suitable_judge.room_requirements:
-                if requirement not in room.characteristics:
-                    room.characteristics.add(requirement)
-
         parsed_data["rooms"].append(room)
 
     
