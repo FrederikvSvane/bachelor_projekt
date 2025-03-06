@@ -239,7 +239,7 @@ def assign_case_judge_pairs_to_rooms(graph: DirectedGraph) -> List[CaseJudgeRoom
     # Step 1: Run the Ford-Fulkerson algorithm
     if max_flow != graph.num_cases:
         raise RuntimeError(f"Not all judge-case pairs could be assigned rooms. "
-                         f"Found {max_flow} assignments, needed {graph.num_rooms}.")
+                         f"Found {max_flow} assignments, needed {graph.num_cases}.")
     
     # Step 2: Extract the final assignments from the flow network
     assigned_cases = extract_c_j_room_assignments(graph)

@@ -2,7 +2,7 @@ from math import ceil
 from collections import defaultdict
 from typing import List, Dict, Optional, Type, Set
 
-from src.model import Case, Judge, Room, calculate_all_judge_capacities, case_requires_from_judge, judge_requires_from_case
+from src.model import Case, Judge, Room, calculate_all_judge_capacities, case_requires_from_judge, judge_requires_from_case, case_judge_compatible, judge_room_compatible, case_room_compatible
 
 class Node:
     """Base class for all node types in the graph."""
@@ -260,8 +260,7 @@ class DirectedGraph:
             for j, judge_node_id in enumerate(judge_node_ids):
                 judge = judges[j]
                 # Use one-directional compatibility checks
-                if (case_requires_from_judge(case, judge) and 
-                    judge_requires_from_case(judge, case)):
+                if (case_judge_compatible(case, judge)):
                     self.add_edge(case_id, judge_node_id, 1)
         
         # Create edges from each judge to the sink with balanced capacity
@@ -308,9 +307,14 @@ class DirectedGraph:
             self.add_edge(source_id, jm_pair_id, 1)
         
         # Create edges from judge_case pairs to rooms
-        for jm_pair_id in jm_pair_ids:
-            for room_id in room_ids:
-                self.add_edge(jm_pair_id, room_id, 1)
+        for i, jm_pair_id in enumerate(jm_pair_ids):
+            jc_pair = jc_pairs[i]
+            judge: Judge = jc_pair.get_judge()
+            case: Case = jc_pair.get_case()
+            for j, room_id in enumerate(room_ids):
+                room: Room = rooms[j]
+                if judge_room_compatible(judge, room) and case_room_compatible(case, room):
+                    self.add_edge(jm_pair_id, room_id, 1)
         
         # Create edges from rooms to sink
         for room_id in room_ids:
@@ -334,7 +338,7 @@ class DirectedGraph:
             # Check for case node
             elif isinstance(node, CaseNode):
                 m = node.get_case()
-                print(f"Case (ID: {m.case_id}, Duration: {m.case_duration}, Attributes: {m.characteristics})")
+                print(f"Case (ID: {m.case_id}, Duration: {m.case_duration}, Attributes: {m.characteristics}, Required: {m.judge_requirements})")
             # Check for judge-room node
             elif isinstance(node, JudgeRoomNode):
                 j = node.get_judge()
@@ -353,7 +357,7 @@ class DirectedGraph:
             # Check for judge node
             elif isinstance(node, JudgeNode):
                 j = node.get_judge()
-                print(f"Judge Node (Judge ID: {j.judge_id}), Skills: {j.characteristics}")
+                print(f"Judge Node (Judge ID: {j.judge_id}), Skills: {j.characteristics}, case_reqs: {j.case_requirements}")
             # Check for room node
             elif isinstance(node, RoomNode):
                 r = node.get_room()

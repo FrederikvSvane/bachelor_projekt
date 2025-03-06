@@ -3,7 +3,7 @@ import math
 import json
 from typing import Dict, Any, List
 
-from src.model import Case, Judge, Room, Attribute
+from src.model import Case, Judge, Room, Attribute, case_judge_compatible, case_room_compatible, judge_room_compatible
 
 class TruncatedNormalDistribution:
     """Generates a truncated normal distribution for case durations."""
@@ -57,7 +57,7 @@ def generate_test_data(n_cases: int, n_judges: int, n_rooms: int,
     
     # Get all possible case types (excluding VIRTUAL/PHYSICAL/SHORTDURATION which are handled separately)
     case_types = [attr for attr in list(Attribute) 
-                  if attr not in [Attribute.VIRTUAL, Attribute.PHYSICAL, 
+                  if attr not in [Attribute.VIRTUAL, 
                                   Attribute.SHORTDURATION, Attribute.SECURITY, 
                                   Attribute.ACCESSIBILITY]]
     
@@ -197,42 +197,8 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         "judges": [],
         "rooms": []
     }
-    
-    # Parse cases (cases)
-    for case_data in test_data["cases"]:
-        case_attr = Attribute.from_string(case_data["type"])
-        characteristics = {case_attr}
-        judge_requirements = {case_attr}  # Judge must have this skill
-        room_requirements = set()  # Default no special room requirements
-        
-        # Add virtual or physical characteristic based on the virtual flag
-        if case_data["virtual"]:
-            characteristics.add(Attribute.VIRTUAL)
-            room_requirements.add(Attribute.VIRTUAL)
-        else:
-            characteristics.add(Attribute.PHYSICAL)
-            room_requirements.add(Attribute.PHYSICAL)
-            
-        # Add security requirements if needed
-        if case_data.get("security", False):
-            characteristics.add(Attribute.SECURITY)
-            room_requirements.add(Attribute.SECURITY)
-            
-        # Add SHORTDURATION if case is short (<120 min)
-        if case_data["duration"] < 120:
-            characteristics.add(Attribute.SHORTDURATION)
-            
-        case = Case(
-            case_id=case_data["id"],
-            case_duration=case_data["duration"],
-            characteristics=characteristics,
-            judge_requirements=judge_requirements,
-            room_requirements=room_requirements
-        )
-            
-        parsed_data["cases"].append(case)
-    
-    # Parse judges
+
+     # Parse judges
     for judge_data in test_data["judges"]:
         skills = [Attribute.from_string(skill) for skill in judge_data["skills"]]
         characteristics = set(skills)
@@ -242,12 +208,6 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         # Add virtual or physical characteristic based on the virtual flag
         if judge_data["virtual"]:
             characteristics.add(Attribute.VIRTUAL)
-            case_requirements.add(Attribute.VIRTUAL)
-            room_requirements.add(Attribute.VIRTUAL)
-        else:
-            characteristics.add(Attribute.PHYSICAL)
-            case_requirements.add(Attribute.PHYSICAL)
-            room_requirements.add(Attribute.PHYSICAL)
             
         # Add accessibility requirement if needed
         if judge_data.get("accessibility", False):
@@ -265,9 +225,66 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             case_requirements=case_requirements,
             room_requirements=room_requirements
         )
-            
+
         parsed_data["judges"].append(judge)
     
+    # Parse cases (cases)
+    for case_data in test_data["cases"]:
+        case_attr = Attribute.from_string(case_data["type"])
+        characteristics = {case_attr}
+        judge_requirements = {case_attr}  # Judge must have this skill
+        room_requirements = set()  # Default no special room requirements
+        
+        # Add virtual or physical characteristic based on the virtual flag
+        if case_data["virtual"]:
+            characteristics.add(Attribute.VIRTUAL)
+            judge_requirements.add(Attribute.VIRTUAL)
+            room_requirements.add(Attribute.VIRTUAL)
+            
+        # Add security requirements if needed
+        if case_data.get("security", False):
+            characteristics.add(Attribute.SECURITY)
+            room_requirements.add(Attribute.SECURITY)
+            
+        # Add SHORTDURATION if case is short (<120 min)
+        if case_data["duration"] < 120:
+            characteristics.add(Attribute.SHORTDURATION)
+            
+        case = Case(
+            case_id=case_data["id"],
+            case_duration=case_data["duration"],
+            characteristics=characteristics,
+            judge_requirements=judge_requirements,
+            room_requirements=room_requirements
+        )
+
+        compatible = False
+        for judge in parsed_data["judges"]:
+            if case_judge_compatible(case, judge):
+                compatible = True
+                break
+
+
+        if not compatible:
+            suitable_judges: list[Judge] = [j for j in parsed_data["judges"] if isinstance(j, Judge) and case_attr in j.characteristics]
+            if not suitable_judges:
+                suitable_judges = parsed_data["judges"]
+            
+            suitable_judge: Judge = suitable_judges[0]  # Pick the first suitable judge
+
+            for requirement in case.judge_requirements:
+                if requirement not in suitable_judge.characteristics:
+                    suitable_judge.characteristics.add(requirement)
+
+            for requirement in suitable_judge.case_requirements:
+                if requirement not in case.characteristics:
+                    if requirement == Attribute.SHORTDURATION:
+                        case.case_duration = case.case_duration - (case.case_duration - 120)
+                        case.characteristics.add(requirement)
+
+        parsed_data["cases"].append(case)
+    
+   
     # Parse rooms
     for room_data in test_data["rooms"]:
         characteristics = set()
@@ -279,10 +296,6 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             characteristics.add(Attribute.VIRTUAL)
             case_requirements.add(Attribute.VIRTUAL)
             judge_requirements.add(Attribute.VIRTUAL)
-        else:
-            characteristics.add(Attribute.PHYSICAL)
-            case_requirements.add(Attribute.PHYSICAL)
-            judge_requirements.add(Attribute.PHYSICAL)
             
         # Add accessibility if room has it
         if room_data.get("accessibility", False):
@@ -298,8 +311,52 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             case_requirements=case_requirements,
             judge_requirements=judge_requirements
         )
+
+        compatible = False
+        for case in parsed_data["cases"]:
+            if case_room_compatible(case, room):
+                compatible = True
+                break
+
+        if not compatible:
+            suitable_cases: list[Case] = [c for c in parsed_data["cases"] if isinstance(c, Case) and Attribute.VIRTUAL in c.characteristics]
+            if not suitable_cases:
+                suitable_cases = parsed_data["cases"]
             
+            suitable_case: Case = suitable_cases[0]
+
+            for requirement in room.case_requirements:
+                if requirement not in suitable_case.characteristics:
+                    suitable_case.characteristics.add(requirement)
+
+            for requirement in suitable_case.room_requirements:
+                if requirement not in room.characteristics:
+                    room.characteristics.add(requirement)
+        
+        compatible = False
+        for judge in parsed_data["judges"]:
+            if judge_room_compatible(judge, room):
+                compatible = True
+                break
+
+
+        if not compatible:
+            suitable_judges: list[Judge] = [j for j in parsed_data["judges"] if isinstance(j, Judge) and Attribute.VIRTUAL in j.characteristics]
+            if not suitable_judges:
+                suitable_judges = parsed_data["judges"]
+            
+            suitable_judge: Judge = suitable_judges[0]
+
+            for requirement in room.judge_requirements:
+                if requirement not in suitable_judge.characteristics:
+                    suitable_judge.characteristics.add(requirement)
+                
+            for requirement in suitable_judge.room_requirements:
+                if requirement not in room.characteristics:
+                    room.characteristics.add(requirement)
+
         parsed_data["rooms"].append(room)
+
     
     print(f"Generated {len(parsed_data['cases'])} cases, "
           f"{len(parsed_data['judges'])} judges, "

@@ -28,7 +28,6 @@ class TestJudgeCapacity(unittest.TestCase):
                 case_id=i,
                 case_duration=60,
                 characteristics = {Attribute.CIVIL},
-                case_virtual=False
             )
             cases.append(case)
             civil_cases.append(case)
@@ -40,7 +39,6 @@ class TestJudgeCapacity(unittest.TestCase):
                 case_id=i,
                 case_duration=60,
                 characteristics= {Attribute.STRAFFE},
-                case_virtual=False
             )
             cases.append(case)
             criminal_cases.append(case)
@@ -48,15 +46,15 @@ class TestJudgeCapacity(unittest.TestCase):
         # Create judges with different skill sets
         judges = [
             # Civil-only judges
-            Judge(judge_id=1, characteristics={Attribute.CIVIL}, judge_virtual=False),
-            Judge(judge_id=2, characteristics={Attribute.CIVIL}, judge_virtual=False),
+            Judge(judge_id=1, characteristics={Attribute.CIVIL}),
+            Judge(judge_id=2, characteristics={Attribute.CIVIL}),
             
             # Criminal-only judges
-            Judge(judge_id=3, characteristics={Attribute.STRAFFE}, judge_virtual=False),
-            Judge(judge_id=4, characteristics={Attribute.STRAFFE}, judge_virtual=False),
+            Judge(judge_id=3, characteristics={Attribute.STRAFFE}),
+            Judge(judge_id=4, characteristics={Attribute.STRAFFE}),
             
             # Versatile judge (both civil and criminal)
-            Judge(judge_id=5, characteristics={Attribute.STRAFFE, Attribute.CIVIL}, judge_virtual=False)
+            Judge(judge_id=5, characteristics={Attribute.STRAFFE, Attribute.CIVIL})
         ]
         
         # Calculate capacity for each judge
@@ -111,23 +109,26 @@ class TestJudgeCapacity(unittest.TestCase):
         Test that a judge with unapplicable skill gets 0 cases assigned
         """
         cases = [
-            Case(1, 1, Attribute.CIVIL, case_virtual=False),
-            Case(2, 1, Attribute.CIVIL, case_virtual=False),
-            Case(3, 1, Attribute.CIVIL, case_virtual=False),
-            Case(4, 1, Attribute.CIVIL, case_virtual=False),
-            Case(5, 1, Attribute.CIVIL, case_virtual=False),
-            Case(6, 1, Attribute.STRAFFE, case_virtual=False),
-            Case(7, 1, Attribute.STRAFFE, case_virtual=False),
-            Case(8, 1, Attribute.STRAFFE, case_virtual=False),
-            Case(9, 1, Attribute.STRAFFE, case_virtual=False),
-            Case(10, 1, Attribute.STRAFFE, case_virtual=False),
+            Case(case_id=1, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=2, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=3, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=4, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=5, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=6, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=7, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=8, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=9, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=10, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
         ]
         judges = [
-            Judge(1, [Attribute.TVANG], False),
-            Judge(2, [Attribute.CIVIL, Attribute.TVANG], False),
-            Judge(3, [Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG], judge_virtual=False),
-            Judge(4, [Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG], judge_virtual=False),
-            Judge(5, [Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG], judge_virtual=False),
+            # This judge is incompatible with all cases (TVANG only)
+            Judge(judge_id=1, characteristics={Attribute.TVANG}, case_requirements=set()),
+            # This judge can only handle CIVIL cases
+            Judge(judge_id=2, characteristics={Attribute.CIVIL, Attribute.TVANG}, case_requirements=set()),
+            # These judges can handle both CIVIL and STRAFFE cases
+            Judge(judge_id=3, characteristics={Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG}, case_requirements=set()),
+            Judge(judge_id=4, characteristics={Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG}, case_requirements=set()),
+            Judge(judge_id=5, characteristics={Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG}, case_requirements=set()),
         ]
         
         capacities = calculate_all_judge_capacities(cases, judges)
@@ -136,16 +137,16 @@ class TestJudgeCapacity(unittest.TestCase):
         
         # Calculated by hand
         self.assertEqual(capacities[1], 0,
-                         f"Judge 1 should get 0 cases but got {capacities[1]}")    
+                        f"Judge 1 should get 0 cases but got {capacities[1]}")    
         self.assertEqual(capacities[2], 0.1*10,
-                         f"Judge 2 should get 1 cases but got {capacities[2]}")    
+                        f"Judge 2 should get 1 cases but got {capacities[2]}")    
         self.assertEqual(capacities[3], 3,
-                         f"Judge 3 should get 3 cases but got {capacities[3]}")    
+                        f"Judge 3 should get 3 cases but got {capacities[3]}")    
         self.assertEqual(capacities[4], 3,
-                         f"Judge 4 should get 3 cases but got {capacities[4]}")    
+                        f"Judge 4 should get 3 cases but got {capacities[4]}")    
         self.assertEqual(capacities[5], 3,
-                         f"Judge 5 should get 3 cases but got {capacities[5]}")    
-        
+                        f"Judge 5 should get 3 cases but got {capacities[5]}")  
+            
 
 if __name__ == "__main__":
     unittest.main()

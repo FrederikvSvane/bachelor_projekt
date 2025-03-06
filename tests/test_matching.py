@@ -20,23 +20,23 @@ class TestMatching(unittest.TestCase):
         """
         # Create judges
         judges = [
-            Judge(judge_id=1, judge_skills=[Attribute.STRAFFE], judge_virtual=False),
-            Judge(judge_id=2, judge_skills=[Attribute.TVANG], judge_virtual=False),
-            Judge(judge_id=3, judge_skills=[Attribute.CIVIL], judge_virtual=False)
+            Judge(judge_id=1, characteristics={Attribute.STRAFFE}, case_requirements={Attribute.STRAFFE}),
+            Judge(judge_id=2, characteristics={Attribute.TVANG}, case_requirements={Attribute.TVANG}),
+            Judge(judge_id=3, characteristics={Attribute.CIVIL}, case_requirements={Attribute.CIVIL})
         ]
         
         # Create cases
         cases = [
-            Case(case_id=1, case_duration=60, case_Attribute=Attribute.CIVIL, case_virtual=False),
-            Case(case_id=2, case_duration=120, case_Attribute=Attribute.CIVIL, case_virtual=False),
-            Case(case_id=3, case_duration=180, case_Attribute=Attribute.STRAFFE, case_virtual=False),
-            Case(case_id=4, case_duration=240, case_Attribute=Attribute.STRAFFE, case_virtual=False),
-            Case(case_id=5, case_duration=300, case_Attribute=Attribute.TVANG, case_virtual=False),
-            Case(case_id=6, case_duration=360, case_Attribute=Attribute.TVANG, case_virtual=False)
+            Case(case_id=1, case_duration=60, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=2, case_duration=120, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=3, case_duration=180, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}),
+            Case(case_id=4, case_duration=240, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}),
+            Case(case_id=5, case_duration=300, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=6, case_duration=360, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL})
         ]
         
         graph = DirectedGraph()
-        graph.initialize_judge_case_graph(cases, judges)
+        graph.initialize_case_to_judge_graph(cases, judges)
         
         # Assign cases to judges
         judge_case_assignments: List[CaseJudgeNode] = assign_cases_to_judges(graph)
@@ -63,21 +63,21 @@ class TestMatching(unittest.TestCase):
         """
         # Create judges
         judges = [
-            Judge(judge_id=1, judge_skills=[Attribute.STRAFFE], judge_virtual=False),
-            Judge(judge_id=2, judge_skills=[Attribute.TVANG], judge_virtual=False),
-            Judge(judge_id=3, judge_skills=[Attribute.CIVIL], judge_virtual=False)  # No cases need this skill
+            Judge(judge_id=1, characteristics={Attribute.STRAFFE}, case_requirements={Attribute.STRAFFE}),
+            Judge(judge_id=2, characteristics={Attribute.TVANG}, case_requirements={Attribute.TVANG}),
+            Judge(judge_id=3, characteristics={Attribute.CIVIL}, case_requirements={})  # No cases need this skill
         ]
         
         # Create cases - none require CIVIL
         cases = [
-            Case(case_id=1, case_duration=60, case_Attribute=Attribute.STRAFFE, case_virtual=False),
-            Case(case_id=2, case_duration=120, case_Attribute=Attribute.STRAFFE, case_virtual=False),
-            Case(case_id=3, case_duration=180, case_Attribute=Attribute.TVANG, case_virtual=False),
-            Case(case_id=4, case_duration=240, case_Attribute=Attribute.TVANG, case_virtual=False),
+            Case(case_id=1, case_duration=60, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=2, case_duration=120, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=3, case_duration=180, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}),
+            Case(case_id=4, case_duration=240, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}),
         ]
         
         graph = DirectedGraph()
-        graph.initialize_judge_case_graph(cases, judges)
+        graph.initialize_case_to_judge_graph(cases, judges)
         
         # Assign cases to judges
         judge_case_assignments: List[CaseJudgeNode] = assign_cases_to_judges(graph)

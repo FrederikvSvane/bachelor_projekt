@@ -30,7 +30,6 @@ class Attribute(Enum):
     SECURITY = auto() # one-directional
     
     # virtual or physical room or case
-    PHYSICAL = auto() # bidirectional
     VIRTUAL = auto() # bidirectional
     
     
@@ -235,16 +234,15 @@ def calculate_all_judge_capacities(cases: List[Case], judges: List[Judge]) -> Di
     remaining = total_cases - current_sum
     
     if remaining > 0:
-        # Sort judges by fractional remainder
-        remainders = [(j.judge_id, float_capacities[j.judge_id] - int_capacities[j.judge_id]) 
-                     for j in judges]
-        remainders.sort(key=lambda x: x[1], reverse=True)
-        
-        # Add one case to judges with largest remainders
-        for i in range(remaining):
-            if i < len(remainders):
-                judge_id = remainders[i][0]
-                int_capacities[judge_id] += 1
+        remainders = [
+            (judge.judge_id, float_capacities[judge.judge_id] - int_capacities[judge.judge_id])
+            for judge in judges if float_capacities[judge.judge_id] > 0
+        ]
+        for _ in range(remaining):
+            remainders.sort(key=lambda x: x[1], reverse=True)
+            judge_id, remainder = remainders[0]
+            int_capacities[judge_id] += 1
+            remainders[0] = (judge_id, remainder - 1.0)
     
     return int_capacities
 
