@@ -95,7 +95,7 @@ class Schedule:
             print(f"Day {day + 1}:")
             print("-" * 70)
             print(f"{'Time':10} | {'Timeslot':10} | {'Case':10} | "
-                  f"{'Judge':10} | {'Room':10} | {'Duration':10}")
+                f"{'Judge':10} | {'Room':10} | {'Duration':10}")
             print("-" * 70)
             
             if day in appointments_by_day:
@@ -108,11 +108,11 @@ class Schedule:
                 # Print each appointment
                 for app in day_appointments:
                     print(f"{self.get_time_from_timeslot(app.timeslot_start):10} | "
-                          f"{app.timeslot_start:10} | "
-                          f"{app.case.case_id:10} | "
-                          f"{app.judge.judge_id:10} | "
-                          f"{app.room.room_id:10} | "
-                          f"{app.timeslots_duration:10} min")
+                        f"{app.timeslot_start:10} | "
+                        f"{app.case.case_id:10} | "
+                        f"{app.judge.judge_id:10} | "
+                        f"{app.room.room_id:10} | "
+                        f"{app.timeslots_duration:10} min")
             else:
                 print("No appointments scheduled")
             
@@ -185,15 +185,18 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     judge_case_graph = DirectedGraph() 
     judge_case_graph.initialize_case_to_judge_graph(cases, judges)
     case_judge_pairs = assign_cases_to_judges(judge_case_graph)
+    judge_case_graph.visualize()
     
     rooms = ensure_jc_pair_room_compatibility(case_judge_pairs, rooms)
     # Flow 2: Assign rooms to case-judge pairs
     jc_room_graph = DirectedGraph()
     jc_room_graph.initialize_case_judge_pair_to_room_graph(case_judge_pairs, rooms)
+    #jc_room_graph.visualize()
     assigned_cases = assign_case_judge_pairs_to_rooms(jc_room_graph)
     
     # Construct conflict graph
-    conflict_graph = construct_conflict_graph(assigned_cases)
+    conflict_graph = construct_conflict_graph(assigned_cases, granularity)
+    conflict_graph.visualize()
     
     # Perform graph coloring
     DSatur(conflict_graph)

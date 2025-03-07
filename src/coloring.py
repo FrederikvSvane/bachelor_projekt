@@ -1,5 +1,5 @@
 from typing import List, Set
-from src.graph import UndirectedGraph, Node
+from src.graph import UndirectedGraph, Node, CaseJudgeRoomNode
 
 def get_saturation_degree(graph: UndirectedGraph, vertex: int) -> int:
     """
@@ -19,7 +19,7 @@ def get_saturation_degree(graph: UndirectedGraph, vertex: int) -> int:
         if color != -1:  # If neighbor is colored
             neighbor_colors.add(color)
     return len(neighbor_colors)
-
+       
 
 def get_next_node(graph: UndirectedGraph) -> int:
     """
@@ -61,34 +61,137 @@ def get_next_node(graph: UndirectedGraph) -> int:
     
     return selected_node
 
+##Legacy color finder##
+# def get_lowest_available_color(graph: UndirectedGraph, vertex: int) -> int:
+#     """
+#     Find the lowest color not used by any neighbor of the vertex.
+    
+#     Args:
+#         graph: The undirected graph
+#         vertex: The vertex to find a color for
+        
+#     Returns:
+#         The lowest available color index
+#     """
+#     color_used = [False] * graph.get_num_nodes()  # Initialize all colors as unused
+    
+#     # Mark colors used by neighbors
+#     for neighbor in graph.get_neighbors(vertex):
+#         color = graph.get_node(neighbor).get_color()
+#         if color != -1:
+#             color_used[color] = True
+    
+#     # Find the lowest unused color
+#     for color in range(graph.get_num_nodes()):
+#         if not color_used[color]:
+#             return color
+    
+#     # This should never happen as we have at most n nodes and n colors
+#     return -1
 
-def get_lowest_available_color(graph: UndirectedGraph, vertex: int) -> int:
+def find_start_of_chain(graph: UndirectedGraph, vertex: int) -> int:
     """
-    Find the lowest color not used by any neighbor of the vertex.
+    Find the vertex ID of the start node of a chain.
     
     Args:
         graph: The undirected graph
-        vertex: The vertex to find a color for
+        vertex: The vertex index to find the chain for
         
     Returns:
-        The lowest available color index
+        The index of the first node in the chain
     """
-    color_used = [False] * graph.get_num_nodes()  # Initialize all colors as unused
+    node: CaseJudgeRoomNode = graph.get_node(vertex)
     
-    # Mark colors used by neighbors
-    for neighbor in graph.get_neighbors(vertex):
-        color = graph.get_node(neighbor).get_color()
-        if color != -1:
-            color_used[color] = True
+    case_id = node.get_case().case_id
+    judge_id = node.get_judge().judge_id
+    room_id = node.get_room().room_id
     
-    # Find the lowest unused color
-    for color in range(graph.get_num_nodes()):
-        if not color_used[color]:
-            return color
+    # Find all vertices in this chain of meetings
+    chain_vertices = []
+    for i in range(graph.get_num_nodes()):
+        check_node = graph.get_node(i)
+        if isinstance(check_node, CaseJudgeRoomNode):
+            if (check_node.get_case().case_id == case_id and 
+                check_node.get_judge().judge_id == judge_id and
+                check_node.get_room().room_id == room_id):
+                parts = check_node.identifier.split(",")
+                if len(parts) > 1:
+                    meeting_number = int(parts[1])
+                    chain_vertices.append((i, meeting_number))
     
-    # This should never happen as we have at most n nodes and n colors
-    return -1
-
+    # Sort by meeting number (numerically) and return the index of the first node
+    if chain_vertices:
+        chain_vertices.sort(key=lambda x: x[1])
+        return chain_vertices[0][0]
+    
+    # If no chain found case is only 1 timeslot long
+    return vertex
+       
+def color_all_cases_in_chain(graph: UndirectedGraph, start_vertex: CaseJudgeRoomNode):
+    """
+    Color all vertices in a chain consecutively, starting from the given vertex.
+    Uses the lowest possible starting color that doesn't conflict with neighbors.
+    
+    Args:
+        graph: The undirected graph
+        start_vertex: The first vertex of the chain to color
+    """
+    # Get case, judge, and room IDs to identify all nodes in this chain
+    case_id = start_vertex.get_case().case_id
+    judge_id = start_vertex.get_judge().judge_id
+    room_id = start_vertex.get_room().room_id
+    
+    # Find all vertices in the chain
+    chain_vertices = []
+    
+    for i in range(graph.get_num_nodes()):
+        node = graph.get_node(i)
+        if isinstance(node, CaseJudgeRoomNode):
+            # Check if this node is part of the same chain
+            if (node.get_case().case_id == case_id and 
+                node.get_judge().judge_id == judge_id and
+                node.get_room().room_id == room_id):
+                # Extract the meeting number from the identifier
+                parts = node.identifier.split(",")
+                if len(parts) > 1:
+                    meeting_number = int(parts[1])
+                    chain_vertices.append((i, meeting_number))
+    
+    # Sort chain vertices by their meeting number (numerically)
+    chain_vertices.sort(key=lambda x: x[1])
+    chain_indices = [idx for idx, _ in chain_vertices]
+    
+    if not chain_indices:
+        print(f"Warning: No vertices found for chain with case_id={case_id}, judge_id={judge_id}, room_id={room_id}")
+        return
+    
+    # For each potential starting color, check if it works for the entire chain
+    start_color = 0
+    valid_start_found = False
+    
+    while not valid_start_found:
+        valid_start_found = True
+        
+        # Check if this starting color works for all positions in the chain
+        for i, vertex_idx in enumerate(chain_indices):
+            current_color = start_color + i
+            
+            # Check if any neighbor conflicts with this color
+            for neighbor in graph.get_neighbors(vertex_idx):
+                neighbor_color = graph.get_node(neighbor).get_color()
+                if neighbor_color == current_color:
+                    # Conflict found - this starting color won't work
+                    valid_start_found = False
+                    start_color += 1
+                    break
+            
+            if not valid_start_found:
+                break
+    
+    # Color the chain consecutively with the found starting color
+    for i, vertex_idx in enumerate(chain_indices):
+        graph.get_node(vertex_idx).set_color(start_color + i)
+        
 
 def DSatur(graph: UndirectedGraph) -> None:
     """
@@ -105,13 +208,30 @@ def DSatur(graph: UndirectedGraph) -> None:
     for i in range(graph.get_num_nodes()):
         graph.get_node(i).set_color(-1)
     
+    # Track which chains have been colored
+    colored_chains = set()  # set of (case_id, judge_id, room_id) tuples
+    
     # Color nodes one by one
-    for _ in range(graph.get_num_nodes()):
+    while True:
         # Select node with highest saturation degree
-        node = get_next_node(graph)
-        if node == -1:
+        node_idx = get_next_node(graph)
+        if node_idx == -1:
             break  # All vertices are colored
         
-        # Find the lowest available color for this node
-        color = get_lowest_available_color(graph, node)
-        graph.get_node(node).set_color(color)
+        node = graph.get_node(node_idx)
+        
+        if isinstance(node, CaseJudgeRoomNode):
+            # Create a chain identifier
+            chain_id = (node.get_case().case_id, node.get_judge().judge_id, node.get_room().room_id)
+            
+            # If this chain hasn't been colored yet
+            if chain_id not in colored_chains:
+                # Find the start of the chain
+                start_idx = find_start_of_chain(graph, node_idx)
+                start_vertex = graph.get_node(start_idx)
+                
+                # Color all meetings in the chain
+                color_all_cases_in_chain(graph, start_vertex)
+                
+                # Mark this chain as colored
+                colored_chains.add(chain_id)

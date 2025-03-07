@@ -407,7 +407,7 @@ class DirectedGraph:
                 node_id = node.get_identifier() if node else "Unknown"
                 
                 # Filter out backward edges
-                forward_outgoing = {to: edge for to, edge in edges.items() if edge.get_capacity() > 0}
+                forward_outgoing = {to: edge for to, edge in edges.items() if edge and edge.get_capacity() > 0}
                 
                 print(f"{i} ({node_id}, {len(forward_outgoing)} outgoing edges) -> ", end="")
                 if not forward_outgoing:
@@ -426,7 +426,7 @@ class DirectedGraph:
             for i, edges in enumerate(self.adj_list):
                 if i < len(self.nodes):
                     # Count only forward edges
-                    forward_count = sum(1 for edge in edges.values() if edge.get_capacity() > 0)
+                    forward_count = sum(1 for edge in edges.values() if edge and edge.get_capacity() > 0)
                     vertex_degrees.append((i, forward_count))
             
             vertex_degrees.sort(key=lambda x: x[1], reverse=True)
@@ -618,7 +618,7 @@ class UndirectedGraph:
                   for j in range(i + 1, len(self.nodes)))
     
     def visualize(self) -> None:
-        """Visualize the undirected graph."""
+        """Visualize the undirected graph with enhanced chain display."""
         print("\nUndirected Graph Visualization:")
         print("==============================\n")
         
@@ -626,106 +626,103 @@ class UndirectedGraph:
         print("Graph Statistics:")
         print("-----------------")
         print(f"Number of vertices: {self.get_num_nodes()}")
-        
         total_edges = self.get_num_edges()
         print(f"Number of edges: {total_edges}\n")
         
-        # Node Information with Colors
-        print("Node Information:")
-        print("----------------")
+        # Group nodes by case_id for better visualization of chains
+        case_chains = {}
+        
         for i, node in enumerate(self.nodes):
-            print(f"Node {i} (Color {node.get_color()}, ID: {node.get_identifier()}): ", end="")
-            
             if isinstance(node, CaseJudgeRoomNode):
-                print(f"Case {node.get_case().case_id}, "
-                      f"Judge {node.get_judge().judge_id}, "
-                      f"Room {node.get_room().room_id}")
-            elif isinstance(node, CaseJudgeNode):
-                print(f"Case {node.get_case().case_id}, "
-                      f"Judge {node.get_judge().judge_id}")
-            elif isinstance(node, JudgeRoomNode):
-                print(f"Judge {node.get_judge().judge_id}, "
-                      f"Room {node.get_room().room_id}")
-            elif isinstance(node, CaseNode):
-                print(f"Case {node.get_case().case_id}")
-            elif isinstance(node, JudgeNode):
-                print(f"Judge {node.get_judge().judge_id}")
-            elif isinstance(node, RoomNode):
-                print(f"Room {node.get_room().room_id}")
+                case_id = node.get_case().case_id
+                if case_id not in case_chains:
+                    case_chains[case_id] = []
+                case_chains[case_id].append((i, node))
+        
+        # Display Case Chains
+        print("Case Chains:")
+        print("------------")
+        if case_chains:
+            for case_id, nodes in case_chains.items():
+                print(f"Case {case_id} Chain:")
+                # Sort nodes by identifier
+                nodes.sort(key=lambda x: x[1].get_identifier())
+                
+                for idx, node in nodes:
+                    identifier = node.get_identifier()
+                    judge = node.get_judge().judge_id
+                    room = node.get_room().room_id
+                    color = node.get_color()
+                    print(f"  {identifier} - Judge {judge}, Room {room}, Color {color}")
+                print()
+        else:
+            print("No case chains found in the graph.\n")
+        
+        # Case Chain Conflict Analysis
+        print("Chain Conflict Analysis:")
+        print("-----------------------")
+        if False:
+            if len(case_chains) > 1:
+                case_ids = list(case_chains.keys())
+                for i in range(len(case_ids)):
+                    for j in range(i+1, len(case_ids)):
+                        case_i_id = case_ids[i]
+                        case_j_id = case_ids[j]
+                        
+                        print(f"Conflicts between Case {case_i_id} and Case {case_j_id}:")
+                        conflict_found = False
+                        
+                        for idx_i, node_i in case_chains[case_i_id]:
+                            for idx_j, node_j in case_chains[case_j_id]:
+                                if self.has_edge(idx_i, idx_j):
+                                    conflict_found = True
+                                    # Determine conflict reason with specific details
+                                    reasons = []
+                                    if node_i.get_judge().judge_id == node_j.get_judge().judge_id:
+                                        judge_id = node_i.get_judge().judge_id
+                                        reasons.append(f"Same Judge (Judge {judge_id})")
+                                    if node_i.get_room().room_id == node_j.get_room().room_id:
+                                        room_id = node_i.get_room().room_id
+                                        reasons.append(f"Same Room (Room {room_id})")
+                                    reason_str = ", ".join(reasons) if reasons else "Unknown"
+                                    
+                                    print(f"  {node_i.get_identifier()} conflicts with {node_j.get_identifier()}: {reason_str}")
+                        
+                        if not conflict_found:
+                            print("  No conflicts found")
+                        print()
+        
+        # Color Summary
+        print("Color Usage Summary:")
+        print("-------------------")
+        if self.is_colored():
+            color_counts = self.get_color_counts()
+            for color, count in sorted(color_counts.items()):
+                print(f"Color {color}: {count} nodes")
+            
+            if self.is_valid_coloring():
+                print("\nThe coloring is valid - no conflicts between same-colored nodes.")
             else:
-                print(node.get_identifier())
-        print()
+                print("\nWARNING: Invalid coloring detected!")
+        else:
+            print("Graph is not fully colored.")
         
-        # Adjacency Matrix (truncated for large graphs)
-        print("Adjacency Matrix:")
-        print("-----------------")
-        n_nodes = self.get_num_nodes()
-        if n_nodes <= 20:  # Only show full matrix for small graphs
+        # Original node and edge information for completeness
+        if self.get_num_nodes() <= 20:  # Only show detailed adjacency for small graphs
+            print("\nAdjacency Matrix:")
+            print("-----------------")
             print("    ", end="")
-            for i in range(n_nodes):
+            for i in range(self.get_num_nodes()):
                 print(f"{i:3} ", end="")
-            print("\n    ", end="")
-            for i in range(n_nodes):
-                print("----", end="")
-            print()
+            print("\n    " + "----" * self.get_num_nodes())
             
-            for i in range(n_nodes):
+            for i in range(self.get_num_nodes()):
                 print(f"{i:3}|", end="")
-                for j in range(n_nodes):
+                for j in range(self.get_num_nodes()):
                     print(f"{self.adj_matrix[i][j]:3} ", end="")
-                print(f"  (Color {self.nodes[i].get_color()})")
-            print()
-        else:
-            print(f"[Matrix too large to display ({n_nodes}x{n_nodes})]")
+                print()
         
-        # Edge List with Colors (truncated for large graphs)
-        print("Edge List:")
-        print("----------")
-        if total_edges <= 50:  # Only show all edges for graphs with few edges
-            has_edges = False
-            for i in range(n_nodes):
-                for j in range(i + 1, n_nodes):
-                    if self.adj_matrix[i][j] == 1:
-                        print(f"{i} (ID: {self.nodes[i].get_identifier()}, Color {self.nodes[i].get_color()}) -- "
-                              f"{j} (ID: {self.nodes[j].get_identifier()}, Color {self.nodes[j].get_color()})")
-                        has_edges = True
-            
-            if not has_edges:
-                print("No edges in the graph")
-        else:
-            print(f"[Too many edges to display ({total_edges} edges)]")
-            # Show sample of edges
-            edge_count = 0
-            print("Sample of edges:")
-            for i in range(n_nodes):
-                for j in range(i + 1, n_nodes):
-                    if self.adj_matrix[i][j] == 1:
-                        print(f"{i} (ID: {self.nodes[i].get_identifier()}, Color {self.nodes[i].get_color()}) -- "
-                              f"{j} (ID: {self.nodes[j].get_identifier()}, Color {self.nodes[j].get_color()})")
-                        edge_count += 1
-                        if edge_count >= 10:  # Show at most 10 sample edges
-                            break
-                if edge_count >= 10:
-                    break
-        print()
-        
-        # Vertex Degrees and Colors
-        print("Vertex Degrees and Colors:")
-        print("-------------------------")
-        if n_nodes <= 50:  # Only show all vertices for small graphs
-            for i in range(n_nodes):
-                print(f"Vertex {i} (ID: {self.nodes[i].get_identifier()}): {self.get_degree(i)} connections, "
-                      f"Color {self.nodes[i].get_color()}")
-        else:
-            print(f"[Too many vertices to display ({n_nodes} vertices)]")
-            # Show only high-degree vertices
-            high_degree_vertices = [(i, self.get_degree(i)) for i in range(n_nodes)]
-            high_degree_vertices.sort(key=lambda x: x[1], reverse=True)
-            print("Top 10 highest-degree vertices:")
-            for i, degree in high_degree_vertices[:10]:
-                print(f"Vertex {i} (ID: {self.nodes[i].get_identifier()}): {degree} connections, "
-                      f"Color {self.nodes[i].get_color()}")
-        print()
+        print("\n")
     
     def is_colored(self) -> bool:
         """
@@ -771,7 +768,7 @@ class UndirectedGraph:
         for node in self.nodes:
             node.set_color(-1)
             
-def construct_conflict_graph(assigned_cases: List[CaseJudgeRoomNode]):
+def construct_conflict_graph(assigned_cases: List[CaseJudgeRoomNode], granularity):
     """
     Construct a conflict graph where nodes are case-judge-room assignments
     and edges connect assignments that conflict (same judge or same room).
@@ -782,26 +779,66 @@ def construct_conflict_graph(assigned_cases: List[CaseJudgeRoomNode]):
     Returns:
         An UndirectedGraph representing the conflicts
     """
+
     conflict_graph = UndirectedGraph()
+    all_nodes = []
+    node_to_index = {}  # Map to track node objects to their indices
     
-    # Add nodes for each assignment
+    # Dictionary to track all nodes by judge_id and room_id for faster conflict detection
+    nodes_by_judge = {}
+    nodes_by_room = {}
+    
+    # Add nodes based on how many timeslots the meeting span
     for assigned_case in assigned_cases:
-        conflict_graph.add_node(assigned_case)
+        length = max(1, assigned_case.get_case().case_duration // granularity)
+        
+        # Create nodes for each timeslot of this case
+        case_indices = []
+        for i in range(length):
+            # Create a node identifier
+            node_id = f"meeting_{assigned_case.get_case().case_id},{i}"
+            
+            # Create a new node for each timeslot with all required parameters
+            node = CaseJudgeRoomNode(node_id, 
+                                     assigned_case.get_case(), 
+                                     assigned_case.get_judge(), 
+                                     assigned_case.get_room())
+            
+            # Add the node and get its index
+            index = conflict_graph.add_node(node)
+            node_to_index[node] = index  # Store mapping from node to index
+            all_nodes.append(node)
+            case_indices.append(index)
+            
+            # Track nodes by judge and room for conflict detection
+            judge_id = assigned_case.get_judge().judge_id
+            room_id = assigned_case.get_room().room_id
+            
+            if judge_id not in nodes_by_judge:
+                nodes_by_judge[judge_id] = []
+            nodes_by_judge[judge_id].append(index)
+            
+            if room_id not in nodes_by_room:
+                nodes_by_room[room_id] = []
+            nodes_by_room[room_id].append(index)
+        
+        # Add edges between all pairs of nodes in this case's chain
+        for i in range(len(case_indices)):
+            for j in range(i+1, len(case_indices)):
+                conflict_graph.add_edge(case_indices[i], case_indices[j])
     
     # Add edges for conflicts (same judge or same room)
-    for i in range(conflict_graph.get_num_nodes()):
-        for j in range(conflict_graph.get_num_nodes()):
-            if i == j:
-                continue
-                
-            # Get the assignments
-            assignment_i = assigned_cases[i]
-            assignment_j = assigned_cases[j]
-            
-            # Check if they share a judge or room
-            if (assignment_i.get_judge().judge_id == assignment_j.get_judge().judge_id or
-                assignment_i.get_room().room_id == assignment_j.get_room().room_id):
-                conflict_graph.add_edge(i, j)
+    # Process conflicts by judge
+    for judge_id, indices in nodes_by_judge.items():
+        for i in range(len(indices)):
+            for j in range(i+1, len(indices)):
+                conflict_graph.add_edge(indices[i], indices[j])
+    
+    # Process conflicts by room
+    for room_id, indices in nodes_by_room.items():
+        for i in range(len(indices)):
+            for j in range(i+1, len(indices)):
+                conflict_graph.add_edge(indices[i], indices[j])
     
     return conflict_graph
 
