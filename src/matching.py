@@ -1,6 +1,7 @@
 from collections import deque
 from typing import List, Dict, Tuple, Optional
 from collections import deque
+from warnings import warn
 
 from src.model import Case, Judge, Room, Attribute
 from src.graph import (
@@ -138,8 +139,6 @@ def extract_case_judge_assignments(graph: DirectedGraph) -> List[CaseJudgeNode]:
                     judge_node.get_judge()
                 )
                 assigned_pairs.append(pair)
-                print(f"Final Assignment: Case {case_node.get_case().case_id} → "
-                     f"Judge {judge_node.get_judge().judge_id}")
                 assigned = True
                 break  # Each case has exactly one judge
         
@@ -167,8 +166,7 @@ def assign_cases_to_judges(graph: DirectedGraph) -> List[CaseJudgeNode]:
     
     # Step 1: Run the Ford-Fulkerson algorithm
     if max_flow != graph.num_cases:
-        raise RuntimeError(f"Not all cases could be assigned judges. "
-                         f"Found {max_flow} assignments, needed {graph.num_cases}.")
+        warn(f"Not all cases could be assigned judges.Found {max_flow} assignments, needed {graph.num_cases}.", RuntimeWarning)
     
     # Step 2: Extract the final assignments from the flow network
     assigned_pairs = extract_case_judge_assignments(graph)
@@ -209,8 +207,6 @@ def extract_c_j_room_assignments(graph: DirectedGraph) -> List[CaseJudgeRoomNode
                     room_node.get_room()
                 )
                 assigned_cases.append(pair)
-                print(f"Final Assignment: Case {jc_pair_node.get_case().case_id} → "
-                     f"Judge {jc_pair_node.get_judge().judge_id} → Room {room_node.get_room().room_id}")
                 assigned = True
                 break
         if not assigned:

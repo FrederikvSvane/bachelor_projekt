@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Set
 
 
+
 class Attribute(Enum):
     """ 
     Base enum for all Attributes of entities in the model.
@@ -247,7 +248,7 @@ def calculate_all_judge_capacities(cases: List[Case], judges: List[Judge]) -> Di
     return int_capacities
 
 
-def calculate_all_room_capacities(cases: List[Case], rooms: List[Room]) -> Dict[int, int]:
+def calculate_all_room_capacities(jc_pairs, rooms: list[Room]) -> dict[int, int]:
     """
     Calculate the capacities of all rooms such that the sum of their capacities 
     equals the total number of cases.
@@ -259,35 +260,39 @@ def calculate_all_room_capacities(cases: List[Case], rooms: List[Room]) -> Dict[
     Returns:
         Dict[int, int]: A dictionary mapping each room's ID to their calculated capacity.
     """
-    # Group cases by their room requirements
+    # Group case_judge pairs by their room requirements
     requirement_groups = {}
-    for case in cases:
-        req_key = frozenset(case.room_requirements)
-        if req_key not in requirement_groups:
-            requirement_groups[req_key] = []
-        requirement_groups[req_key].append(case)
+    for jc_pair in jc_pairs:
+        # Combine requirements from both case and judge
+        combined_req = frozenset(
+            list(jc_pair.case.room_requirements) + 
+            list(jc_pair.judge.room_requirements)
+        )
+        if combined_req not in requirement_groups:
+            requirement_groups[combined_req] = []
+        requirement_groups[combined_req].append(jc_pair)
+    
     
     # Count cases per requirement group
-    group_counts = {req: len(cases_list) for req, cases_list in requirement_groups.items()}
+    group_counts = {req: len(pairs_list) for req, pairs_list in requirement_groups.items()}
     
     # Calculate weights for each room per requirement group
     room_weights = {}
     for room in rooms:
         room_weights[room.room_id] = {}
-        for req_group, cases_in_group in requirement_groups.items():
+        for req_group, pairs_in_group in requirement_groups.items():
             # Check compatibility against the first case in the group
-            if cases_in_group:
-                sample_case = cases_in_group[0]
+            if pairs_in_group:
+                sample_pair = pairs_in_group[0]
                 # Use one-directional compatibility checks
-                compatible = (case_requires_from_room(sample_case, room) and 
-                             room_requires_from_case(room, sample_case))
+                compatible = (case_room_compatible(sample_pair.get_case(), room) and judge_room_compatible(sample_pair.get_judge(), room))
             else:
                 compatible = False
-            
-            # Calculate how many rooms can handle this group
+
             competing_rooms = sum(1 for r in rooms if 
-                                case_requires_from_room(sample_case, r) and 
-                                room_requires_from_case(r, sample_case))
+                                case_room_compatible(sample_pair.case, r) and 
+                                judge_room_compatible(sample_pair.judge, r))
+
             
             # Weight is inversely proportional to number of rooms that can handle this group
             weight = 1.0 / max(1, competing_rooms) if compatible else 0
@@ -307,9 +312,9 @@ def calculate_all_room_capacities(cases: List[Case], rooms: List[Room]) -> Dict[
     int_capacities = {room_id: int(cap) for room_id, cap in float_capacities.items()}
     
     # Distribute remaining cases using largest remainder method
-    total_cases = len(cases)
+    total_pairs = len(jc_pairs)
     current_sum = sum(int_capacities.values())
-    remaining = total_cases - current_sum
+    remaining = total_pairs - current_sum
     
     if remaining > 0:
         # Sort rooms by fractional remainder
@@ -324,13 +329,13 @@ def calculate_all_room_capacities(cases: List[Case], rooms: List[Room]) -> Dict[
             remainders[0] = (room_id, remainder - 1.0)
     
     # Safety check - ensure all cases are assigned
-    if sum(int_capacities.values()) != total_cases:
+    if sum(int_capacities.values()) != total_pairs:
         print(f"Warning: Room capacity calculation did not distribute all cases. " +
-              f"Assigned: {sum(int_capacities.values())}, Total: {total_cases}")
+              f"Assigned: {sum(int_capacities.values())}, Total: {total_pairs}")
         
         # Find room with highest capacity and add the difference
         if rooms:
             max_room = max(rooms, key=lambda r: float_capacities[r.room_id])
-            int_capacities[max_room.room_id] += (total_cases - sum(int_capacities.values()))
+            int_capacities[max_room.room_id] += (total_pairs - sum(int_capacities.values()))
     
     return int_capacities

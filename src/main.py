@@ -40,7 +40,6 @@ def main():
             
             from src.data_generator import generate_test_data_parsed
             n_cases, n_judges, n_rooms = args.test[:3]
-            print(f"Generating test data: {n_cases} cases, {n_judges} judges, {n_rooms} rooms")
             parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms)
         
         

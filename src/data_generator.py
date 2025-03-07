@@ -4,6 +4,7 @@ import json
 from typing import Dict, Any, List
 
 from src.model import Case, Judge, Room, Attribute, case_judge_compatible, case_room_compatible, judge_room_compatible
+from src.graph import CaseJudgeNode
 
 class TruncatedNormalDistribution:
     """Generates a truncated normal distribution for case durations."""
@@ -237,14 +238,16 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         
         # Add virtual or physical characteristic based on the virtual flag
         if case_data["virtual"]:
+            
             characteristics.add(Attribute.VIRTUAL)
             judge_requirements.add(Attribute.VIRTUAL)
             room_requirements.add(Attribute.VIRTUAL)
             
         # Add security requirements if needed
         if case_data.get("security", False):
-            characteristics.add(Attribute.SECURITY)
-            room_requirements.add(Attribute.SECURITY)
+            if not case_data["virtual"]:
+                characteristics.add(Attribute.SECURITY)
+                room_requirements.add(Attribute.SECURITY)
             
         # Add SHORTDURATION if case is short (<120 min)
         if case_data["duration"] < 120:
@@ -279,7 +282,7 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             for requirement in suitable_judge.case_requirements:
                 if requirement not in case.characteristics:
                     if requirement == Attribute.SHORTDURATION:
-                        case.case_duration = case.case_duration - (case.case_duration - 120)
+                        case.case_duration = 120
                         case.characteristics.add(requirement)
 
         parsed_data["cases"].append(case)
@@ -294,8 +297,6 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         # Add virtual or physical characteristic based on the virtual flag
         if room_data["virtual"]:
             characteristics.add(Attribute.VIRTUAL)
-            case_requirements.add(Attribute.VIRTUAL)
-            judge_requirements.add(Attribute.VIRTUAL)
             
         # Add accessibility if room has it
         if room_data.get("accessibility", False):
@@ -303,7 +304,8 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             
         # Add security if room has it
         if room_data.get("security", False):
-            characteristics.add(Attribute.SECURITY)
+            if not room_data["virtual"]:
+                characteristics.add(Attribute.SECURITY)
             
         room = Room(
             room_id=room_data["id"],
@@ -315,8 +317,44 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         parsed_data["rooms"].append(room)
 
     
-    print(f"Generated {len(parsed_data['cases'])} cases, "
-          f"{len(parsed_data['judges'])} judges, "
-          f"{len(parsed_data['rooms'])} rooms")
-    
     return parsed_data
+
+
+def ensure_jc_pair_room_compatibility(jc_pairs: list[CaseJudgeNode], rooms: list[Room]) -> list[Room]:
+    """
+    Check if each case-judge pair has at least one compatible room and fix if not.
+    
+    Args:
+        jc_pairs: List of CaseJudgeNode objects
+        rooms: List of Room objects
+        
+    Returns:
+        Updated list of rooms
+    """
+    
+    
+    for jc_pair in jc_pairs:
+        judge = jc_pair.get_judge()
+        case = jc_pair.get_case()
+        
+        # Check if this pair has at least one compatible room
+        has_compatible_room = False
+        for room in rooms:
+            if judge_room_compatible(judge, room) and case_room_compatible(case, room):
+                has_compatible_room = True
+                break
+        
+        if not has_compatible_room:
+            
+            for req in case.room_requirements:
+                if req not in room.characteristics:
+                    room.characteristics.add(req)
+                    
+            
+            
+            for req in judge.room_requirements:
+                if req not in room.characteristics:
+                    room.characteristics.add(req)
+            
+    return rooms
+            

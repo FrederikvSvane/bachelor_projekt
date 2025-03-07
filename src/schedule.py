@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import Dict
 
+from src.data_generator import ensure_jc_pair_room_compatibility
 from src.model import Case, Judge, Room, Attribute, Appointment
 from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode, CaseJudgeNode, construct_conflict_graph
 
@@ -141,17 +142,15 @@ class Schedule:
                 "case": {
                     "id": app.case.case_id,
                     "duration": app.case.case_duration,
-                    #"type": str(app.case.case_sagstype),
-                    "virtual": app.case.case_virtual
+                    "Attributes": str(app.case.characteristics),
                 },
                 "judge": {
                     "id": app.judge.judge_id,
-                    "skills": [str(skill) for skill in app.judge.judge_skills],
-                    "virtual": app.judge.judge_virtual
+                    "Attributes:": str(app.judge.characteristics),
                 },
                 "room": {
                     "id": app.room.room_id,
-                    "virtual": app.room.room_virtual
+                    "Attributes:": str(app.room.characteristics),
                 }
             }
             result["appointments"].append(appointment_dict)
@@ -185,13 +184,12 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     # Flow 1: Assign judges to cases based on skills
     judge_case_graph = DirectedGraph() 
     judge_case_graph.initialize_case_to_judge_graph(cases, judges)
-    judge_case_graph.visualize()
     case_judge_pairs = assign_cases_to_judges(judge_case_graph)
     
+    rooms = ensure_jc_pair_room_compatibility(case_judge_pairs, rooms)
     # Flow 2: Assign rooms to case-judge pairs
     jc_room_graph = DirectedGraph()
     jc_room_graph.initialize_case_judge_pair_to_room_graph(case_judge_pairs, rooms)
-    jc_room_graph.visualize()
     assigned_cases = assign_case_judge_pairs_to_rooms(jc_room_graph)
     
     # Construct conflict graph

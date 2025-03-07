@@ -2,7 +2,7 @@ from math import ceil
 from collections import defaultdict
 from typing import List, Dict, Optional, Type, Set
 
-from src.model import Case, Judge, Room, calculate_all_judge_capacities, case_requires_from_judge, judge_requires_from_case, case_judge_compatible, judge_room_compatible, case_room_compatible
+from src.model import Case, Judge, Room, calculate_all_judge_capacities, case_requires_from_judge, judge_requires_from_case, case_judge_compatible, judge_room_compatible, case_room_compatible, calculate_all_room_capacities
 
 class Node:
     """Base class for all node types in the graph."""
@@ -317,7 +317,7 @@ class DirectedGraph:
                     self.add_edge(jm_pair_id, room_id, 1)
         
         # Create edges from rooms to sink
-        room_capacities = calculate_all_room_capacities([jc.get_case() for jc in jc_pairs], rooms)
+        room_capacities = calculate_all_room_capacities(jc_pairs, rooms)
         for i, room_id in enumerate(room_ids):
             room_capacity = room_capacities[rooms[i].room_id]
             self.add_edge(room_id, sink_id, room_capacity)
