@@ -185,7 +185,7 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     judge_case_graph = DirectedGraph() 
     judge_case_graph.initialize_case_to_judge_graph(cases, judges)
     case_judge_pairs = assign_cases_to_judges(judge_case_graph)
-    #judge_case_graph.visualize()
+    # judge_case_graph.visualize()
     
     rooms = ensure_jc_pair_room_compatibility(case_judge_pairs, rooms)
     # Flow 2: Assign rooms to case-judge pairs
@@ -196,7 +196,7 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     
     # Construct conflict graph
     conflict_graph = construct_conflict_graph(assigned_cases, granularity)
-    #conflict_graph.visualize()
+    # conflict_graph.visualize()
     
     # Perform graph coloring
     DSatur(conflict_graph)

@@ -48,7 +48,6 @@ def main():
             parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms)
         
         schedule = generate_schedule_using_double_flow(parsed_data)
-        schedule.visualize()
         visualizer = calendar_visualizer(parsed_data["judges"], parsed_data["rooms"], parsed_data["cases"], schedule)
         visualizer.generate_calendar()
         

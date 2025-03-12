@@ -41,7 +41,6 @@ class calendar_visualizer:
         
         # For each day, create a calendar view
         for day in range(self.work_days):
-            print(f"\nJudges in schedule: {all_judge_ids}")
             print(f"Day {day + 1}:")
             
             # Calculate table width based on number of judges

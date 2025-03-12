@@ -26,53 +26,95 @@ def parse_input(input_path: Path) -> Dict:
     
     # Parse cases
     cases = []
-    for i, case_data in enumerate(data.get("cases", [])):
-        case_type_str = case_data.get("type", "Civile")
-        try:
-            case_type = Attribute.from_string(case_type_str)
-        except ValueError:
-            print(f"Warning: Invalid case type '{case_type_str}', defaulting to Civile")
-            case_type = Attribute.CIVILE
+    for case in data["cases"]:
+        case_attr = Attribute.from_string(case["type"])
+        characteristics = {case_attr}
+        judge_requirements = {case_attr}  # Judge must have this skill
+        room_requirements = set()  # Default no special room requirements
         
+        # Add virtual or physical characteristic based on the virtual flag
+        if case["virtual"]:
+            characteristics.add(Attribute.VIRTUAL)
+            judge_requirements.add(Attribute.VIRTUAL)
+            room_requirements.add(Attribute.VIRTUAL)
+            
+        # Add security requirements if needed
+        if case.get("security", False):
+            if not case["virtual"]:
+                characteristics.add(Attribute.SECURITY)
+                room_requirements.add(Attribute.SECURITY)
+            
+        # Add SHORTDURATION if case is short (<120 min)
+        if case["duration"] < 120:
+            characteristics.add(Attribute.SHORTDURATION)
+            
         case = Case(
-            case_id=case_data.get("id", i),
-            case_duration=case_data.get("duration", 60),
-            case_Attribute=case_type,
-            case_virtual=case_data.get("virtual", False)
+            case_id=case["id"],
+            case_duration=case["duration"],
+            characteristics=characteristics,
+            judge_requirements=judge_requirements,
+            room_requirements=room_requirements
         )
         cases.append(case)
     
     # Parse judges
     judges = []
-    for i, judge_data in enumerate(data.get("judges", [])):
-        # Parse skills
-        skills = []
-        for skill_str in judge_data.get("skills", ["Civile"]):
-            try:
-                skill = Attribute.from_string(skill_str)
-                skills.append(skill)
-            except ValueError:
-                print(f"Warning: Invalid judge skill '{skill_str}', skipping")
+    for judge in data["judges"]:
+        skills = [Attribute.from_string(skill) for skill in judge["skills"]]
+        characteristics = set(skills)
+        case_requirements = set()
+        room_requirements = set()
         
-        # Ensure judge has at least one skill
-        if not skills:
-            print(f"Warning: Judge {i} has no valid skills, adding default Civile")
-            skills.append(Attribute.CIVILE)
-        
+        # Add virtual or physical characteristic based on the virtual flag
+        if judge["virtual"]:
+            characteristics.add(Attribute.VIRTUAL)
+            
+        # Add accessibility requirement if needed
+        if judge.get("accessibility", False):
+            characteristics.add(Attribute.ACCESSIBILITY)
+            room_requirements.add(Attribute.ACCESSIBILITY)
+            
+        # Add shortduration requirement if judge has health limitations
+        if judge.get("shortduration", False):
+            characteristics.add(Attribute.SHORTDURATION)
+            case_requirements.add(Attribute.SHORTDURATION)
+            
         judge = Judge(
-            judge_id=judge_data.get("id", i),
-            judge_skills=skills,
-            judge_virtual=judge_data.get("virtual", False)
+            judge_id=judge["id"],
+            characteristics=characteristics,
+            case_requirements=case_requirements,
+            room_requirements=room_requirements
         )
+
         judges.append(judge)
     
     # Parse rooms
     rooms = []
-    for i, room_data in enumerate(data.get("rooms", [])):
+    for room in data["rooms"]:
+        characteristics = set()
+        case_requirements = set()
+        judge_requirements = set()
+        
+        # Add virtual or physical characteristic based on the virtual flag
+        if room["virtual"]:
+            characteristics.add(Attribute.VIRTUAL)
+            
+        # Add accessibility if room has it
+        if room.get("accessibility", False):
+            characteristics.add(Attribute.ACCESSIBILITY)
+            
+        # Add security if room has it
+        if room.get("security", False):
+            if not room["virtual"]:
+                characteristics.add(Attribute.SECURITY)
+            
         room = Room(
-            room_id=room_data.get("id", i),
-            room_virtual=room_data.get("virtual", False)
+            room_id=room["id"],
+            characteristics=characteristics,
+            case_requirements=case_requirements,
+            judge_requirements=judge_requirements
         )
+
         rooms.append(room)
     
     # Add to parsed data

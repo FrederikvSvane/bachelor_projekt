@@ -182,7 +182,7 @@ def generate_test_data(n_cases: int, n_judges: int, n_rooms: int,
     return data
 
 def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int, 
-                             work_days: int = 5, granularity: int = 5, 
+                             work_days: int = 3, granularity: int = 5, 
                              min_per_work_day: int = 390) -> Dict:
     """Generate and parse test data into model objects."""
     # Generate raw test data
