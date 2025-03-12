@@ -91,12 +91,14 @@ class calendar_visualizer:
                     for timeslot in all_timeslots:
                         if timeslot != start_timeslot:
                             calendar_grid[(timeslot, judge_id)] = "#########"
-            
+                           
             # Print each timeslot row
-            for timeslot in range(min(32, self.timeslot_per_day)):  # Limit to reasonable number of slots
-                # Calculate time string
-                hours = (timeslot * self.granularity) // 60
-                minutes = (timeslot * self.granularity) % 60
+            for timeslot in range(self.timeslot_per_day):  # Limit to reasonable number of slots
+                # Calculate time string - starting at 08:30
+                base_minutes = 8 * 60 + 30  # 8 hours and 30 minutes in minutes
+                total_minutes = base_minutes + (timeslot * self.granularity)
+                hours = total_minutes // 60
+                minutes = total_minutes % 60
                 time_str = f"{hours:02d}:{minutes:02d}"
                 
                 print(f"{time_str:<10} | ", end="")

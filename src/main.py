@@ -9,6 +9,7 @@ from src.parser import parse_input
 from src.schedule import generate_schedule_using_double_flow
 import src.calendar_visualizer as calendar_visualizer
 from src.calendar_visualizer import calendar_visualizer
+from src.rules_engine import calculate_score
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -47,11 +48,15 @@ def main():
             parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms)
         
         schedule = generate_schedule_using_double_flow(parsed_data)
+        schedule.visualize()
         visualizer = calendar_visualizer(parsed_data["judges"], parsed_data["rooms"], parsed_data["cases"], schedule)
         visualizer.generate_calendar()
         
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        score = calculate_score(schedule)
+        print(f"Final score: {score}")
         
         with open(output_path, 'w') as f:
             json.dump(schedule.to_json(), f, indent=2)

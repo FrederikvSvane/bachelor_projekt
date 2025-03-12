@@ -29,7 +29,7 @@ class Schedule:
         self.work_days = work_days
         self.minutes_in_a_work_day = minutes_in_a_work_day
         self.granularity = granularity
-        self.timeslots_per_work_day = minutes_in_a_work_day // granularity - 1
+        self.timeslots_per_work_day = minutes_in_a_work_day // granularity
     
     def generate_schedule_from_colored_graph(self, graph: UndirectedGraph) -> None:
         """
@@ -84,39 +84,39 @@ class Schedule:
         print(f"Time slot granularity: {self.granularity} minutes")
         print(f"Time slots per day: {self.timeslots_per_work_day}")
         print(f"Total appointments: {len(self.appointments)}\n")
-        
-        # Map appointments by day
-        appointments_by_day = defaultdict(list)
-        for app in self.appointments:
-            appointments_by_day[app.day].append(app)
-        
-        # Print daily schedule
-        for day in range(self.work_days):
-            print(f"Day {day + 1}:")
-            print("-" * 70)
-            print(f"{'Time':10} | {'Timeslot':10} | {'Case':10} | "
-                f"{'Judge':10} | {'Room':10} | {'Duration':10}")
-            print("-" * 70)
+        if True:
+            # Map appointments by day
+            appointments_by_day = defaultdict(list)
+            for app in self.appointments:
+                appointments_by_day[app.day].append(app)
             
-            if day in appointments_by_day:
-                # Sort appointments by timeslot
-                day_appointments = sorted(
-                    appointments_by_day[day],
-                    key=lambda a: a.timeslot_start
-                )
+            # Print daily schedule
+            for day in range(self.work_days):
+                print(f"Day {day + 1}:")
+                print("-" * 70)
+                print(f"{'Time':10} | {'Timeslot':10} | {'Case':10} | "
+                    f"{'Judge':10} | {'Room':10} | {'Duration':10}")
+                print("-" * 70)
                 
-                # Print each appointment
-                for app in day_appointments:
-                    print(f"{self.get_time_from_timeslot(app.timeslot_start):10} | "
-                        f"{app.timeslot_start:10} | "
-                        f"{app.case.case_id:10} | "
-                        f"{app.judge.judge_id:10} | "
-                        f"{app.room.room_id:10} | "
-                        f"{app.timeslots_duration:10} min")
-            else:
-                print("No appointments scheduled")
-            
-            print("-" * 70 + "\n")
+                if day in appointments_by_day:
+                    # Sort appointments by timeslot
+                    day_appointments = sorted(
+                        appointments_by_day[day],
+                        key=lambda a: a.timeslot_start
+                    )
+                    
+                    # Print each appointment
+                    for app in day_appointments:
+                        print(f"{self.get_time_from_timeslot(app.timeslot_start):10} | "
+                            f"{app.timeslot_start:10} | "
+                            f"{app.case.case_id:10} | "
+                            f"{app.judge.judge_id:10} | "
+                            f"{app.room.room_id:10} | "
+                            f"{app.timeslots_duration:10} min")
+                else:
+                    print("No appointments scheduled")
+                
+                print("-" * 70 + "\n")
     
     def to_json(self) -> Dict:
         """
@@ -185,7 +185,7 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     judge_case_graph = DirectedGraph() 
     judge_case_graph.initialize_case_to_judge_graph(cases, judges)
     case_judge_pairs = assign_cases_to_judges(judge_case_graph)
-    judge_case_graph.visualize()
+    #judge_case_graph.visualize()
     
     rooms = ensure_jc_pair_room_compatibility(case_judge_pairs, rooms)
     # Flow 2: Assign rooms to case-judge pairs
@@ -196,7 +196,7 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     
     # Construct conflict graph
     conflict_graph = construct_conflict_graph(assigned_cases, granularity)
-    conflict_graph.visualize()
+    #conflict_graph.visualize()
     
     # Perform graph coloring
     DSatur(conflict_graph)

@@ -47,8 +47,8 @@ class TruncatedNormalDistribution:
 
 
 def generate_test_data(n_cases: int, n_judges: int, n_rooms: int, 
-                       work_days: int = 5, granularity: int = 15, 
-                       min_per_work_day: int = 480, fixed_duration: bool = False) -> Dict[str, Any]:
+                       work_days: int = 5, granularity: int = 5, 
+                       min_per_work_day: int = 390, fixed_duration: bool = False) -> Dict[str, Any]:
     """Generate test data for court scheduling."""
     # Initialize random generator
     gen = random.Random()
@@ -182,8 +182,8 @@ def generate_test_data(n_cases: int, n_judges: int, n_rooms: int,
     return data
 
 def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int, 
-                             work_days: int = 5, granularity: int = 15, 
-                             min_per_work_day: int = 480) -> Dict:
+                             work_days: int = 5, granularity: int = 5, 
+                             min_per_work_day: int = 390) -> Dict:
     """Generate and parse test data into model objects."""
     # Generate raw test data
     test_data = generate_test_data(n_cases, n_judges, n_rooms, 

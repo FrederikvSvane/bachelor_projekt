@@ -20,8 +20,8 @@ def parse_input(input_path: Path) -> Dict:
     # Extract basic parameters
     parsed_data = {
         "work_days": data.get("work_days", 5),  # Default to 5 work days
-        "min_per_work_day": data.get("min_per_work_day", 480),  # Default to 8 hours
-        "granularity": data.get("granularity", 15)  # Default to 15-minute slots
+        "min_per_work_day": data.get("min_per_work_day", 390),  # Default to 8 hours
+        "granularity": data.get("granularity", 5)  # Default to 15-minute slots
     }
     
     # Parse cases

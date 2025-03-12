@@ -618,45 +618,46 @@ class UndirectedGraph:
                   for j in range(i + 1, len(self.nodes)))
     
     def visualize(self) -> None:
-        """Visualize the undirected graph with enhanced chain display."""
-        print("\nUndirected Graph Visualization:")
-        print("==============================\n")
-        
-        # Graph Statistics
-        print("Graph Statistics:")
-        print("-----------------")
-        print(f"Number of vertices: {self.get_num_nodes()}")
-        total_edges = self.get_num_edges()
-        print(f"Number of edges: {total_edges}\n")
-        
-        # Group nodes by case_id for better visualization of chains
-        case_chains = {}
-        
-        for i, node in enumerate(self.nodes):
-            if isinstance(node, CaseJudgeRoomNode):
-                case_id = node.get_case().case_id
-                if case_id not in case_chains:
-                    case_chains[case_id] = []
-                case_chains[case_id].append((i, node))
-        
-        # Display Case Chains
-        print("Case Chains:")
-        print("------------")
-        if case_chains:
-            for case_id, nodes in case_chains.items():
-                print(f"Case {case_id} Chain:")
-                # Sort nodes by identifier
-                nodes.sort(key=lambda x: x[1].get_identifier())
-                
-                for idx, node in nodes:
-                    identifier = node.get_identifier()
-                    judge = node.get_judge().judge_id
-                    room = node.get_room().room_id
-                    color = node.get_color()
-                    print(f"  {identifier} - Judge {judge}, Room {room}, Color {color}")
-                print()
-        else:
-            print("No case chains found in the graph.\n")
+        if False:
+            """Visualize the undirected graph with enhanced chain display."""
+            print("\nUndirected Graph Visualization:")
+            print("==============================\n")
+            
+            # Graph Statistics
+            print("Graph Statistics:")
+            print("-----------------")
+            print(f"Number of vertices: {self.get_num_nodes()}")
+            total_edges = self.get_num_edges()
+            print(f"Number of edges: {total_edges}\n")
+            
+            # Group nodes by case_id for better visualization of chains
+            case_chains = {}
+            
+            for i, node in enumerate(self.nodes):
+                if isinstance(node, CaseJudgeRoomNode):
+                    case_id = node.get_case().case_id
+                    if case_id not in case_chains:
+                        case_chains[case_id] = []
+                    case_chains[case_id].append((i, node))
+            
+            # Display Case Chains
+            print("Case Chains:")
+            print("------------")
+            if case_chains:
+                for case_id, nodes in case_chains.items():
+                    print(f"Case {case_id} Chain:")
+                    # Sort nodes by identifier
+                    nodes.sort(key=lambda x: x[1].get_identifier())
+                    
+                    for idx, node in nodes:
+                        identifier = node.get_identifier()
+                        judge = node.get_judge().judge_id
+                        room = node.get_room().room_id
+                        color = node.get_color()
+                        print(f"  {identifier} - Judge {judge}, Room {room}, Color {color}")
+                    print()
+            else:
+                print("No case chains found in the graph.\n")
         
         # Case Chain Conflict Analysis
         print("Chain Conflict Analysis:")
