@@ -81,33 +81,63 @@ class calendar_visualizer:
             calendar_grid = {}
             
             if day in appointments_by_day:
-                # Group appointments by case-judge-room to identify continuous blocks
-                meeting_blocks = defaultdict(list)
-                for app in appointments_by_day[day]:
-                    key = (app.case.case_id, app.judge.judge_id, app.room.room_id)
-                    meeting_blocks[key].append(app)
+                # Sort appointments by judge and timeslot for sequential processing
+                day_appointments = sorted(appointments_by_day[day], 
+                                        key=lambda a: (a.judge.judge_id, a.timeslot_start))
                 
-                # Process each meeting block
-                for (case_id, judge_id, room_id), apps in meeting_blocks.items():
-                    # Sort by timeslot
-                    apps.sort(key=lambda a: a.timeslot_start)
+                # Track previous appointment for comparison
+                prev_app = None
+                
+                for app in day_appointments:
+                    timeslot = app.timeslot_start % self.timeslot_per_day
+                    judge_id = app.judge.judge_id
                     
-                    # Find all timeslots for this meeting
-                    all_timeslots = set()
-                    for app in apps:
-                        timeslot = app.timeslot_start % self.timeslot_per_day
-                        all_timeslots.add(timeslot)
+                    # Check if this is a continuation of previous appointment
+                    is_continuation = False
+                    if prev_app:
+                        prev_timeslot = prev_app.timeslot_start % self.timeslot_per_day
+                        # Check if adjacent timeslot with same judge, case, and room
+                        if (prev_app.judge.judge_id == judge_id and
+                            prev_app.case.case_id == app.case.case_id and
+                            prev_app.room.room_id == app.room.room_id and
+                            (prev_timeslot + 1 == timeslot or  # Sequential within day
+                            (prev_timeslot == self.timeslot_per_day - 1 and timeslot == 0))):  # Day boundary
+                            is_continuation = True
                     
-                    # Find the starting timeslot (lowest)
-                    start_timeslot = min(all_timeslots)
+                    if is_continuation:
+                        calendar_grid[(timeslot, judge_id)] = "#############"
+                    else:
+                        calendar_grid[(timeslot, judge_id)] = f"C{app.case.case_id}:{self.print_case_info(app.case.case_id)}/R{app.room.room_id}:{self.print_room_info(app.room.room_id)}"
                     
-                    # Mark the starting slot with the case/room identifier
-                    calendar_grid[(start_timeslot, judge_id)] = f"C{case_id}:{self.print_case_info(case_id)}/R{room_id}:{self.print_room_info(room_id)}"
+                    # Update previous appointment
+                    prev_app = app
+                
+                # meeting_blocks = defaultdict(list)
+                # for app in appointments_by_day[day]:
+                #     key = (app.case.case_id, app.judge.judge_id, app.room.room_id)
+                #     meeting_blocks[key].append(app)
+                
+                # # Process each meeting block
+                # for (case_id, judge_id, room_id), apps in meeting_blocks.items():
+                #     # Sort by timeslot
+                #     apps.sort(key=lambda a: a.timeslot_start)
                     
-                    # Mark all other slots of this meeting with continuation markers
-                    for timeslot in all_timeslots:
-                        if timeslot != start_timeslot:
-                            calendar_grid[(timeslot, judge_id)] = "#############"
+                #     # Find all timeslots for this meeting
+                #     all_timeslots = set()
+                #     for app in apps:
+                #         timeslot = app.timeslot_start % self.timeslot_per_day
+                #         all_timeslots.add(timeslot)
+                    
+                #     # Find the starting timeslot (lowest)
+                #     start_timeslot = min(all_timeslots)
+                    
+                #     # Mark the starting slot with the case/room identifier
+                #     calendar_grid[(start_timeslot, judge_id)] = f"C{case_id}:{self.print_case_info(case_id)}/R{room_id}:{self.print_room_info(room_id)}"
+                    
+                #     # Mark all other slots of this meeting with continuation markers
+                #     for timeslot in all_timeslots:
+                #         if timeslot != start_timeslot:
+                #             calendar_grid[(timeslot, judge_id)] = "#############"
                         
             # Print each timeslot row
             for timeslot in range(self.timeslot_per_day):
