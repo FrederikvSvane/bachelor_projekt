@@ -44,8 +44,8 @@ def main():
                 return 1
             
             from src.data_generator import generate_test_data_parsed
-            n_cases, n_judges, n_rooms = args.test[:3]
-            parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms)
+            n_cases, n_judges, n_rooms, n_work_days = args.test[:4]
+            parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_work_days, granularity=5, min_per_work_day=390)
         
         schedule = generate_schedule_using_double_flow(parsed_data)
         visualizer = calendar_visualizer(parsed_data["judges"], parsed_data["rooms"], parsed_data["cases"], schedule)
