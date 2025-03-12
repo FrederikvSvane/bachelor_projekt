@@ -4,7 +4,7 @@ import json
 from typing import Dict, Any, List
 
 from src.model import Case, Judge, Room, Attribute, case_judge_compatible, case_room_compatible, judge_room_compatible
-from src.graph import CaseJudgeNode
+from src.graph_construction.graph import CaseJudgeNode
 
 class TruncatedNormalDistribution:
     """Generates a truncated normal distribution for case durations."""

@@ -3,13 +3,13 @@ from typing import Dict
 
 from src.data_generator import ensure_jc_pair_room_compatibility
 from src.model import Case, Judge, Room, Attribute, Appointment
-from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode, CaseJudgeNode, construct_conflict_graph
+from src.graph_construction.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode, CaseJudgeNode, construct_conflict_graph
 
-from src.matching import (
+from src.graph_construction.matching import (
     assign_cases_to_judges, assign_case_judge_pairs_to_rooms, 
 )
-from src.coloring import DSatur
-from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode
+from src.graph_construction.coloring import DSatur
+from src.graph_construction.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode
 from src.model import Appointment
 
 

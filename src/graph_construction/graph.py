@@ -1,8 +1,7 @@
-from math import ceil
 from collections import defaultdict
-from typing import List, Dict, Optional, Type, Set
+from typing import List, Dict, Optional, Type
 
-from src.model import Case, Judge, Room, calculate_all_judge_capacities, case_requires_from_judge, judge_requires_from_case, case_judge_compatible, judge_room_compatible, case_room_compatible, calculate_all_room_capacities
+from src.model import Case, Judge, Room, calculate_all_judge_capacities, case_judge_compatible, judge_room_compatible, case_room_compatible, calculate_all_room_capacities
 
 class Node:
     """Base class for all node types in the graph."""
@@ -618,7 +617,7 @@ class UndirectedGraph:
                   for j in range(i + 1, len(self.nodes)))
     
     def visualize(self) -> None:
-        if True:
+        if False:
             """Visualize the undirected graph with enhanced chain display."""
             print("\nUndirected Graph Visualization:")
             print("==============================\n")

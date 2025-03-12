@@ -4,7 +4,7 @@ from collections import deque
 from warnings import warn
 
 from src.model import Case, Judge, Room, Attribute
-from src.graph import (
+from src.graph_construction.graph import (
     DirectedGraph, UndirectedGraph, Node, JudgeNode, CaseNode, 
     RoomNode, CaseJudgeNode, CaseJudgeRoomNode, Edge
 )

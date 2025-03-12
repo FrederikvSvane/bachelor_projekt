@@ -1,7 +1,7 @@
 import unittest
-from src.matching import *
+from src.graph_construction.matching import *
 from src.schedule import *
-from src.graph import *
+from src.graph_construction.graph import *
 from src.model import *
 import random
 

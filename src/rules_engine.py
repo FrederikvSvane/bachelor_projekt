@@ -1,17 +1,6 @@
 from collections import defaultdict
-from typing import Dict
-
-from src.data_generator import ensure_jc_pair_room_compatibility
-from src.model import Case, Judge, Room, Attribute, Appointment
-from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode, CaseJudgeNode, construct_conflict_graph, case_judge_compatible, judge_room_compatible, case_room_compatible
-
-from src.matching import (
-    assign_cases_to_judges, assign_case_judge_pairs_to_rooms, 
-)
-from src.coloring import DSatur
-from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode
-from src.model import Appointment
 from src.schedule import Schedule
+from src.model import case_room_compatible, case_judge_compatible, judge_room_compatible
       
 def calculate_score(schedule: Schedule) -> int:
     """Calculate overall score by applying all scoring rules"""

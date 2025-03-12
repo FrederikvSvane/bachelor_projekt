@@ -40,4 +40,5 @@ else
     echo "No requirements.txt found."
 fi
 
+source venv/bin/activate
 echo "Setup complete."

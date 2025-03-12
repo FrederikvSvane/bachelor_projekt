@@ -17,12 +17,15 @@ def parse_arguments():
     
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--input', type=str, help='Path to input JSON file')
-    group.add_argument('--test', nargs='+', type=int, 
-                       help='Generate test data with [n_cases] [n_judges] [n_rooms]')
     
-    parser.add_argument('--output', type=str,
-                      help='Path to output JSON file (default: output.json)',
-                      default='output.json')
+    group.add_argument('--test', nargs='+', type=int, 
+                       help='Generate test data with [n_cases] [n_judges] [n_rooms] [n_work_days]')
+    
+    parser.add_argument('--method', type=str, choices=['graph', 'ilp'], default='graph',
+                        help='Method to use for scheduling (default: graph)')
+    
+    parser.add_argument('--output', type=str, default='output.json',
+                      help='Path to output JSON file (default: output.json)')
     
     return parser.parse_args()
 
@@ -31,36 +34,45 @@ def main():
     args = parse_arguments()
     
     try:
-        # Handle input data
+        # Handle input data (use input file or generate test data)
         if args.input:
             input_path = Path(args.input)
             if not input_path.exists():
                 print(f"Error: Input file {args.input} not found")
                 return 1
             parsed_data = parse_input(input_path)
-        else:  # Test mode
-            if len(args.test) < 3:
-                print("Error: Test mode requires 3 parameters: n_cases n_judges n_rooms")
+        elif args.test: 
+            if len(args.test) < 4:
+                print("Error: Test mode requires 3 parameters: n_cases n_judges n_rooms n_work_days")
                 return 1
             
             from src.data_generator import generate_test_data_parsed
             n_cases, n_judges, n_rooms, n_work_days = args.test[:4]
             parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_work_days, granularity=5, min_per_work_day=390)
         
-        schedule = generate_schedule_using_double_flow(parsed_data)
+        
+        # Choose initial schedule construction method
+        if args.method == 'ilp':
+            print("Using ILP-based scheduling method")
+            from src.ilp_construction.ilp_solver import generate_schedule_using_ilp
+            schedule = generate_schedule_using_ilp(parsed_data)
+        elif args.method == 'graph':
+            print("Using graph-based scheduling method")
+            schedule = generate_schedule_using_double_flow(parsed_data)
+        
+        # Visualize the schedule and give it final score        
         visualizer = calendar_visualizer(parsed_data["judges"], parsed_data["rooms"], parsed_data["cases"], schedule)
         visualizer.generate_calendar()
-        
-        output_path = Path(args.output)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        
         score = calculate_score(schedule)
         print(f"Final score: {score}")
         
+        # Write schedule to output file
+        output_path = Path(args.output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, 'w') as f:
             json.dump(schedule.to_json(), f, indent=2)
-        
         print(f"Schedule written to {args.output}")
+
         return 0
         
     except Exception as e:
