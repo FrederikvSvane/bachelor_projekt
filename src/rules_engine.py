@@ -25,7 +25,8 @@ def calculate_score(schedule: Schedule) -> int:
         overbooked_judge_in_timeslot,
         judge_case_compatibility,
         judge_room_compatiblity,
-        case_room_compatibility
+        case_room_compatibility,
+        unused_timeslots
         # Add other rule functions here
     ]
     
@@ -106,7 +107,49 @@ def room_stability_per_day(schedule: Schedule) -> int:
     
     return score
 
-def case_planned_longer_than_day(schedule: Schedule) -> int:
+def unused_timeslots(schedule: Schedule) -> int:
+    """
+    Counts the number of unused timeblocks in the schedule.
+    Counts up to the latest meeting by any judge globally.
+    Handles judges with no appointments.
+    """
+    # We need to know all judges, not just those with appointments
+    # Determine the number of judges from the highest judge ID
+    appointment_judge_ids = set(app.judge.judge_id for app in schedule.appointments)
+    max_judge_id = max(appointment_judge_ids) if appointment_judge_ids else 0
+    
+    # Create a complete set of judge IDs (assuming sequential IDs starting from 1)
+    all_judge_ids = set(range(1, max_judge_id + 1))
+    
+    # Track used timeslots for each (judge, timeslot)
+    used_global_slots = set()
+    
+    # Find the global latest timeslot (across all judges)
+    latest_global_timeslot = 0
+    
+    for app in schedule.appointments:
+        judge_id = app.judge.judge_id
+        # Calculate global timeslot
+        global_timeslot = app.day * schedule.timeslots_per_work_day + (app.timeslot_start % schedule.timeslots_per_work_day)
+        used_global_slots.add((judge_id, global_timeslot))
+        
+        # Update the global latest timeslot
+        latest_global_timeslot = max(latest_global_timeslot, global_timeslot)
+    
+    # Calculate unused slots
+    unused_slots = 0
+    
+    # For each judge, count unused slots up to the global latest appointment
+    for judge_id in all_judge_ids:
+        for global_timeslot in range(latest_global_timeslot + 1):
+            if (judge_id, global_timeslot) not in used_global_slots:
+                unused_slots += 1
+                
+   
+    return unused_slots
+            
+
+def case_planned_longer_than_day(schedule: Schedule) -> int: 
     """
     Check if a case is planned both at the end of day x and start of day y.
     Apply penalty only once per case.
@@ -127,7 +170,7 @@ def case_planned_longer_than_day(schedule: Schedule) -> int:
             
             # If case has appointments on both sides of boundary, penalize it
             if last_slot_of_day in timeslots and first_slot_of_next_day in timeslots:
-                print(f"Case {case_id} scheduled overnight: timeslots {last_slot_of_day} and {first_slot_of_next_day}")
+                print(f"Case {case_id} scheduled longer than the day: timeslots {last_slot_of_day} and {first_slot_of_next_day}")
                 score += 10
                 break  # Only penalize once per case
     

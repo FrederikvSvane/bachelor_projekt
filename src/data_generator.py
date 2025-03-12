@@ -294,8 +294,8 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         # Add virtual or physical characteristic based on the virtual flag
         if room_data["virtual"]:
             characteristics.add(Attribute.VIRTUAL)
-            room_requirements.add(Attribute.VIRTUAL)
-            case_requirements.add(Attribute.VIRTUAL)
+            # room_requirements.add(Attribute.VIRTUAL)
+            # case_requirements.add(Attribute.VIRTUAL)
             
         # Add accessibility if room has it
         if room_data["accessibility"]:
