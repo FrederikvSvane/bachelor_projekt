@@ -1,6 +1,7 @@
 from typing import List, Set
 from src.graph import UndirectedGraph, Node, CaseJudgeRoomNode
 
+
 def get_saturation_degree(graph: UndirectedGraph, vertex: int) -> int:
     """
     Calculate the saturation degree of a vertex.

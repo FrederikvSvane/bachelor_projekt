@@ -107,7 +107,7 @@ class Appointment:
                 f"judge_id={self.judge.judge_id}, room_id={self.room.room_id}, "
                 f"day={self.day}, start={self.timeslot_start}, "
                 f"duration={self.timeslots_duration})")
-        
+        ''
 # One-directional compatibility check
 def has_required_characteristics(requirements: Set[Attribute], 
                                characteristics: Set[Attribute]) -> bool:

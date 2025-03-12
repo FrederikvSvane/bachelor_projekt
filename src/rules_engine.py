@@ -3,7 +3,7 @@ from typing import Dict
 
 from src.data_generator import ensure_jc_pair_room_compatibility
 from src.model import Case, Judge, Room, Attribute, Appointment
-from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode, CaseJudgeNode, construct_conflict_graph
+from src.graph import UndirectedGraph, DirectedGraph, CaseJudgeRoomNode, CaseJudgeNode, construct_conflict_graph, case_judge_compatible, judge_room_compatible, case_room_compatible
 
 from src.matching import (
     assign_cases_to_judges, assign_case_judge_pairs_to_rooms, 
@@ -20,7 +20,12 @@ def calculate_score(schedule: Schedule) -> int:
     # Apply each rule
     rules = [
         room_stability_per_day,
-        case_planned_over_night
+        case_planned_longer_than_day,
+        overbooked_room_in_timeslot,
+        overbooked_judge_in_timeslot,
+        judge_case_compatibility,
+        judge_room_compatiblity,
+        case_room_compatibility
         # Add other rule functions here
     ]
     
@@ -37,26 +42,23 @@ def calculate_score(schedule: Schedule) -> int:
 ############## RULES DEFINED AS FUNCTIONS ################
 ##########################################################
 
-
 ##########################################################
 ############## HARD CONSTRAINTS ##########################
 ##########################################################
 def overbooked_room_in_timeslot(schedule: Schedule) -> int:
-    return 0
+    return check_hard_constraints(schedule)["overbooked_room_in_timeslot"]
 
 def overbooked_judge_in_timeslot(schedule: Schedule) -> int:
-    return 0
+    return check_hard_constraints(schedule)["overbooked_judge_in_timeslot"]
 
-def overbooked_case_in_timeslot(schedule: Schedule) -> int:
-    return 0
+def judge_case_compatibility(schedule: Schedule) -> int:
+    return check_hard_constraints(schedule)["judge_case_compatibility"]
 
-def judge_case_room_compatibility(schedule: Schedule) -> int:
-    return 0
+def judge_room_compatiblity(schedule: Schedule) -> int:
+    return check_hard_constraints(schedule)["judge_room_compatiblity"]
 
-def virtual_case_must_have_virtual_judge(schedule: Schedule) -> int:
-    return 0
-
-
+def case_room_compatibility(schedule: Schedule) -> int:
+    return check_hard_constraints(schedule)["case_room_compatibility"]
 
 
 ##########################################################
@@ -86,7 +88,7 @@ def room_stability_per_day(schedule: Schedule) -> int:
         for app in apps:
             if current_room is not None and app.room.room_id != current_room:
                 # Room change detected
-                score -= 1  # Penalty of -10 per change
+                score += 1
                 
                 # Record the change
                 room_changes.append({
@@ -100,17 +102,92 @@ def room_stability_per_day(schedule: Schedule) -> int:
             # Update current room
             current_room = app.room.room_id
     # Print summary
-    print(f"Room changes: {len(room_changes)} detected (-10 points each)")
+    print(f"Room changes: {len(room_changes)} detected (+1 points each)")
     
     return score
 
-def case_planned_over_night(schedule: Schedule) -> int:
+def case_planned_longer_than_day(schedule: Schedule) -> int:
     """
     Check if a case is planned both at the end of day x and start of day y.
+    Apply penalty only once per case.
     """
     score = 0
+    
+    # Group timeslots by case_id
+    case_timeslots = defaultdict(set)
     for app in schedule.appointments:
-        if app.timeslot_start + app.timeslots_duration > schedule.timeslots_per_work_day:
-            # Case is planned over night
-            score -= 10
+        case_timeslots[app.case.case_id].add(app.timeslot_start)
+    
+    # Check each case
+    for case_id, timeslots in case_timeslots.items():
+        # Check each day boundary
+        for day in range(schedule.work_days - 1):
+            last_slot_of_day = (day + 1) * schedule.timeslots_per_work_day - 1
+            first_slot_of_next_day = (day + 1) * schedule.timeslots_per_work_day
+            
+            # If case has appointments on both sides of boundary, penalize it
+            if last_slot_of_day in timeslots and first_slot_of_next_day in timeslots:
+                print(f"Case {case_id} scheduled overnight: timeslots {last_slot_of_day} and {first_slot_of_next_day}")
+                score += 10
+                break  # Only penalize once per case
+    
     return score
+
+##########################################################
+############## HELPER FUNCTIONS ##########################
+##########################################################
+
+def check_hard_constraints(schedule: Schedule) -> dict:
+    """
+    Efficiently checks all hard scheduling constraints in a single pass
+    Returns a dictionary with penalties for each constraint
+    """
+    # Initialize penalties
+    penalties = {
+        "overbooked_room_in_timeslot": 0,
+        "overbooked_judge_in_timeslot": 0,
+        "judge_case_compatibility": 0,
+        "judge_room_compatiblity": 0,
+        "case_room_compatibility": 0
+    }
+    
+    # Create tracking dictionaries
+    room_usage = {}  # (room_id, timeslot) -> count
+    judge_usage = {}  # (judge_id, timeslot) -> count
+    
+    # Check all constraints in a single pass
+    for app in schedule.appointments:
+        # Check resource overbooking
+        room_key = (app.room.room_id, app.timeslot_start)
+        if room_key in room_usage:
+            room_usage[room_key] += 1
+        else:
+            room_usage[room_key] = 1
+            
+        judge_key = (app.judge.judge_id, app.timeslot_start)
+        if judge_key in judge_usage:
+            judge_usage[judge_key] += 1
+        else:
+            judge_usage[judge_key] = 1
+        
+        # Check compatibility constraints
+        if not case_judge_compatible(app.case, app.judge):
+            penalties["judge_case_compatibility"] = 1000
+            
+        if not judge_room_compatible(app.judge, app.room):
+            penalties["judge_room_compatiblity"] = 1000
+            
+        if not case_room_compatible(app.case, app.room):
+            penalties["case_room_compatibility"] = 1000
+    
+    # Calculate overbooking penalties
+    for count in room_usage.values():
+        if count > 1:
+            penalties["overbooked_room_in_timeslot"] += 1000 * (count - 1)
+            
+    for count in judge_usage.values():
+        if count > 1:
+            penalties["overbooked_judge_in_timeslot"] = 1000
+            break
+    
+    return penalties

@@ -618,7 +618,7 @@ class UndirectedGraph:
                   for j in range(i + 1, len(self.nodes)))
     
     def visualize(self) -> None:
-        if False:
+        if True:
             """Visualize the undirected graph with enhanced chain display."""
             print("\nUndirected Graph Visualization:")
             print("==============================\n")

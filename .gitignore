@@ -11,3 +11,4 @@ CourtCaseScheduler
 /venv/bin/*
 /venv
 src/__pycache__
+*.prof

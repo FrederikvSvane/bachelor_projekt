@@ -26,6 +26,7 @@ class calendar_visualizer:
         self.min_per_work_day = schedule.minutes_in_a_work_day
         self.timeslot_per_day = schedule.timeslots_per_work_day
     
+      
     def generate_calendar(self):
         """
         Generate a calendar for the schedule with all judges displayed
@@ -44,20 +45,37 @@ class calendar_visualizer:
             print(f"Day {day + 1}:")
             
             # Calculate table width based on number of judges
-            col_width = 10
-            total_width = 10 + (col_width + 3) * len(all_judge_ids)
+            col_width = 18  # Width for each column
+            
+            # Get all judges
+            judges = {judge_id: next(judge for judge in self.judges if judge.judge_id == judge_id) 
+                    for judge_id in all_judge_ids}
             
             # Print header separator
-            print("-" * total_width)
+            header_line = "+" + "+".join(["-" * col_width for _ in range(len(all_judge_ids) + 1)]) + "+"
+            print(header_line)
             
             # Print header with judge IDs
-            print(f"{'Time':<10} | ", end="")
+            print("|" + f"{'Time':^{col_width}}" + "|", end="")
             for judge_id in all_judge_ids:
-                print(f"{'Judge ' + str(judge_id):^{col_width}} | ", end="")
+                print(f"{'Judge ' + str(judge_id):^{col_width}}" + "|", end="")
             print()
             
-            # Print separator
-            print("-" * total_width)
+            # Convert characteristics sets to lists and find maximum number of characteristics
+            judge_attrs = {judge_id: list(judge.characteristics) for judge_id, judge in judges.items()}
+            max_attrs = max(len(attrs) for attrs in judge_attrs.values())
+            
+            # Print one attribute per line for each judge
+            for i in range(max_attrs):
+                print("|" + f"{'':{col_width}}" + "|", end="")
+                for judge_id in all_judge_ids:
+                    attrs = judge_attrs[judge_id]
+                    attr_text = str(attrs[i]) if i < len(attrs) else ""
+                    print(f"{attr_text:^{col_width}}" + "|", end="")
+                print()
+            
+            # Print separator between header and calendar
+            print(header_line)
             
             # Create a grid to represent the calendar
             calendar_grid = {}
@@ -84,28 +102,84 @@ class calendar_visualizer:
                     start_timeslot = min(all_timeslots)
                     
                     # Mark the starting slot with the case/room identifier
-                    calendar_grid[(start_timeslot, judge_id)] = f"C{case_id}/R{room_id}"
+                    calendar_grid[(start_timeslot, judge_id)] = f"C{case_id}:{self.print_case_info(case_id)}/R{room_id}:{self.print_room_info(room_id)}"
                     
                     # Mark all other slots of this meeting with continuation markers
                     for timeslot in all_timeslots:
                         if timeslot != start_timeslot:
-                            calendar_grid[(timeslot, judge_id)] = "#########"
-                           
+                            calendar_grid[(timeslot, judge_id)] = "#############"
+                        
             # Print each timeslot row
-            for timeslot in range(self.timeslot_per_day):  # Limit to reasonable number of slots
+            for timeslot in range(self.timeslot_per_day):
                 # Calculate time string - starting at 08:30
-                base_minutes = 8 * 60 + 30  # 8 hours and 30 minutes in minutes
+                base_minutes = 8 * 60 + 30  # 8:30 AM
                 total_minutes = base_minutes + (timeslot * self.granularity)
                 hours = total_minutes // 60
                 minutes = total_minutes % 60
                 time_str = f"{hours:02d}:{minutes:02d}"
                 
-                print(f"{time_str:<10} | ", end="")
+                # Print time and appointment cells with proper centering and borders
+                print("|" + f"{time_str:^{col_width}}" + "|", end="")
                 
                 for judge_id in all_judge_ids:
                     cell_content = calendar_grid.get((timeslot, judge_id), "")
-                    print(f"{cell_content:^{col_width}} | ", end="")
+                    print(f"{cell_content:^{col_width}}" + "|", end="")
                 print()
             
             # Print footer separator
-            print("-" * total_width)
+            print(header_line)
+            print()  # Add empty line between days
+            
+    def print_case_info(self, case_id):
+        """Returns a string with abbreviated characteristics of the case"""
+        # Find the case with matching ID
+        case = None
+        for c in self.cases:
+            if c.case_id == case_id:
+                case = c
+                break
+        
+        if not case.characteristics:
+            return ""  # Fallback if no characteristics
+        
+        abbr = []
+        for attr in case.characteristics:
+            # Compare each attribute to the enum values
+            if attr == Attribute.STRAFFE:
+                abbr.append("S")
+            elif attr == Attribute.GRUNDLOV:
+                abbr.append("G")
+            elif attr == Attribute.DOEDSBO:
+                abbr.append("D")
+            elif attr == Attribute.TVANG:
+                abbr.append("T")
+            elif attr == Attribute.CIVIL:
+                abbr.append("C")
+            elif attr == Attribute.SHORTDURATION:
+                abbr.append("Sh")
+            elif attr == Attribute.VIRTUAL:
+                abbr.append("V")
+        
+        return "".join(abbr) if abbr else ""
+
+    def print_room_info(self, room_id):
+        """Returns a string with abbreviated characteristics of the room"""
+        # Find the room with matching ID
+        room = None
+        for r in self.rooms:
+            if r.room_id == room_id:
+                room = r
+                break
+        
+        if not room.characteristics:
+            return ""
+    
+        abbr = []
+        for attr in room.characteristics:
+            if attr == Attribute.VIRTUAL:
+                abbr.append("V")
+            elif attr == Attribute.SECURITY:
+                abbr.append("Sc")
+            elif attr == Attribute.ACCESSIBILITY:
+                abbr.append("A")
+        return "".join(abbr) if abbr else ""

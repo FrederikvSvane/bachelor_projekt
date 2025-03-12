@@ -208,12 +208,12 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             characteristics.add(Attribute.VIRTUAL)
             
         # Add accessibility requirement if needed
-        if judge_data.get("accessibility", False):
+        if judge_data["accessibility"]:
             characteristics.add(Attribute.ACCESSIBILITY)
             room_requirements.add(Attribute.ACCESSIBILITY)
             
         # Add shortduration requirement if judge has health limitations
-        if judge_data.get("shortduration", False):
+        if judge_data["shortduration"]:
             characteristics.add(Attribute.SHORTDURATION)
             case_requirements.add(Attribute.SHORTDURATION)
             
@@ -241,7 +241,7 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             room_requirements.add(Attribute.VIRTUAL)
             
         # Add security requirements if needed
-        if case_data.get("security", False):
+        if case_data["security"]:
             if not case_data["virtual"]:
                 characteristics.add(Attribute.SECURITY)
                 room_requirements.add(Attribute.SECURITY)
@@ -294,16 +294,19 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         # Add virtual or physical characteristic based on the virtual flag
         if room_data["virtual"]:
             characteristics.add(Attribute.VIRTUAL)
+            room_requirements.add(Attribute.VIRTUAL)
+            case_requirements.add(Attribute.VIRTUAL)
             
         # Add accessibility if room has it
-        if room_data.get("accessibility", False):
+        if room_data["accessibility"]:
             characteristics.add(Attribute.ACCESSIBILITY)
             
         # Add security if room has it
-        if room_data.get("security", False):
+        if room_data["security"]:
             if not room_data["virtual"]:
                 characteristics.add(Attribute.SECURITY)
-            
+        
+                    
         room = Room(
             room_id=room_data["id"],
             characteristics=characteristics,
