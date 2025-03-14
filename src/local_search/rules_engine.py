@@ -1,6 +1,6 @@
 from collections import defaultdict
-from src.schedule import Schedule
-from src.model import case_room_compatible, case_judge_compatible, judge_room_compatible
+from src.base_model.schedule import Schedule
+from src.base_model.compatibility_checks import case_room_compatible, case_judge_compatible, judge_room_compatible
       
 def calculate_score(schedule: Schedule) -> int:
     """Calculate overall score by applying all scoring rules"""

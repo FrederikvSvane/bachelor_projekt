@@ -1,9 +1,11 @@
+from typing import List
 import unittest
-from src.graph_construction.matching import *
-from src.schedule import *
-from src.graph_construction.graph import *
-from src.model import *
-import random
+
+from src.base_model.case import Case
+from src.base_model.judge import Judge
+from src.base_model.attribute_enum import Attribute
+from src.graph_construction.graph import CaseJudgeNode, DirectedGraph
+from src.graph_construction.matching import assign_cases_to_judges
 
 class TestMatching(unittest.TestCase):
     

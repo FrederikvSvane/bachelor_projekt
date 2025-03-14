@@ -1,7 +1,7 @@
 import pulp
-from typing import Dict, List, Set
-from src.model import Case, Judge, Room, Appointment
-from src.schedule import Schedule
+from typing import Dict
+from src.base_model import Case, Judge, Room, Appointment
+from src.base_model.schedule import Schedule
 import time
 
 def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:

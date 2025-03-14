@@ -1,6 +1,9 @@
-# tests/test_models.py
 import unittest
-from src.model import Judge, Case, Attribute, calculate_all_judge_capacities
+
+from src.base_model.case import Case
+from src.base_model.judge import Judge
+from src.base_model.attribute_enum import Attribute
+from src.base_model.capacity_calculator import calculate_all_judge_capacities
 
 class TestJudgeCapacity(unittest.TestCase):
     def test_case_distribution_with_mixed_skills(self):

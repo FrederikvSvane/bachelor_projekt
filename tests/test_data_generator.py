@@ -1,7 +1,7 @@
-# tests/test_data_generator.py
 import unittest
-from src.data_generator import generate_test_data_parsed
-from src.model import case_requires_from_judge, judge_requires_from_case, case_room_compatible
+from src.util.data_generator import generate_test_data_parsed
+from src.base_model.compatibility_checks import case_requires_from_judge, judge_requires_from_case
+
 
 class TestDataGenerator(unittest.TestCase):
     
@@ -76,7 +76,7 @@ class TestDataGenerator(unittest.TestCase):
         judges = parsed_data["judges"]
         
         # Import the capacity calculation function
-        from src.model import calculate_all_judge_capacities
+        from src.base_model.capacity_calculator import calculate_all_judge_capacities
         
         capacities = calculate_all_judge_capacities(cases, judges)
         total_capacity = sum(capacities.values())

@@ -2,14 +2,13 @@ import argparse
 import json
 from pathlib import Path
 import sys
-import os
 
 
-from src.parser import parse_input
-from src.schedule import generate_schedule_using_double_flow
-import src.calendar_visualizer as calendar_visualizer
-from src.calendar_visualizer import calendar_visualizer
-from src.rules_engine import calculate_score
+from src.util.parser import parse_input
+from src.base_model.schedule import generate_schedule_using_double_flow
+import src.util.calendar_visualizer as calendar_visualizer
+from src.util.calendar_visualizer import calendar_visualizer
+from src.local_search.rules_engine import calculate_score
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -46,7 +45,7 @@ def main():
                 print("Error: Test mode requires 3 parameters: n_cases n_judges n_rooms n_work_days")
                 return 1
             
-            from src.data_generator import generate_test_data_parsed
+            from src.util.data_generator import generate_test_data_parsed
             n_cases, n_judges, n_rooms, n_work_days = args.test[:4]
             parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_work_days, granularity=5, min_per_work_day=390)
         

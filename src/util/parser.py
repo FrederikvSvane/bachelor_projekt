@@ -1,8 +1,11 @@
 import json
-from typing import Dict, List, Any
+from typing import Dict
 from pathlib import Path
 
-from src.model import Case, Judge, Room, Attribute
+from src.base_model.case import Case
+from src.base_model.room import Room
+from src.base_model.judge import Judge
+from src.base_model.attribute_enum import Attribute
 
 def parse_input(input_path: Path) -> Dict:
     """
