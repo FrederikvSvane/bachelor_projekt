@@ -13,15 +13,15 @@ class TestDataGenerator(unittest.TestCase):
         """
         # Generate test data with various configurations
         test_configs = [
-            (5, 3, 2),    # Small dataset: 5 cases, 3 judges, 2 rooms
-            (10, 5, 3),   # Medium dataset
-            (20, 8, 5),   # Larger dataset
+            (5, 3, 2, 1),    # Small dataset: 5 cases, 3 judges, 2 rooms
+            (10, 5, 3, 2),   # Medium dataset
+            (20, 8, 5, 2),   # Larger dataset
         ]
         
-        for n_cases, n_judges, n_rooms in test_configs:
+        for n_cases, n_judges, n_rooms, n_days in test_configs:
             with self.subTest(f"Testing with {n_cases} cases, {n_judges} judges, {n_rooms} rooms"):
                 # Generate data
-                parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms)
+                parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_days, granularity=5, min_per_work_day=390)
                 
                 cases = parsed_data["cases"]
                 judges = parsed_data["judges"]
@@ -69,9 +69,9 @@ class TestDataGenerator(unittest.TestCase):
 
     def test_judge_capacity_is_enough(self):
         """Test that the total judge capacity is sufficient for all cases."""
-        n_cases, n_judges, n_rooms = 15, 5, 3
+        n_cases, n_judges, n_rooms, n_days, granularity, min_per_work_day = 15, 5, 3, 2, 5, 390
         
-        parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms)
+        parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_days, granularity, min_per_work_day)
         cases = parsed_data["cases"]
         judges = parsed_data["judges"]
         

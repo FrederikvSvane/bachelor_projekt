@@ -1,9 +1,8 @@
 import unittest
-from src.model import Judge, Case, Attribute, Appointment, Room
-from src.schedule import Schedule
-from src.parser import parse_input
-from src.calendar_visualizer import calendar_visualizer
-from src.rules_engine import calculate_score
+from src.base_model.appointment import Appointment
+from src.base_model.schedule import Schedule
+from src.util.parser import parse_input
+from src.local_search.rules_engine import calculate_score
 
 class TestRulesEngine(unittest.TestCase):
     

@@ -56,23 +56,46 @@ class Schedule:
             )
             self.appointments.append(appointment)
             
-    def get_all_judges(self) -> set:
-        judges = set()
+    def get_all_judges(self) -> list:
+        """
+        Returns a list of all unique judges in the schedule
+        """
+        judges = []
+        judge_ids = set()  # Track IDs to avoid duplicates
+        
         for app in self.appointments:
-            judges.append(app.judge)
+            if app.judge.judge_id not in judge_ids:
+                judge_ids.add(app.judge.judge_id)
+                judges.append(app.judge)
+        
         return judges
     
-    def get_all_rooms(self) -> set:
-        rooms = set()
+    def get_all_rooms(self) -> list:
+        """
+        Returns a list of all unique rooms in the schedule
+        """
+        rooms = []
+        room_ids = set()
+        
         for app in self.appointments:
-            rooms.append(app.room)
+            if app.room.room_id not in room_ids:
+                room_ids.add(app.room.room_id)
+                rooms.append(app.room)
         return rooms
     
-    def get_all_cases(self) -> set:
-        cases = set()
+    def get_all_cases(self) -> list:
+        """
+        MAYBE DONT WORK?? Returns a list of all unique cases in the schedule
+        """
+        cases = []
+        case_ids = set()
+        
         for app in self.appointments:
-            cases.append(app.case)
+            if app.case.case_id not in case_ids:
+                case_ids.add(app.case.case_id)
+                cases.append(app.case)
         return cases
+
     
     def get_time_from_timeslot(self, timeslot: int) -> str:
         """

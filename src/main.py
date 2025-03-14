@@ -6,8 +6,7 @@ import sys
 
 from src.util.parser import parse_input
 from src.base_model.schedule import generate_schedule_using_double_flow
-import src.util.calendar_visualizer as calendar_visualizer
-from src.util.calendar_visualizer import calendar_visualizer
+from src.util.calendar_visualizer import generate_calendar
 from src.local_search.rules_engine import calculate_score
 
 def parse_arguments():
@@ -60,8 +59,7 @@ def main():
             schedule = generate_schedule_using_double_flow(parsed_data)
         
         # Visualize the schedule and give it final score        
-        visualizer = calendar_visualizer(parsed_data["judges"], parsed_data["rooms"], parsed_data["cases"], schedule)
-        visualizer.generate_calendar()
+        generate_calendar(schedule)
         score = calculate_score(schedule)
         print(f"Final score: {score}")
         

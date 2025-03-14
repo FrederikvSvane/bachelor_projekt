@@ -2,7 +2,7 @@ from src.base_model.schedule import Schedule
 from src.base_model.appointment import Appointment
 from src.base_model.room import Room
 from src.base_model.judge import Judge
-from rules_engine import calculate_score
+from src.local_search.rules_engine import calculate_score
 
 class ShiftMove:
     def __init__(self, chain: list[Appointment], to_timeslot: int):
@@ -46,12 +46,6 @@ def find_swap_moves(schedule: Schedule) -> list[SwapMove]:
             
         
     return swap_moves
-
-# def find_split_moves(schedule: Schedule):
-#     """
-#     Split/merge move for longer cases split them into smaller or merge shorter cases
-#     """
-#     pass
 
 def find_shift_moves(schedule: Schedule) -> list[ShiftMove]:
     """
