@@ -229,7 +229,16 @@ def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
     start_time = time.time()
 
     # Set a reasonable time limit
-    problem.solve(pulp.GLPK_CMD(msg=True, timeLimit=60))
+    
+    # Instead of hardcoding a solver, let PuLP find what's available
+    available_solvers = pulp.listSolvers(onlyAvailable=True)
+    print("Available solvers:", available_solvers)
+
+    if available_solvers:
+        problem.solve()  # PuLP will use the first available solver
+    else:
+        print("No solvers available!")
+    # problem.solve(pulp.GLPK_CMD(msg=True, timeLimit=60))
 
     solution_time = time.time() - start_time
     print(f"ILP solved in {solution_time:.2f} seconds with status: {pulp.LpStatus[problem.status]}")
