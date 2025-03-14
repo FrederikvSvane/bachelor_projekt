@@ -22,7 +22,7 @@ class TestRulesEngine(unittest.TestCase):
         assignments = [
             # (judge_index, room_index, case_indices)
             (0, 0, range(0, 6)),    # Judge 0, Room 0, Cases 0-5
-            (1, 1, range(6, 13)),   # Judge 1, Room 1, Cases 6-12git 
+            (1, 1, range(6, 13)),   # Judge 1, Room 1, Cases 6-12
             (2, 2, range(13, 20))   # Judge 2, Room 2, Cases 13-19
         ]
         

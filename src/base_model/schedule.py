@@ -55,6 +55,24 @@ class Schedule:
                 node.get_case().case_duration
             )
             self.appointments.append(appointment)
+            
+    def get_all_judges(self) -> set:
+        judges = set()
+        for app in self.appointments:
+            judges.append(app.judge)
+        return judges
+    
+    def get_all_rooms(self) -> set:
+        rooms = set()
+        for app in self.appointments:
+            rooms.append(app.room)
+        return rooms
+    
+    def get_all_cases(self) -> set:
+        cases = set()
+        for app in self.appointments:
+            cases.append(app.case)
+        return cases
     
     def get_time_from_timeslot(self, timeslot: int) -> str:
         """
