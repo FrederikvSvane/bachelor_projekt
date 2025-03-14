@@ -7,8 +7,8 @@ CourtCaseScheduler.DS_Store
 CourtCaseScheduler
 *.json
 .DS_Store
-*/__pycache__
+*/__pycache__/*
 /venv/bin/*
 /venv
-src/__pycache__
 *.prof
+src/*/__pycache__/*
