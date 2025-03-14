@@ -5,8 +5,8 @@ from src.base_model.judge import Judge
 from rules_engine import calculate_score
 
 class ShiftMove:
-    def __init__(self, appointment: Appointment, to_timeslot: int):
-        self.appointment = appointment
+    def __init__(self, chain: list[Appointment], to_timeslot: int):
+        self.appointment = chain
         self.to_timeslot = to_timeslot
 
 class SwapMove:
@@ -15,13 +15,13 @@ class SwapMove:
         self.appointment2 = chain2
 
 class ReassignJudgeMove:
-    def __init__(self, appointment: Appointment, new_judge: Judge):
-        self.appointment = appointment
+    def __init__(self, chain: list[Appointment], new_judge: Judge):
+        self.appointment = chain
         self.new_judge = new_judge
 
 class ReassignRoomMove:
-    def __init__(self, appointment: Appointment, new_room: Room):
-        self.appointment = appointment
+    def __init__(self, chain: list[Appointment], new_room: Room):
+        self.appointment = chain
         self.new_room = new_room
   
 
@@ -59,12 +59,11 @@ def find_shift_moves(schedule: Schedule) -> list[ShiftMove]:
     """
     shift_moves = []
 
-    appointment_chains: dict = identify_appointment_chains(schedule)    
-    for i in len(appointment_chains):
-        appointment_chain = appointment_chains[i]
+    appointment_chains: dict = identify_appointment_chains(schedule)
+    for chain in appointment_chains.values():
         for day in range(schedule.work_days):
             for timeslot in range(schedule.timeslots_per_work_day):
-                move = ShiftMove(appointment_chain[i], day * schedule.timeslots_per_work_day + timeslot)
+                move = ShiftMove(chain, day * schedule.timeslots_per_work_day + timeslot)
                 shift_moves.append(move)
     return shift_moves
     
@@ -76,9 +75,12 @@ def find_reassign_judge_moves(schedule: Schedule) -> list[ReassignJudgeMove]:
     reassign_judge_moves = []
     judges = schedule.get_all_judges()
     
-    for appointment in schedule.appointments:
+    appointment_chains: dict = identify_appointment_chains(schedule)
+    for chain in appointment_chains.values():
         for judge in judges:
-            move = ReassignJudgeMove(appointment, judge)
+            if chain.judge == judge:
+                continue
+            move = ReassignJudgeMove(chain, judge)
             reassign_judge_moves.append(move)
             
     return reassign_judge_moves
@@ -90,9 +92,12 @@ def find_reassign_room_moves(schedule: Schedule) -> list[ReassignRoomMove]:
     reassign_room_moves = []
     rooms = schedule.get_all_rooms()
     
-    for appointment in schedule.appointments:
+    appointment_chains: dict = identify_appointment_chains(schedule)
+    for chain in appointment_chains.values():
         for room in rooms:
-            move = ReassignRoomMove(appointment, room)
+            if chain.room == room:
+                continue
+            move = ReassignRoomMove(chain, room)
             reassign_room_moves.append(move)
     
     return reassign_room_moves
@@ -141,7 +146,7 @@ def run_local_search(schedule: Schedule) -> Schedule:
     """
     Run the simulated annealing algorithm to improve the given schedule.
     """
-    num_cases = len(schedule.appointments)
+    num_cases = len(identify_appointment_chains(schedule).keys())
     start_temperature = 250
     end_temperature = 1
     K = 100
@@ -149,6 +154,8 @@ def run_local_search(schedule: Schedule) -> Schedule:
     
     iterations_per_temperature = num_cases * (num_cases - 1) // 2
     
+    
+    expected_move_count = num_cases
     
     pass
     
