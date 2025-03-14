@@ -1,9 +1,9 @@
 from typing import Set
 
-from attribute_enum import Attribute
-from case import Case
-from judge import Judge
-from room import Room
+from src.base_model.attribute_enum import Attribute
+from src.base_model.case import Case
+from src.base_model.judge import Judge
+from src.base_model.room import Room
 
 # One-directional compatibility check
 def has_required_characteristics(requirements: Set[Attribute], 

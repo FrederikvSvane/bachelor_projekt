@@ -1,7 +1,11 @@
 from collections import defaultdict
 from typing import List, Dict, Optional, Type
 
-from src.model import Case, Judge, Room, calculate_all_judge_capacities, case_judge_compatible, judge_room_compatible, case_room_compatible, calculate_all_room_capacities
+from src.base_model.case import Case
+from src.base_model.judge import Judge
+from src.base_model.room import Room
+from src.base_model.capacity_calculator import calculate_all_judge_capacities, calculate_all_room_capacities
+from src.base_model.compatibility_checks import case_judge_compatible, judge_room_compatible, case_room_compatible
 
 class Node:
     """Base class for all node types in the graph."""

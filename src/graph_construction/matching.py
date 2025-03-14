@@ -1,13 +1,9 @@
 from collections import deque
-from typing import List, Dict, Tuple, Optional
+from typing import List, Optional
 from collections import deque
 from warnings import warn
 
-from src.model import Case, Judge, Room, Attribute
-from src.graph_construction.graph import (
-    DirectedGraph, UndirectedGraph, Node, JudgeNode, CaseNode, 
-    RoomNode, CaseJudgeNode, CaseJudgeRoomNode, Edge
-)
+from src.graph_construction.graph import DirectedGraph, JudgeNode, CaseNode, RoomNode, CaseJudgeNode, CaseJudgeRoomNode
 
 class AugmentingPath:
     """Represents an augmenting path in the Ford-Fulkerson algorithm."""

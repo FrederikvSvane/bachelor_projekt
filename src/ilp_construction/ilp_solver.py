@@ -1,6 +1,9 @@
 import pulp
 from typing import Dict
-from src.base_model import Case, Judge, Room, Appointment
+from src.base_model.case import Case
+from src.base_model.judge import Judge
+from src.base_model.room import Room
+from src.base_model.appointment import Appointment
 from src.base_model.schedule import Schedule
 import time
 

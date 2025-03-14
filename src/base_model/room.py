@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Set
 
-from attribute_enum import Attribute
+from src.base_model.attribute_enum import Attribute
 
 @dataclass
 class Room:

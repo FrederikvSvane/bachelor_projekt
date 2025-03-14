@@ -3,7 +3,11 @@ import math
 import json
 from typing import Dict, Any, List
 
-from src.model import Case, Judge, Room, Attribute, case_judge_compatible, case_room_compatible, judge_room_compatible
+from src.base_model.case import Case
+from src.base_model.judge import Judge
+from src.base_model.room import Room
+from src.base_model.attribute_enum import Attribute
+from src.base_model.compatibility_checks import case_judge_compatible, case_room_compatible, judge_room_compatible
 from src.graph_construction.graph import CaseJudgeNode
 
 class TruncatedNormalDistribution:

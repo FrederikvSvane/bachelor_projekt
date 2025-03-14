@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from base_model.case import Case
-from base_model.judge import Judge
-from base_model.room import Room
+from src.base_model.case import Case
+from src.base_model.judge import Judge
+from src.base_model.room import Room
 
 @dataclass
 class Appointment:
