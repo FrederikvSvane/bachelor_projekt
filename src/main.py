@@ -54,24 +54,27 @@ def main():
         if args.method == 'ilp':
             print("Using ILP-based scheduling method")
             from src.ilp_construction.ilp_solver import generate_schedule_using_ilp
-            schedule = generate_schedule_using_ilp(parsed_data)
+            initial_schedule = generate_schedule_using_ilp(parsed_data)
         elif args.method == 'graph':
             print("Using graph-based scheduling method")
-            schedule = generate_schedule_using_double_flow(parsed_data)
+            initial_schedule = generate_schedule_using_double_flow(parsed_data)
+        # Visualize the initial schedule
+        visualize(initial_schedule)
+        score = calculate_score(initial_schedule)
+        print(f"Initial score: {score}")
         
-        
-        # Visualize the schedule and give it final score        
-        visualize(schedule)
-        score = calculate_score(schedule)
-        print(f"Final score: {score}")
-        
-        run_local_search(schedule)
+        final_schedule = run_local_search(initial_schedule)
+
+        # Then the final schedule
+        visualize(final_schedule)
+        score = calculate_score(final_schedule)
+        print(f"Initial score: {score}")        
+
         # Write schedule to output file
-        #print_score_summary(schedule)
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, 'w') as f:
-            json.dump(schedule.to_json(), f, indent=2)
+            json.dump(final_schedule.to_json(), f, indent=2)
         print(f"Schedule written to {args.output}")
 
         return 0

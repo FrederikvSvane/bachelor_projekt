@@ -1,225 +1,131 @@
-from src.base_model.schedule import Schedule
-from src.base_model.appointment import Appointment, print_appointments
-from src.util.schedule_visualizer import visualize
-from src.base_model.compatibility_checks import case_judge_compatible, case_room_compatible
-from src.base_model.case import Case
-from src.base_model.room import Room
-from src.base_model.judge import Judge
-from src.local_search.rules_engine import calculate_score, print_score_summary
+import math
 import random
 from copy import deepcopy
-import math
+from typing import Dict, List
 
+from src.base_model.schedule import Schedule
+from src.local_search.move import apply_move, undo_move
+from src.local_search.move_generator import generate_random_move, calculate_compatible_judges, calculate_compatible_rooms
+from src.local_search.rules_engine import calculate_score, print_score_summary
 
-
-class SwapMove:
-    def __init__(self, judge_swap: bool, room_swap: bool, time_swap: bool):
-        self.judge_swap = judge_swap
-        self.room_swap = room_swap
-        self.time_swap = time_swap
-
-    def print_move(self):
-        print(f"Judge swap: {self.judge_swap}, Room swap: {self.room_swap}, Time swap: {self.time_swap}")
-        
-
-def calculate_alpha(K: int, start_temperature: int, end_temperature: int) -> int:
+def calculate_alpha(K: int, start_temperature: float, end_temperature: float) -> float:
     """
-    Calculate the alpha value for the simulated annealing algorithm.
-    """
-    return (end_temperature / start_temperature) ** (1 / (K -1))
-
-
-def find_all_possible_moves():
-    """
-    Find all possible neighbouring moves for the given schedule.
-    """
-    moves = []
-    for i in [True, False]:
-        for j in [True, False]:
-            for k in [True, False]:
-                moves.append(SwapMove(i,j,k))
-
-    return moves
-
-def identify_appointment_chains(schedule: Schedule) -> dict[int, list[Appointment]]:
-    """
-    Identify chains of appointments representing the same case-judge-room combination.
+    Calculate the cooling rate alpha for simulated annealing.
     
     Args:
-        schedule: The current court schedule
+        K: Number of temperature steps
+        start_temperature: Starting temperature
+        end_temperature: Ending temperature
         
     Returns:
-        Dictionary mapping (case_id, judge_id, room_id) tuples to lists of appointments
+        Alpha cooling rate
     """
-    appointment_chains: dict[int, list[Appointment]] = {}  # Key: (case_id), Value: list of appointments
-    
-    for appointment in schedule.appointments:
-        key = (appointment.case.case_id)
-        if key not in appointment_chains:
-            appointment_chains[key] = []
-        appointment_chains[key].append(appointment)
-    
-    # Sort each chain by absolute timeslot
-    for key, appointments in appointment_chains.items():
-        appointments.sort(key=lambda app: ((app.day - 1) * schedule.timeslots_per_work_day + app.timeslot_in_day))
-    
-    return appointment_chains
+    return (end_temperature / start_temperature) ** (1 / (K - 1))
 
-
-def select_random_move(moves: list[SwapMove]) -> SwapMove:
-    return random.choice(moves)
-
-def select_random_case(cases: list[int]) -> Case:
-    return random.choice(cases)
-
-def select_random_judge(judges: list[Judge], appointment: Appointment) -> Judge:
-    available_judges = [judge for judge in judges if appointment.judge != judge]
-    if not available_judges:
-        return appointment.judge
-    return random.choice(available_judges)
-
-def select_random_room(rooms: list[Room], appointment: Appointment) -> Room:
-    available_rooms = [room for room in rooms if appointment.room != room]
-    if not available_rooms:
-        return appointment.room
-    return random.choice(available_rooms)
-    
-def select_random_time(timeslots: int, appointment: Appointment) -> int:
-    #Maybe dont work
-    #TODO make sure doesnt not exceed schedule and is within day
-    available_timeslots = [timeslot for timeslot in range(timeslots + 1) if appointment.timeslot_in_day != timeslot]
-    return random.choice(available_timeslots)
-
-def swap_judge(case_chain: list[Appointment], judge: Judge) -> None:
-    for appointment in case_chain:
-        appointment.judge = judge
-
-def swap_room(case_chain: list[Appointment], room: Room) -> None:
-    for appointment in case_chain:
-        appointment.room = room
-
-def swap_time(case_chain: list[Appointment], timeslot: int) -> None:
-    for i, appointment in enumerate(case_chain):
-        appointment.timeslot_in_day = timeslot + i
-        appointment.day = appointment.timeslot_in_day // 78
-        
-        
-def calculate_compatible_judges(cases: list[Case], judges: list[Judge]) -> dict[int, list[Judge]]:
-    compatible_judges: dict[int, list[Judge]] = {}
-    for case in cases:
-        compatible_judges[case.case_id] = [judge for judge in judges if case_judge_compatible(case, judge)]
-        
-    return compatible_judges
-
-def calculate_compatible_rooms(cases: list[Case], rooms: list[Room]) -> dict[int, list[Room]]:
-    compatible_rooms: dict[int, list[Room]] = {}
-    for case in cases:
-        compatible_rooms[case.case_id] = [room for room in rooms if case_room_compatible(case, room)]
-        
-    return compatible_rooms
-
-def process_move(move: SwapMove, case_chain: list[Appointment], compatible_judges: list[Judge], compatible_rooms: list[Room], timeslots: int) -> None:
-    appointment: Appointment = case_chain[0]
-    case: Case = appointment.case
-    
-    if move.judge_swap and compatible_judges:
-        new_judge = select_random_judge(compatible_judges, appointment)
-        swap_judge(case_chain, new_judge)
-        
-    if move.room_swap and compatible_rooms:
-        new_room = select_random_room(compatible_rooms, appointment)
-        swap_room(case_chain, new_room)
-        
-    if move.time_swap:
-        new_time = select_random_time(timeslots, appointment)
-        swap_time(case_chain, new_time)
-        
-   
-def make_random_move(schedule: Schedule, compatible_judges_dict: dict[int, list[Judge]], compatible_rooms_dict: dict[int, list[Room]], timeslots: list[int]) -> Schedule:
+def simulated_annealing(schedule: Schedule, n: int, K: int, 
+                        start_temp: float, end_temp: float) -> Schedule:
     """
-    Make a random move in the given schedule.
-    We make a copy and modify it in place and then return it
+    Perform simulated annealing optimization on the given schedule.
+    
+    Args:
+        schedule: Initial schedule
+        n: Problem size factor for iteration calculation
+        K: Number of temperature steps
+        start_temp: Starting temperature
+        end_temp: Ending temperature
+        
+    Returns:
+        Optimized schedule
     """
-    new_schedule = deepcopy(schedule) #TODO avoid deepcopy - do/undo move instead
-    chain_dict = identify_appointment_chains(new_schedule)
-    
-    chosen_case_id: int = select_random_case(list(chain_dict.keys()))
-    chosen_case_chain: list[Appointment] = chain_dict[chosen_case_id]
-          
-    moves = find_all_possible_moves()
-    chosen_move: SwapMove = select_random_move(moves)
-    
-    compatible_judges = compatible_judges_dict[chosen_case_id]
-    compatible_rooms = compatible_rooms_dict[chosen_case_id]
-    
-    process_move(chosen_move, chosen_case_chain, compatible_judges, compatible_rooms, timeslots)
-    return new_schedule
-
-def simulated_annealing(schedule: Schedule, n, K, start_temp, end_temp) -> Schedule:
     iterations_per_temperature = n * (n - 1) // 2
     alpha = calculate_alpha(K, start_temp, end_temp)
     
-    cases: list[Case]  = schedule.get_all_cases()
-    judges: list[Judge] = schedule.get_all_judges()
-    rooms: list[Room] = schedule.get_all_rooms() 
-    timeslots = schedule.timeslots_per_work_day * schedule.work_days
+    cases = schedule.get_all_cases()
+    judges = schedule.get_all_judges()
+    rooms = schedule.get_all_rooms() 
     
-    compatible_judges: dict[int, list[Judge]] = calculate_compatible_judges(cases, judges)
-    compatible_rooms: dict[int, list[Room]] = calculate_compatible_rooms(cases, rooms) 
+    compatible_judges = calculate_compatible_judges(cases, judges)
+    compatible_rooms = calculate_compatible_rooms(cases, rooms) 
+    # print the len of compatible_judges and compatible_rooms for each case
+    # for case_id in compatible_judges:
+    #     print(f"Case {case_id}: Judges {len(compatible_judges[case_id])}, Rooms {len(compatible_rooms[case_id])}")
     
-    current_schedule = schedule
-    best_schedule = deepcopy(schedule)
-    current_score = calculate_score(current_schedule)
+    current_score = calculate_score(schedule)
     best_score = current_score
-        
-    temperature = start_temp
+    best_schedule = deepcopy(schedule)  # Only deep copy once at the beginning
     
-    for _ in range(K):
-        accepted_moves = 0
+    temperature = start_temp
+    total_moves = 0
+    accepted_moves = 0
+    
+    for k in range(K):
+        iteration_accepted = 0
         
-        for _ in range(iterations_per_temperature):
-            new_schedule = make_random_move(current_schedule, compatible_judges, compatible_rooms, timeslots)
-            new_score = calculate_score(new_schedule)
+        for i in range(iterations_per_temperature):
+            # Generate and apply a move
+            move = generate_random_move(schedule, compatible_judges, compatible_rooms)
             
+            # Skip empty moves
+            if (move.new_judge is None and move.new_room is None and 
+                move.new_day is None and move.new_start_timeslot is None):
+                print("wtf")
+                continue
+                
+            apply_move(move)
+            total_moves += 1
+            
+            # Calculate new score
+            new_score = calculate_score(schedule)
+            
+            # Accept or reject move
             delta = new_score - current_score
             if delta < 0 or random.random() < math.exp(-delta / temperature):
-                current_schedule = new_schedule
+                # Accept move
                 current_score = new_score
+                iteration_accepted += 1
                 accepted_moves += 1
                 
+                # Update best solution if needed
                 if current_score < best_score:
-                    best_schedule = deepcopy(current_schedule)
                     best_score = current_score
-                    if best_score == 0:
-                        return best_schedule ## perfect schedule found
+                    best_schedule = deepcopy(schedule)  # Only deep copy for best solution
                     
+            else:
+                # Reject move - undo it
+                undo_move(move)
+        
         temperature *= alpha
-        print(f"Temperature: {temperature:.2f}, Accepted moves: {accepted_moves}, current score: {current_score}, best score: {best_score}")
+        print(f"Iteration {k+1}/{K} - Temp: {temperature:.2f}, "
+              f"Accepted: {iteration_accepted}/{iterations_per_temperature}, "
+              f"Current: {current_score}, Best: {best_score}")
         
-        
-        #if accepted_moves == 0:
-         #   return best_schedule
-        
+        # Early termination if no progress
+        if iteration_accepted == 0:
+            print("Early termination: No moves accepted in this iteration")
+            break
     
+    print(f"Search completed: {total_moves} moves attempted, {accepted_moves} accepted")
     print_score_summary(best_schedule)
     return best_schedule
 
 def run_local_search(schedule: Schedule) -> Schedule:
     """
-    Run the simulated annealing algorithm with different parameter combinations.
-    Tests multiple start temperatures, end temperatures, and iteration counts.
+    Run simulated annealing with parameter testing to find optimal settings.
+    
+    Args:
+        schedule: Initial schedule
+        
+    Returns:
+        Optimized schedule
     """
     initial_schedule = deepcopy(schedule)
     initial_score = calculate_score(schedule)
     print(f"Initial score: {initial_score}")
     
-    # Define parameter ranges to test
-    #start_temperatures = [250, 500, 700, 900]
-    #end_temperatures = [1, 5, 10, 20, 30]
-    #iteration_counts = [20, 30, 40, 50]  # K values
-    start_temperatures = [8]
-    end_temperatures = [3]
-    iteration_counts = [4]
+    # Parameter ranges to test
+    start_temperatures = [500]
+    end_temperatures = [1]
+    iteration_counts = [30]
     
     # Track results
     results = []
@@ -228,27 +134,22 @@ def run_local_search(schedule: Schedule) -> Schedule:
     best_params = None
     
     total_combinations = len(start_temperatures) * len(end_temperatures) * len(iteration_counts)
-    current_combination = 0
     
     print(f"Testing {total_combinations} parameter combinations...\n")
-    
-    # Create a results table header
     print(f"{'Start Temp':^10} | {'End Temp':^8} | {'K':^4} | {'Score':^6}")
     print("-" * 35)
     
     for start_temp in start_temperatures:
         for end_temp in end_temperatures:
             for n in iteration_counts:
-                current_combination += 1
-                
                 # Create a fresh copy of the initial schedule
                 test_schedule = deepcopy(initial_schedule)
                 
-                # Run simulated annealing with the current parameters
+                # Run simulated annealing
                 optimized_schedule = simulated_annealing(
                     test_schedule,
                     n,
-                    100,
+                    100,  # Number of temperature steps
                     start_temp,
                     end_temp
                 )
@@ -279,22 +180,6 @@ def run_local_search(schedule: Schedule) -> Schedule:
     print("\n==== PARAMETER TESTING SUMMARY ====")
     print(f"Initial score: {initial_score}")
     print(f"Best score: {best_score}")
-    print(f"Best parameters: start_temp={best_params[0]}, end_temp={best_params[1]}, K={best_params[2]}")
-    
-    # Visualize the best schedule
-    print("\nBest schedule:")
-    visualize(best_schedule)
-    print_score_summary(best_schedule)
+    print(f"Best parameters: start_temp={best_params[0]}, end_temp={best_params[1]}, n={best_params[2]}")
     
     return best_schedule
-    
-    
-  
-    
-    
-    
-    
-    
-
-    
-    
