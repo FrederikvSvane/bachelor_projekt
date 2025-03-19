@@ -114,48 +114,6 @@ class Schedule:
         
         return f"{hours:02d}:{minutes:02d}"
     
-    def visualize(self) -> None:
-        """Visualize the schedule in a table format."""
-        print("\nSchedule Visualization")
-        print("=====================\n")
-        print(f"Work days: {self.work_days}")
-        print(f"Minutes per work day: {self.minutes_in_a_work_day}")
-        print(f"Time slot granularity: {self.granularity} minutes")
-        print(f"Time slots per day: {self.timeslots_per_work_day}")
-        print(f"Total appointments: {len(self.appointments)}\n")
-        if True:
-            # Map appointments by day
-            appointments_by_day = defaultdict(list)
-            for app in self.appointments:
-                appointments_by_day[app.day].append(app)
-            
-            # Print daily schedule
-            for day in range(self.work_days):
-                print(f"Day {day + 1}:")
-                print("-" * 70)
-                print(f"{'Time':10} | {'Timeslot':10} | {'Case':10} | "
-                    f"{'Judge':10} | {'Room':10} | {'Duration':10}")
-                print("-" * 70)
-                
-                if day in appointments_by_day:
-                    # Sort appointments by timeslot
-                    day_appointments = sorted(
-                        appointments_by_day[day],
-                        key=lambda a: a.timeslot_start
-                    )
-                    
-                    # Print each appointment
-                    for app in day_appointments:
-                        print(f"{self.get_time_from_timeslot(app.timeslot_start):10} | "
-                            f"{app.timeslot_start:10} | "
-                            f"{app.case.case_id:10} | "
-                            f"{app.judge.judge_id:10} | "
-                            f"{app.room.room_id:10} | "
-                            f"{app.timeslots_duration:10} min")
-                else:
-                    print("No appointments scheduled")
-                
-                print("-" * 70 + "\n")
     
     def to_json(self) -> Dict:
         """

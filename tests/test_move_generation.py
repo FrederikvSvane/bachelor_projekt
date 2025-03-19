@@ -11,57 +11,46 @@ from src.local_search.simulated_annealing import (
 )
 from src.base_model.attribute_enum import Attribute
 
-from src.util.calendar_visualizer import generate_calendar
+from src.util.schedule_visualizer import visualize
 
 
 class TestMoveGeneration(unittest.TestCase):
     
     def setUp(self):
-        """Set up a simple schedule for testing"""
-        # Create schedule
-        self.schedule = Schedule(work_days=2, minutes_in_a_work_day=390, granularity=5)
+        """
+        setting up a simple schedule for reuse
+        """
         
-        # Create cases
-        self.case1 = Case(case_id=1, case_duration=60, characteristics={Attribute.CIVIL})
-        self.case2 = Case(case_id=2, case_duration=120, characteristics={Attribute.STRAFFE})
+        self.schedule = Schedule(work_days=1, minutes_in_a_work_day=390, granularity=5)
         
-        # Create judges
+        self.case1 = Case(case_id=1, case_duration=60, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL})
+        self.case2 = Case(case_id=2, case_duration=120, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE})
         self.judge1 = Judge(judge_id=1, characteristics={Attribute.CIVIL})
-        self.judge2 = Judge(judge_id=2, characteristics={Attribute.STRAFFE, Attribute.CIVIL})
-        
-        # Create rooms
+        self.judge2 = Judge(judge_id=2, characteristics={Attribute.STRAFFE})
         self.room1 = Room(room_id=1)
         self.room2 = Room(room_id=2)
         
-        # Add appointments - case1 spans 2 timeslots
-        self.app1_1 = Appointment(self.case1, self.judge1, self.room1, 0, 0, 1)
-        self.app1_2 = Appointment(self.case1, self.judge1, self.room1, 0, 1, 1)
+        self.case1_timeslots = self.case1.case_duration // self.schedule.granularity
+        self.case2_timeslots = self.case2.case_duration // self.schedule.granularity
         
-        # Case2 is on a different day
-        self.app2 = Appointment(self.case2, self.judge2, self.room2, 1, 0, 2)
+        self.app1 = [Appointment(self.case1, self.judge1, self.room1, 0, t, 1) for t in range(self.case1_timeslots + 1)]  # + 1 because range is exclusive
+        self.app2 = [Appointment(self.case2, self.judge2, self.room2, 0, t, 1) for t in range(self.case2_timeslots + 1)]
         
-        # Add to schedule
-        self.schedule.appointments = [self.app1_1, self.app1_2, self.app2]
+        self.schedule.appointments.extend(self.app1)
+        self.schedule.appointments.extend(self.app2)
     
     def test_identify_appointment_chains(self):
-        """Test identifying chains of appointments"""
-
-        generate_calendar(self.schedule)
-        
         chains = identify_appointment_chains(self.schedule)
         
-        # Should have 2 chains
         self.assertEqual(len(chains), 2, "Should identify 2 appointment chains")
-        
-        # First chain should be for case1, judge1, room1 with 2 appointments
+
         key1 = (1, 1, 1)  # (case_id, judge_id, room_id)
         self.assertIn(key1, chains, "Chain for case1-judge1-room1 missing")
-        self.assertEqual(len(chains[key1]), 2, "Chain for case1 should have 2 appointments")
+        self.assertEqual(len(chains[key1]), self.case1_timeslots+1, "Chain for case1 should have 13 appointments")
         
-        # Second chain should be for case2, judge2, room2 with 1 appointment
-        key2 = (2, 2, 2)  # (case_id, judge_id, room_id)
+        key2 = (2, 2, 2)  
         self.assertIn(key2, chains, "Chain for case2-judge2-room2 missing")
-        self.assertEqual(len(chains[key2]), 1, "Chain for case2 should have 1 appointment")
+        self.assertEqual(len(chains[key2]), self.case2_timeslots+1, "Chain for case2 should have 26 appointments")
     
     def test_find_swap_moves(self):
         """Test finding swap moves between appointment chains"""

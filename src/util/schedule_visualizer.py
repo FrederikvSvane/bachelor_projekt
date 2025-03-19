@@ -6,7 +6,7 @@ from src.base_model.room import Room
 from src.base_model.schedule import Schedule
 from src.base_model.attribute_enum import Attribute
     
-def generate_calendar(schedule: Schedule):
+def visualize(schedule: Schedule):
     """
     Generate a calendar for the schedule with all judges displayed
     and appointments shown as Case/Room with continuation markers.
