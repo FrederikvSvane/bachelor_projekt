@@ -12,5 +12,4 @@ class Judge:
     room_requirements: Set[Attribute] = field(default_factory=set)
     
     def __str__(self):
-        char_str = ", ".join(str(char) for char in self.characteristics)
-        return f"Judge(id={self.judge_id}, chars=[{char_str}])"
+        return f"{self.judge_id}"

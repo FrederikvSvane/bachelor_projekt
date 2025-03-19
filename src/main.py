@@ -8,6 +8,7 @@ from src.util.parser import parse_input
 from src.base_model.schedule import generate_schedule_using_double_flow
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import calculate_score
+from src.local_search.simulated_annealing import run_local_search
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -58,11 +59,13 @@ def main():
             print("Using graph-based scheduling method")
             schedule = generate_schedule_using_double_flow(parsed_data)
         
+        
         # Visualize the schedule and give it final score        
         visualize(schedule)
         score = calculate_score(schedule)
         print(f"Final score: {score}")
         
+        run_local_search(schedule)
         # Write schedule to output file
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)

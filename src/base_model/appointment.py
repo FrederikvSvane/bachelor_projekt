@@ -15,7 +15,7 @@ class Appointment:
     timeslots_duration: int
     
     def __str__(self):
-        return (f"Appointment(case_id={self.case.case_id}, "
-                f"judge_id={self.judge.judge_id}, room_id={self.room.room_id}, "
-                f"day={self.day}, start={self.timeslot_start}, "
-                f"duration={self.timeslots_duration})")
+        return (f"Appointment(C{self.case}, "
+                f"J{self.judge}, R{self.room}, "
+                f"T{self.timeslot_start})")
+                
