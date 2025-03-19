@@ -155,13 +155,9 @@ def make_random_move(schedule: Schedule, compatible_judges_dict: dict[int, list[
     process_move(chosen_move, chosen_case_chain, compatible_judges, compatible_rooms, timeslots)
     return new_schedule
 
-def simulated_annealing(schedule: Schedule):
-    num_cases = len(schedule.get_all_cases())
-    iterations_per_temperature = 30 * (30 - 1) // 2
-    start_temperature = 250
-    end_temperature = 1
-    K = 100
-    alpha = calculate_alpha(K, start_temperature, end_temperature)
+def simulated_annealing(schedule: Schedule, n, K, start_temp, end_temp) -> Schedule:
+    iterations_per_temperature = n * (n - 1) // 2
+    alpha = calculate_alpha(K, start_temp, end_temp)
     
     cases: list[Case]  = schedule.get_all_cases()
     judges: list[Judge] = schedule.get_all_judges()
@@ -176,7 +172,7 @@ def simulated_annealing(schedule: Schedule):
     current_score = calculate_score(current_schedule)
     best_score = current_score
         
-    temperature = start_temperature
+    temperature = start_temp
     
     for _ in range(K):
         accepted_moves = 0
@@ -201,8 +197,8 @@ def simulated_annealing(schedule: Schedule):
         print(f"Temperature: {temperature:.2f}, Accepted moves: {accepted_moves}, current score: {current_score}, best score: {best_score}")
         
         
-        if accepted_moves == 0:
-            return best_schedule
+        #if accepted_moves == 0:
+         #   return best_schedule
         
     
     print_score_summary(best_schedule)
@@ -210,18 +206,87 @@ def simulated_annealing(schedule: Schedule):
 
 def run_local_search(schedule: Schedule) -> Schedule:
     """
-    Run the simulated annealing algorithm to improve the given schedule.
+    Run the simulated annealing algorithm with different parameter combinations.
+    Tests multiple start temperatures, end temperatures, and iteration counts.
     """
+    initial_schedule = deepcopy(schedule)
     initial_score = calculate_score(schedule)
     print(f"Initial score: {initial_score}")
     
-    optimized_schedule = simulated_annealing(schedule)
+    # Define parameter ranges to test
+    #start_temperatures = [250, 500, 700, 900]
+    #end_temperatures = [1, 5, 10, 20, 30]
+    #iteration_counts = [20, 30, 40, 50]  # K values
+    start_temperatures = [8]
+    end_temperatures = [3]
+    iteration_counts = [4]
     
-    final_score = calculate_score(optimized_schedule)
+    # Track results
+    results = []
+    best_score = float('inf')
+    best_schedule = None
+    best_params = None
     
-    visualize(optimized_schedule)
-    print(f"Final score: {final_score}")
-    return optimized_schedule
+    total_combinations = len(start_temperatures) * len(end_temperatures) * len(iteration_counts)
+    current_combination = 0
+    
+    print(f"Testing {total_combinations} parameter combinations...\n")
+    
+    # Create a results table header
+    print(f"{'Start Temp':^10} | {'End Temp':^8} | {'K':^4} | {'Score':^6}")
+    print("-" * 35)
+    
+    for start_temp in start_temperatures:
+        for end_temp in end_temperatures:
+            for n in iteration_counts:
+                current_combination += 1
+                
+                # Create a fresh copy of the initial schedule
+                test_schedule = deepcopy(initial_schedule)
+                
+                # Run simulated annealing with the current parameters
+                optimized_schedule = simulated_annealing(
+                    test_schedule,
+                    n,
+                    100,
+                    start_temp,
+                    end_temp
+                )
+                
+                # Calculate score of the optimized schedule
+                score = calculate_score(optimized_schedule)
+                
+                # Print result for this combination
+                print(f"{start_temp:^10} | {end_temp:^8} | {n:^4} | {score:^6}")
+                
+                # Save result
+                result = {
+                    "start_temp": start_temp,
+                    "end_temp": end_temp,
+                    "n": n,
+                    "score": score,
+                    "schedule": optimized_schedule
+                }
+                results.append(result)
+                
+                # Update best result if better
+                if score < best_score:
+                    best_score = score
+                    best_schedule = optimized_schedule
+                    best_params = (start_temp, end_temp, n)
+    
+    # Print summary
+    print("\n==== PARAMETER TESTING SUMMARY ====")
+    print(f"Initial score: {initial_score}")
+    print(f"Best score: {best_score}")
+    print(f"Best parameters: start_temp={best_params[0]}, end_temp={best_params[1]}, K={best_params[2]}")
+    
+    # Visualize the best schedule
+    print("\nBest schedule:")
+    visualize(best_schedule)
+    print_score_summary(best_schedule)
+    
+    return best_schedule
     
     
   

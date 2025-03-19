@@ -65,9 +65,9 @@ def main():
         score = calculate_score(schedule)
         print(f"Final score: {score}")
         
-        #run_local_search(schedule)
+        run_local_search(schedule)
         # Write schedule to output file
-        print_score_summary(schedule)
+        #print_score_summary(schedule)
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, 'w') as f:
