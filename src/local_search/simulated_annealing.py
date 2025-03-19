@@ -1,9 +1,10 @@
 from src.base_model.schedule import Schedule
-from src.base_model.appointment import Appointment
+from src.base_model.appointment import Appointment, print_appointments
 from src.base_model.case import Case
 from src.base_model.room import Room
 from src.base_model.judge import Judge
 from src.local_search.rules_engine import calculate_score
+
 
 
 class SwapMove:
@@ -80,11 +81,8 @@ def run_local_search(schedule: Schedule) -> Schedule:
     alpha = calculate_alpha(K, start_temperature, end_temperature)
     
     moves = find_all_possible_moves()
-    case0_chain = chain_dict[cases[0].case_id]
-    for app in case0_chain:
-        print(app)
     
-    #print(f"Chain_dict: {chain_dict[cases[0].case_id][0]}")
+    #print_appointments(schedule.appointments)
     
     
     iterations_per_temperature = num_cases * (num_cases - 1) // 2

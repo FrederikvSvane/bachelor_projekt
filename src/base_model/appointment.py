@@ -19,3 +19,7 @@ class Appointment:
                 f"J{self.judge}, R{self.room}, "
                 f"T{self.timeslot_start})")
                 
+def print_appointments(appointments: list[Appointment]):
+    for app in appointments:
+        print(app)
+        

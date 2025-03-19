@@ -1,3 +1,4 @@
+
 import random
 import math
 import json
@@ -58,7 +59,7 @@ def generate_test_data(n_cases: int, n_judges: int, n_rooms: int,
     gen = random.Random()
     
     # Create duration distribution
-    duration_dist = TruncatedNormalDistribution(30.0, 80.0, 5.0, 360.0)
+    duration_dist = TruncatedNormalDistribution(30.0, 80.0, 10.0, 360.0)
     
     # Get all possible case types (excluding VIRTUAL/PHYSICAL/SHORTDURATION which are handled separately)
     case_types = [attr for attr in list(Attribute) 
