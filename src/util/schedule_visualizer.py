@@ -28,8 +28,8 @@ def visualize(schedule: Schedule):
         appointments_by_day[app.day].append(app)
     
     # For each day, create a calendar view
-    for day in range(work_days):
-        print(f"Day {day + 1}:")
+    for day in range(1, work_days + 1):
+        print(f"Day {day}:")
         
         # Calculate table width based on number of judges
         col_width = 18  # Width for each column
@@ -66,25 +66,25 @@ def visualize(schedule: Schedule):
         if day in appointments_by_day:
             # Sort appointments by judge and timeslot for sequential processing
             day_appointments = sorted(appointments_by_day[day], 
-                                    key=lambda a: (a.judge.judge_id, a.timeslot_start))
+                                    key=lambda a: (a.judge.judge_id, a.timeslot_in_day))
             
             # Track previous appointment for comparison
             prev_app = None
             
             for app in day_appointments:
-                timeslot = app.timeslot_start % timeslot_per_day
+                timeslot = app.timeslot_in_day
                 judge_id = app.judge.judge_id
                 
                 # Check if this is a continuation of previous appointment
                 is_continuation = False
                 if prev_app:
-                    prev_timeslot = prev_app.timeslot_start % timeslot_per_day
+                    prev_timeslot = prev_app.timeslot_in_day
                     # Check if adjacent timeslot with same judge, case, and room
                     if (prev_app.judge.judge_id == judge_id and
                         prev_app.case.case_id == app.case.case_id and
                         prev_app.room.room_id == app.room.room_id and
                         (prev_timeslot + 1 == timeslot or  # Sequential within day
-                        (prev_timeslot == timeslot_per_day - 1 and timeslot == 0))):  # Day boundary
+                        (prev_timeslot == timeslot_per_day - 1 and timeslot == 1))):  # Day boundary
                         is_continuation = True
                 
                 if is_continuation:
@@ -95,38 +95,12 @@ def visualize(schedule: Schedule):
                 # Update previous appointment
                 prev_app = app
             
-            # meeting_blocks = defaultdict(list)
-            # for app in appointments_by_day[day]:
-            #     key = (app.case.case_id, app.judge.judge_id, app.room.room_id)
-            #     meeting_blocks[key].append(app)
-            
-            # # Process each meeting block
-            # for (case_id, judge_id, room_id), apps in meeting_blocks.items():
-            #     # Sort by timeslot
-            #     apps.sort(key=lambda a: a.timeslot_start)
-                
-            #     # Find all timeslots for this meeting
-            #     all_timeslots = set()
-            #     for app in apps:
-            #         timeslot = app.timeslot_start % timeslot_per_day
-            #         all_timeslots.add(timeslot)
-                
-            #     # Find the starting timeslot (lowest)
-            #     start_timeslot = min(all_timeslots)
-                
-            #     # Mark the starting slot with the case/room identifier
-            #     calendar_grid[(start_timeslot, judge_id)] = f"C{case_id}:{print_case_info(case_id)}/R{room_id}:{print_room_info(room_id)}"
-                
-            #     # Mark all other slots of this meeting with continuation markers
-            #     for timeslot in all_timeslots:
-            #         if timeslot != start_timeslot:
-            #             calendar_grid[(timeslot, judge_id)] = "#############"
                     
         # Print each timeslot row
-        for timeslot in range(timeslot_per_day):
+        for timeslot in range(1, timeslot_per_day + 1):
             # Calculate time string - starting at 08:30
             base_minutes = 8 * 60 + 30  # 8:30 AM
-            total_minutes = base_minutes + (timeslot * granularity)
+            total_minutes = base_minutes + ((timeslot - 1) * granularity)
             hours = total_minutes // 60
             minutes = total_minutes % 60
             time_str = f"{hours:02d}:{minutes:02d}"

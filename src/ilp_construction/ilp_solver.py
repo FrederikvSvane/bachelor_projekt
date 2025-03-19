@@ -272,8 +272,7 @@ def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
                             judge=j,
                             room=r,
                             day=day,
-                            timeslot_start=timeslot_in_day,
-                            timeslots_duration=granularity
+                            timeslot_in_day=timeslot_in_day
                         )
                         schedule.appointments.append(appointment)
 

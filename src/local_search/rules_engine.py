@@ -1,10 +1,21 @@
 from collections import defaultdict
 from src.base_model.schedule import Schedule
+from src.base_model.appointment import Appointment
 from src.base_model.compatibility_checks import case_room_compatible, case_judge_compatible, judge_room_compatible
       
-def calculate_score(schedule: Schedule) -> int:
-    """Calculate overall score by applying all scoring rules"""
+def calculate_score(schedule: Schedule, print_summary=False) -> int:
+    """
+    Calculate overall score by applying all scoring rules
+    
+    Args:
+        schedule: The schedule to evaluate
+        print_summary: If True, prints a detailed summary of scores
+        
+    Returns:
+        Total score as an integer
+    """
     score = 0
+    rule_scores = {}
     
     # Apply each rule
     rules = [
@@ -15,18 +26,61 @@ def calculate_score(schedule: Schedule) -> int:
         judge_case_compatibility,
         judge_room_compatiblity,
         case_room_compatibility,
-        unused_timeslots
-        # Add other rule functions here
+        unused_timeslots,
+        schedule_length
     ]
     
     # Apply each rule and accumulate score
     for rule_method in rules:
         rule_name = rule_method.__name__
-        rule_score = rule_method(schedule)  # Pass schedule to the function
-        print(f"Rule: {rule_name} - Score: {rule_score}")
+        rule_score = rule_method(schedule)
+        rule_scores[rule_name] = rule_score
         score += rule_score
+        
+        if print_summary:
+            print(f"Rule: {rule_name} - Score: {rule_score}")
+    
+    # Print a summary if requested
+    if print_summary:
+        print("\n=== SCORE SUMMARY ===")
+        
+        # Group by constraint type
+        hard_constraints = [
+            "overbooked_room_in_timeslot",
+            "overbooked_judge_in_timeslot",
+            "judge_case_compatibility",
+            "judge_room_compatiblity",
+            "case_room_compatibility"
+        ]
+        
+        soft_constraints = [
+            "room_stability_per_day",
+            "case_planned_longer_than_day",
+            "unused_timeslots"
+        ]
+        
+        print("\nHard Constraints:")
+        hard_total = sum(rule_scores[rule] for rule in hard_constraints)
+        for rule in hard_constraints:
+            print(f"  {rule}: {rule_scores[rule]}")
+        print(f"  Total Hard Constraints: {hard_total}")
+        
+        print("\nSoft Constraints:")
+        soft_total = sum(rule_scores[rule] for rule in soft_constraints)
+        for rule in soft_constraints:
+            print(f"  {rule}: {rule_scores[rule]}")
+        print(f"  Total Soft Constraints: {soft_total}")
+        
+        print(f"\nTOTAL SCORE: {score}")
+        print("==================\n")
     
     return score
+
+def print_score_summary(schedule: Schedule) -> None:
+    """
+    Convenience function to print a summary of the schedule's score
+    """
+    calculate_score(schedule, print_summary=True)
     
 ##########################################################
 ############## RULES DEFINED AS FUNCTIONS ################
@@ -65,13 +119,13 @@ def room_stability_per_day(schedule: Schedule) -> int:
     # Group appointments by day and judge
     by_day_judge = defaultdict(list)
     for app in schedule.appointments:
-        key = (app.day, app.judge.judge_id)
+        key = ((app.day - 1)  , app.judge.judge_id)
         by_day_judge[key].append(app)
     
     # For each day and judge, check for room changes
     for (day, judge_id), apps in by_day_judge.items():
         # Sort by timeslot to get chronological order
-        apps.sort(key=lambda a: a.timeslot_start)
+        apps.sort(key=lambda a: a.timeslot_in_day)
         
         # Track room changes
         current_room = None
@@ -86,13 +140,13 @@ def room_stability_per_day(schedule: Schedule) -> int:
                     "judge_id": judge_id,
                     "from_room": current_room,
                     "to_room": app.room.room_id,
-                    "timeslot": app.timeslot_start
+                    "timeslot": app.timeslot_in_day
                 })
             
             # Update current room
             current_room = app.room.room_id
     # Print summary
-    print(f"Room changes: {len(room_changes)} detected (+1 points each)")
+    #print(f"Room changes: {len(room_changes)} detected (+1 points each)")
     
     return score
 
@@ -119,7 +173,7 @@ def unused_timeslots(schedule: Schedule) -> int:
     for app in schedule.appointments:
         judge_id = app.judge.judge_id
         # Calculate global timeslot
-        global_timeslot = app.day * schedule.timeslots_per_work_day + (app.timeslot_start % schedule.timeslots_per_work_day)
+        global_timeslot = (app.day - 1) * schedule.timeslots_per_work_day + app.timeslot_in_day
         used_global_slots.add((judge_id, global_timeslot))
         
         # Update the global latest timeslot
@@ -130,13 +184,19 @@ def unused_timeslots(schedule: Schedule) -> int:
     
     # For each judge, count unused slots up to the global latest appointment
     for judge_id in all_judge_ids:
-        for global_timeslot in range(latest_global_timeslot + 1):
+        for global_timeslot in range(1, latest_global_timeslot + 1):
             if (judge_id, global_timeslot) not in used_global_slots:
                 unused_slots += 1
                 
    
     return unused_slots
-            
+
+def schedule_length(schedule: Schedule) -> int:
+    """
+    Calculate the total length of the schedule in minutes.
+    """
+    # Find the latest timeslot of any appointment
+    return max(schedule.timeslots_per_work_day * (app.day-1) + app.timeslot_in_day for app in schedule.appointments if isinstance(app, Appointment)) 
 
 def case_planned_longer_than_day(schedule: Schedule) -> int: 
     """
@@ -148,7 +208,7 @@ def case_planned_longer_than_day(schedule: Schedule) -> int:
     # Group timeslots by case_id
     case_timeslots = defaultdict(set)
     for app in schedule.appointments:
-        case_timeslots[app.case.case_id].add(app.timeslot_start)
+        case_timeslots[app.case.case_id].add(app.timeslot_in_day)
     
     # Check each case
     for case_id, timeslots in case_timeslots.items():
@@ -159,7 +219,7 @@ def case_planned_longer_than_day(schedule: Schedule) -> int:
             
             # If case has appointments on both sides of boundary, penalize it
             if last_slot_of_day in timeslots and first_slot_of_next_day in timeslots:
-                print(f"Case {case_id} scheduled longer than the day: timeslots {last_slot_of_day} and {first_slot_of_next_day}")
+                #print(f"Case {case_id} scheduled longer than the day: timeslots {last_slot_of_day} and {first_slot_of_next_day}")
                 score += 10
                 break  # Only penalize once per case
     
@@ -190,13 +250,13 @@ def check_hard_constraints(schedule: Schedule) -> dict:
     # Check all constraints in a single pass
     for app in schedule.appointments:
         # Check resource overbooking
-        room_key = (app.room.room_id, app.timeslot_start)
+        room_key = (app.room.room_id, app.day, app.timeslot_in_day)
         if room_key in room_usage:
             room_usage[room_key] += 1
         else:
             room_usage[room_key] = 1
             
-        judge_key = (app.judge.judge_id, app.timeslot_start)
+        judge_key = (app.judge.judge_id, app.day, app.timeslot_in_day)
         if judge_key in judge_usage:
             judge_usage[judge_key] += 1
         else:
@@ -219,7 +279,11 @@ def check_hard_constraints(schedule: Schedule) -> dict:
             
     for count in judge_usage.values():
         if count > 1:
-            penalties["overbooked_judge_in_timeslot"] = 1000
+            penalties["overbooked_judge_in_timeslot"] += 1000 * (count - 1)
             break
     
     return penalties
+
+
+def print_score_summary(schedule: Schedule) -> None:
+    calculate_score(schedule, print_summary=True)

@@ -1,11 +1,14 @@
 from src.base_model.schedule import Schedule
 from src.base_model.appointment import Appointment, print_appointments
+from src.util.schedule_visualizer import visualize
 from src.base_model.compatibility_checks import case_judge_compatible, case_room_compatible
 from src.base_model.case import Case
 from src.base_model.room import Room
 from src.base_model.judge import Judge
-from src.local_search.rules_engine import calculate_score
+from src.local_search.rules_engine import calculate_score, print_score_summary
 import random
+from copy import deepcopy
+import math
 
 
 
@@ -58,7 +61,7 @@ def identify_appointment_chains(schedule: Schedule) -> dict[int, list[Appointmen
     
     # Sort each chain by absolute timeslot
     for key, appointments in appointment_chains.items():
-        appointments.sort(key=lambda app: (app.day * schedule.timeslots_per_work_day + app.timeslot_start))
+        appointments.sort(key=lambda app: ((app.day - 1) * schedule.timeslots_per_work_day + app.timeslot_in_day))
     
     return appointment_chains
 
@@ -66,7 +69,7 @@ def identify_appointment_chains(schedule: Schedule) -> dict[int, list[Appointmen
 def select_random_move(moves: list[SwapMove]) -> SwapMove:
     return random.choice(moves)
 
-def select_random_case(cases: list[Case]) -> Case:
+def select_random_case(cases: list[int]) -> Case:
     return random.choice(cases)
 
 def select_random_judge(judges: list[Judge], appointment: Appointment) -> Judge:
@@ -82,7 +85,9 @@ def select_random_room(rooms: list[Room], appointment: Appointment) -> Room:
     return random.choice(available_rooms)
     
 def select_random_time(timeslots: int, appointment: Appointment) -> int:
-    available_timeslots = [timeslot for timeslot in range(timeslots + 1) if appointment.timeslot_start != timeslot]
+    #Maybe dont work
+    #TODO make sure doesnt not exceed schedule and is within day
+    available_timeslots = [timeslot for timeslot in range(timeslots + 1) if appointment.timeslot_in_day != timeslot]
     return random.choice(available_timeslots)
 
 def swap_judge(case_chain: list[Appointment], judge: Judge) -> None:
@@ -95,8 +100,10 @@ def swap_room(case_chain: list[Appointment], room: Room) -> None:
 
 def swap_time(case_chain: list[Appointment], timeslot: int) -> None:
     for i, appointment in enumerate(case_chain):
-        appointment.timeslot_start = timeslot + i
-
+        appointment.timeslot_in_day = timeslot + i
+        appointment.day = appointment.timeslot_in_day // 78
+        
+        
 def calculate_compatible_judges(cases: list[Case], judges: list[Judge]) -> dict[int, list[Judge]]:
     compatible_judges: dict[int, list[Judge]] = {}
     for case in cases:
@@ -111,87 +118,113 @@ def calculate_compatible_rooms(cases: list[Case], rooms: list[Room]) -> dict[int
         
     return compatible_rooms
 
-def process_move(move: SwapMove, case_chain: list[Appointment], judges: list[Judge], rooms: list[Room], timeslots: list[int]) -> list[Appointment]:
+def process_move(move: SwapMove, case_chain: list[Appointment], compatible_judges: list[Judge], compatible_rooms: list[Room], timeslots: int) -> None:
     appointment: Appointment = case_chain[0]
-    match move:
-        case SwapMove(judge_swap = True, room_swap = False, time_swap = False):
-            judge: Judge = select_random_judge(judges, appointment)
-            swap_judge(case_chain, judge)
-        case SwapMove(judge_swap = False, room_swap = True, time_swap = False):
-            room: Room = select_random_room(rooms, appointment)
-            swap_room(case_chain, room)
-        case SwapMove(judge_swap = False, room_swap = False, time_swap = True):
-            timeslot: int = select_random_time(timeslots, appointment)
-            swap_time(case_chain, timeslot)
-        case SwapMove(judge_swap = True, room_swap = True, time_swap = False):
-            judge: Judge = select_random_judge(judges, appointment)
-            room: Room = select_random_room(rooms, appointment)
-            swap_judge(case_chain, judge)
-            swap_room(case_chain, room)
-        case SwapMove(judge_swap = True, room_swap = False, time_swap = True):
-            judge: Judge = select_random_judge(judges, appointment)
-            timeslot: int = select_random_time(timeslots, appointment)
-            swap_judge(case_chain, judge)
-            swap_time(case_chain, timeslot)
-        case SwapMove(judge_swap = False, room_swap = True, time_swap = True):
-            room: Room = select_random_room(rooms, appointment)
-            timeslot: int = select_random_time(timeslots, appointment)
-            swap_room(case_chain, room)
-            swap_time(case_chain, timeslot)
-        case SwapMove(judge_swap = True, room_swap = True, time_swap = True):
-            judge: Judge = select_random_judge(judges, appointment)
-            room: Room = select_random_room(rooms, appointment)
-            timeslot: int = select_random_time(timeslots, appointment)
-            swap_judge(case_chain, judge)
-            swap_room(case_chain, room)
-            swap_time(case_chain, timeslot)
-        case SwapMove(judge_swap = False, room_swap = False, time_swap = False):
-            print("Stoopid move")
-        case _:
-            print("Invalid move")
-    return case_chain
+    case: Case = appointment.case
     
+    if move.judge_swap and compatible_judges:
+        new_judge = select_random_judge(compatible_judges, appointment)
+        swap_judge(case_chain, new_judge)
+        
+    if move.room_swap and compatible_rooms:
+        new_room = select_random_room(compatible_rooms, appointment)
+        swap_room(case_chain, new_room)
+        
+    if move.time_swap:
+        new_time = select_random_time(timeslots, appointment)
+        swap_time(case_chain, new_time)
+        
+   
+def make_random_move(schedule: Schedule, compatible_judges_dict: dict[int, list[Judge]], compatible_rooms_dict: dict[int, list[Room]], timeslots: list[int]) -> Schedule:
+    """
+    Make a random move in the given schedule.
+    We make a copy and modify it in place and then return it
+    """
+    new_schedule = deepcopy(schedule) #TODO avoid deepcopy - do/undo move instead
+    chain_dict = identify_appointment_chains(new_schedule)
+    
+    chosen_case_id: int = select_random_case(list(chain_dict.keys()))
+    chosen_case_chain: list[Appointment] = chain_dict[chosen_case_id]
+          
+    moves = find_all_possible_moves()
+    chosen_move: SwapMove = select_random_move(moves)
+    
+    compatible_judges = compatible_judges_dict[chosen_case_id]
+    compatible_rooms = compatible_rooms_dict[chosen_case_id]
+    
+    process_move(chosen_move, chosen_case_chain, compatible_judges, compatible_rooms, timeslots)
+    return new_schedule
 
 def simulated_annealing(schedule: Schedule):
     num_cases = len(schedule.get_all_cases())
-    iterations_per_temperature = num_cases * (num_cases - 1) // 2
+    iterations_per_temperature = 30 * (30 - 1) // 2
     start_temperature = 250
     end_temperature = 1
     K = 100
     alpha = calculate_alpha(K, start_temperature, end_temperature)
-    pass
+    
+    cases: list[Case]  = schedule.get_all_cases()
+    judges: list[Judge] = schedule.get_all_judges()
+    rooms: list[Room] = schedule.get_all_rooms() 
+    timeslots = schedule.timeslots_per_work_day * schedule.work_days
+    
+    compatible_judges: dict[int, list[Judge]] = calculate_compatible_judges(cases, judges)
+    compatible_rooms: dict[int, list[Room]] = calculate_compatible_rooms(cases, rooms) 
+    
+    current_schedule = schedule
+    best_schedule = deepcopy(schedule)
+    current_score = calculate_score(current_schedule)
+    best_score = current_score
+        
+    temperature = start_temperature
+    
+    for _ in range(K):
+        accepted_moves = 0
+        
+        for _ in range(iterations_per_temperature):
+            new_schedule = make_random_move(current_schedule, compatible_judges, compatible_rooms, timeslots)
+            new_score = calculate_score(new_schedule)
+            
+            delta = new_score - current_score
+            if delta < 0 or random.random() < math.exp(-delta / temperature):
+                current_schedule = new_schedule
+                current_score = new_score
+                accepted_moves += 1
+                
+                if current_score < best_score:
+                    best_schedule = deepcopy(current_schedule)
+                    best_score = current_score
+                    if best_score == 0:
+                        return best_schedule ## perfect schedule found
+                    
+        temperature *= alpha
+        print(f"Temperature: {temperature:.2f}, Accepted moves: {accepted_moves}, current score: {current_score}, best score: {best_score}")
+        
+        
+        if accepted_moves == 0:
+            return best_schedule
+        
+    
+    print_score_summary(best_schedule)
+    return best_schedule
 
 def run_local_search(schedule: Schedule) -> Schedule:
     """
     Run the simulated annealing algorithm to improve the given schedule.
     """
-    cases: list[Case]  = schedule.get_all_cases()
-    judges: list[Judge] = schedule.get_all_judges()
-    rooms: list[Room] = schedule.get_all_rooms() 
-    compatible_judges: dict[int, list[Judge]] = calculate_compatible_judges(cases, judges)
-    compatible_rooms: dict[int, list[Room]] = calculate_compatible_rooms(cases, rooms) 
-    timeslots = schedule.timeslots_per_work_day * schedule.work_days
+    initial_score = calculate_score(schedule)
+    print(f"Initial score: {initial_score}")
     
-    chain_dict = identify_appointment_chains(schedule)
+    optimized_schedule = simulated_annealing(schedule)
     
-    moves = find_all_possible_moves()
+    final_score = calculate_score(optimized_schedule)
     
-    chosen_case: Case = select_random_case(cases)
-    chosen_case_chain: list[Appointment] = chain_dict[chosen_case.case_id]
-    chosen_move: SwapMove = select_random_move(moves)
-    
-    print("chosen chain before modification:")
-    print_appointments(chosen_case_chain)
-    
-    judges.remove(chosen_case_chain[0].judge)
-    rooms.remove(chosen_case_chain[0].room)
-    modified_case_chain: list[Appointment] = process_move(chosen_move, chosen_case_chain, judges, rooms, timeslots)
+    visualize(optimized_schedule)
+    print(f"Final score: {final_score}")
+    return optimized_schedule
     
     
-    print("chosen chain after modification:")
-    print_appointments(modified_case_chain)
-    
-    
+  
     
     
     

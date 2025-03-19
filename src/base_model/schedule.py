@@ -24,11 +24,12 @@ class Schedule:
             granularity: Time slot granularity in minutes
         """
         self.appointments = []
-        self.work_days = work_days
+        self.work_days = work_days # 1-indexed
         self.minutes_in_a_work_day = minutes_in_a_work_day
         self.granularity = granularity
         self.timeslots_per_work_day = minutes_in_a_work_day // granularity
-    
+        
+        
     def generate_schedule_from_colored_graph(self, graph: UndirectedGraph) -> None:
         """
         Generate appointments using the node "color" as timeslot.
@@ -43,7 +44,8 @@ class Schedule:
                 continue
                 
             # Determine the day based on timeslot (color) and timeslots per day
-            day = node.get_color() // self.timeslots_per_work_day
+            day = node.get_color() // self.timeslots_per_work_day + 1
+            timeslot_in_day = node.get_color() % self.timeslots_per_work_day + 1
             
             # Create an appointment
             appointment = Appointment(
@@ -51,9 +53,8 @@ class Schedule:
                 node.get_judge(),
                 node.get_room(),
                 day,
-                node.get_color(),
-                node.get_case().case_duration
-            )
+                timeslot_in_day,
+                )
             self.appointments.append(appointment)
             
     def get_all_judges(self) -> list:
@@ -133,9 +134,8 @@ class Schedule:
         for app in self.appointments:
             appointment_dict = {
                 "day": app.day,
-                "timeslot_start": app.timeslot_start,
-                "time": self.get_time_from_timeslot(app.timeslot_start),
-                "timeslots_duration": app.timeslots_duration,
+                "timeslot_in_day": app.timeslot_in_day,
+                "time": self.get_time_from_timeslot(app.timeslot_in_day),
                 "case": {
                     "id": app.case.case_id,
                     "duration": app.case.case_duration,
@@ -201,5 +201,6 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     # Generate schedule
     schedule = Schedule(work_days, minutes_per_work_day, granularity)
     schedule.generate_schedule_from_colored_graph(conflict_graph)
+    
     
     return schedule
