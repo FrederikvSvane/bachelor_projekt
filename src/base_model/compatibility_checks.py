@@ -5,6 +5,8 @@ from src.base_model.case import Case
 from src.base_model.judge import Judge
 from src.base_model.room import Room
 
+
+
 # One-directional compatibility check
 def has_required_characteristics(requirements: Set[Attribute], 
                                characteristics: Set[Attribute]) -> bool:
@@ -65,3 +67,63 @@ def judge_room_compatible(judge: Judge, room: Room) -> bool:
     """Check if judge and room are compatible (bidirectional)."""
     return (is_compatible(judge.room_requirements, room.characteristics) and
             is_compatible(room.judge_requirements, judge.characteristics))
+
+
+def check_case_judge_compatibility(case_id: int, judge_id: int) -> bool:
+    return case_judge_matrix[case_id][judge_id]
+
+def check_case_room_compatibility(case_id: int, room_id: int) -> bool:
+    return case_room_matrix[case_id][room_id]
+
+def check_judge_room_compatibility(judge_id: int, room_id: int) -> bool:
+    return judge_room_matrix[judge_id][room_id]
+
+
+case_judge_matrix = {}
+case_room_matrix = {}
+judge_room_matrix = {}
+
+def initialize_compatibility_matricies(parsed_data):
+    """
+    Initialize compatibility matricies for judges, rooms, and cases.
+    
+    Args:
+        parsed_data: Parsed data dictionary
+    """
+    global case_judge_matrix, case_room_matrix, judge_room_matrix
+
+    case_judge_matrix.clear()
+    case_room_matrix.clear()
+    judge_room_matrix.clear()
+
+    cases = parsed_data["cases"]
+    judges = parsed_data["judges"]
+    rooms = parsed_data["rooms"]
+
+    for case in cases:
+        case_id = case.case_id
+        case_judge_matrix[case_id] = {}
+
+        for judge in judges:
+            judge_id = judge.judge_id
+            case_judge_matrix[case_id][judge_id] = case_judge_compatible(case, judge)
+
+    for case in cases:
+        case_id = case.case_id
+        case_room_matrix[case_id] = {}
+
+        for room in rooms:
+            room_id = room.room_id
+            case_room_matrix[case_id][room_id] = case_room_compatible(case, room)
+
+    for judge in judges:
+        judge_id = judge.judge_id
+        judge_room_matrix[judge_id] = {}
+
+        for room in rooms:
+            room_id = room.room_id
+            judge_room_matrix[judge_id][room_id] = judge_room_compatible(judge, room)
+    
+    
+    
+    

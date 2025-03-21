@@ -9,6 +9,8 @@ from src.base_model.schedule import generate_schedule_using_double_flow
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import calculate_score, print_score_summary
 from src.local_search.simulated_annealing import run_local_search
+from src.base_model.compatibility_checks import initialize_compatibility_matricies
+from src.local_search.move import Move
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -49,6 +51,8 @@ def main():
             n_cases, n_judges, n_rooms, n_work_days = args.test[:4]
             parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_work_days, granularity=5, min_per_work_day=390)
         
+
+        initialize_compatibility_matricies(parsed_data)
         
         # Choose initial schedule construction method
         if args.method == 'ilp':
@@ -60,7 +64,7 @@ def main():
             initial_schedule = generate_schedule_using_double_flow(parsed_data)
         # Visualize the initial schedule
         visualize(initial_schedule)
-        score = calculate_score(initial_schedule)
+        score = calculate_score(initial_schedule, move=Move(case_id=1, appointments=[]), initial_calculation=True)
         print(f"Initial score: {score}")
         
         final_schedule = run_local_search(initial_schedule)
