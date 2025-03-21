@@ -6,6 +6,7 @@
 CourtCaseScheduler.DS_Store
 CourtCaseScheduler
 *.json
+!quality_test.json
 .DS_Store
 */__pycache__/*
 /venv/bin/*
