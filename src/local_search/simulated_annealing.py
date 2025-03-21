@@ -4,7 +4,7 @@ from copy import deepcopy
 from typing import Dict, List
 
 from src.base_model.schedule import Schedule
-from src.local_search.move import apply_move, undo_move, Move
+from src.local_search.move import do_move, undo_move, Move
 from src.local_search.move_generator import generate_random_move, calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.rules_engine import calculate_score, print_score_summary
 
@@ -26,16 +26,6 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
                         start_temp: float, end_temp: float) -> Schedule:
     """
     Perform simulated annealing optimization on the given schedule.
-    
-    Args:
-        schedule: Initial schedule
-        n: Problem size factor for iteration calculation
-        K: Number of temperature steps
-        start_temp: Starting temperature
-        end_temp: Ending temperature
-        
-    Returns:
-        Optimized schedule
     """
     iterations_per_temperature = n * (n - 1) // 2
     alpha = calculate_alpha(K, start_temp, end_temp)
@@ -45,14 +35,12 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
     rooms = schedule.get_all_rooms() 
     
     compatible_judges = calculate_compatible_judges(cases, judges)
-    compatible_rooms = calculate_compatible_rooms(cases, rooms) 
-    # print the len of compatible_judges and compatible_rooms for each case
-    # for case_id in compatible_judges:
-    #     print(f"Case {case_id}: Judges {len(compatible_judges[case_id])}, Rooms {len(compatible_rooms[case_id])}")
+    compatible_rooms = calculate_compatible_rooms(cases, rooms)
     
-    current_score = calculate_score(schedule, move=Move(case_id=1, appointments=[]), initial_calculation=True)
+    # Initial full score calculation
+    current_score = calculate_score(schedule, move=None, initial_calculation=True)
     best_score = current_score
-    best_schedule = deepcopy(schedule)  # Only deep copy once at the beginning
+    best_schedule = deepcopy(schedule)
     
     temperature = start_temp
     total_moves = 0
@@ -68,27 +56,25 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
             # Skip empty moves
             if (move.new_judge is None and move.new_room is None and 
                 move.new_day is None and move.new_start_timeslot is None):
-                print("wtf")
                 continue
                 
-            apply_move(move)
+            # Calculate delta score before applying move
+            delta = calculate_score(schedule, move)
+            
+            do_move(move)
             total_moves += 1
             
-            # Calculate new score
-            new_score = calculate_score(schedule, move)
-            
             # Accept or reject move
-            delta = new_score - current_score
             if delta < 0 or random.random() < math.exp(-delta / temperature):
                 # Accept move
-                current_score = new_score
+                current_score += delta
                 iteration_accepted += 1
                 accepted_moves += 1
                 
                 # Update best solution if needed
                 if current_score < best_score:
                     best_score = current_score
-                    best_schedule = deepcopy(schedule)  # Only deep copy for best solution
+                    best_schedule = deepcopy(schedule)
                     
             else:
                 # Reject move - undo it
@@ -146,42 +132,42 @@ def run_local_search(schedule: Schedule) -> Schedule:
         start_temperatures[0],
         end_temperatures[0]
     )
-    # for start_temp in start_temperatures:
-    #     for end_temp in end_temperatures:
-    #         for n in iteration_counts:
-    #             # Create a fresh copy of the initial schedule
-    #             test_schedule = deepcopy(initial_schedule)
+    for start_temp in start_temperatures:
+        for end_temp in end_temperatures:
+            for n in iteration_counts:
+                # Create a fresh copy of the initial schedule
+                test_schedule = deepcopy(initial_schedule)
                 
-    #             # Run simulated annealing
-    #             optimized_schedule = simulated_annealing(
-    #                 test_schedule,
-    #                 n,
-    #                 100,  # Number of temperature steps
-    #                 start_temp,
-    #                 end_temp
-    #             )
+                # Run simulated annealing
+                optimized_schedule = simulated_annealing(
+                    test_schedule,
+                    n,
+                    100,  # Number of temperature steps
+                    start_temp,
+                    end_temp
+                )
                 
-    #             # Calculate score of the optimized schedule
-    #             score = calculate_score(optimized_schedule)
+                # Calculate score of the optimized schedule
+                score = calculate_score(optimized_schedule, move=None, initial_calculation=True)
                 
-    #             # Print result for this combination
-    #             print(f"{start_temp:^10} | {end_temp:^8} | {n:^4} | {score:^6}")
+                # Print result for this combination
+                print(f"{start_temp:^10} | {end_temp:^8} | {n:^4} | {score:^6}")
                 
-    #             # Save result
-    #             result = {
-    #                 "start_temp": start_temp,
-    #                 "end_temp": end_temp,
-    #                 "n": n,
-    #                 "score": score,
-    #                 "schedule": optimized_schedule
-    #             }
-    #             results.append(result)
+                # Save result
+                result = {
+                    "start_temp": start_temp,
+                    "end_temp": end_temp,
+                    "n": n,
+                    "score": score,
+                    "schedule": optimized_schedule
+                }
+                results.append(result)
                 
-    #             # Update best result if better
-    #             if score < best_score:
-    #                 best_score = score
-    #                 best_schedule = optimized_schedule
-    #                 best_params = (start_temp, end_temp, n)
+                # Update best result if better
+                if score < best_score:
+                    best_score = score
+                    best_schedule = optimized_schedule
+                    best_params = (start_temp, end_temp, n)
     
     # Print summary
     print("\n==== PARAMETER TESTING SUMMARY ====")

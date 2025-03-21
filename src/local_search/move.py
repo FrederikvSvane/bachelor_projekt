@@ -32,31 +32,25 @@ class Move:
         return f"Move(case {self.case_id}: {', '.join(move_type)})"
 
 
-def apply_move(move: Move) -> None:
+def do_move(move: Move) -> None:
     """Apply a move to the schedule"""
     if move.is_applied:
         return
         
-    # Apply judge swap
     if move.new_judge:
         for app in move.appointments:
             app.judge = move.new_judge
             
-    # Apply room swap
     if move.new_room:
         for app in move.appointments:
             app.room = move.new_room
             
-    # Apply day change
     if move.new_day is not None:
         for app in move.appointments:
             app.day = move.new_day
     
-    # Apply timeslot change within day
     if move.new_start_timeslot is not None:
-        # Calculate offset from old starting timeslot
         for i, app in enumerate(move.appointments):
-            # Calculate new timeslot as starting timeslot + offset from first appointment
             app.timeslot_in_day = move.new_start_timeslot + i
             
     move.is_applied = True
@@ -67,22 +61,18 @@ def undo_move(move: Move) -> None:
     if not move.is_applied:
         return
         
-    # Restore judge
     if move.old_judge:
         for app in move.appointments:
             app.judge = move.old_judge
             
-    # Restore room
     if move.old_room:
         for app in move.appointments:
             app.room = move.old_room
     
-    # Restore day
     if move.old_day is not None:
         for app in move.appointments:
             app.day = move.old_day
             
-    # Restore timeslot
     if move.old_start_timeslot is not None:
         for i, app in enumerate(move.appointments):
             app.timeslot_in_day = move.old_start_timeslot + i
