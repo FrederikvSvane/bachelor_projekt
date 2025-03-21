@@ -123,9 +123,9 @@ def run_local_search(schedule: Schedule) -> Schedule:
     print(f"Initial score: {initial_score}")
     
     # Parameter ranges to test
-    start_temperatures = [500]
+    start_temperatures = [300]
     end_temperatures = [1]
-    iteration_counts = [30]
+    iteration_counts = [40]
     
     # Track results
     results = []

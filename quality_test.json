@@ -1,0 +1,201 @@
+{
+    "work_days": 2, 
+    "min_per_work_day": 390,
+    "granularity": 5,
+    "cases": [
+        {
+            "id": 1,
+            "duration": 50,
+            "type": "Doedsbo",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 2,
+            "duration": 50,
+            "type": "Doedsbo",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 3,
+            "duration": 100,
+            "type": "Doedsbo",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 4,
+            "duration": 75,
+            "type": "Doedsbo",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 5,
+            "duration": 50,
+            "type": "Civil",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 6,
+            "duration": 65,
+            "type": "Civil",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 7,
+            "duration": 50,
+            "type": "Tvang",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 8,
+            "duration": 50,
+            "type": "Tvang",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 9,
+            "duration": 45,
+            "type": "Tvang",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 10,
+            "duration": 55,
+            "type": "Tvang",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 11,
+            "duration": 50,
+            "type": "Grundlov",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 12,
+            "duration": 60,
+            "type": "Grundlov",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 13,
+            "duration": 80,
+            "type": "Grundlov",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 14,
+            "duration": 50,
+            "type": "Civil",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 15,
+            "duration": 50,
+            "type": "Civil",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 16,
+            "duration": 50,
+            "type": "Civil",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 17,
+            "duration": 50,
+            "type": "Civil",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 18,
+            "duration": 75,
+            "type": "Civil",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 19,
+            "duration": 50,
+            "type": "Straffe",
+            "virtual": false,
+            "security": false
+        },
+        {
+            "id": 20,
+            "duration": 65,
+            "type": "Straffe",
+            "virtual": false,
+            "security": false
+        }
+    ],
+    "judges": [
+        {
+            "id": 1,
+            "skills": [
+                "Straffe",
+                "Civil",
+                "Doedsbo"
+            ],
+            "virtual": false,
+            "accessibility": false,
+            "shortduration": false
+        },
+        {
+            "id": 2,
+            "skills": [
+                "Grundlov",
+                "Tvang"
+            ],
+            "virtual": false,
+            "accessibility": false,
+            "shortduration": false
+        },
+        {
+            "id": 3,
+            "skills": [
+                "Grundlov",
+                "Straffe",
+                "Civil"
+            ],
+            "virtual": false,
+            "accessibility": false,
+            "shortduration": false
+        }
+    ],
+    "rooms": [
+        {
+            "id": 1,
+            "virtual": false,
+            "accessibility": false,
+            "security": false
+        },
+        {
+            "id": 2,
+            "virtual": false,
+            "accessibility": false,
+            "security": false
+        },
+        {
+            "id": 3,
+            "virtual": false,
+            "accessibility": false,
+            "security": false
+        }
+    ]
+}
