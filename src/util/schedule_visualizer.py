@@ -79,9 +79,9 @@ def visualize(schedule: Schedule):
                 is_continuation = False
                 if prev_app:
                     prev_timeslot = prev_app.timeslot_in_day
-                    # Check if adjacent timeslot with same judge, case, and room
+                    # Check if adjacent timeslot with same judge, meting, and room
                     if (prev_app.judge.judge_id == judge_id and
-                        prev_app.case.case_id == app.case.case_id and
+                        prev_app.meeting.meeting_id == app.meeting.meeting_id and
                         prev_app.room.room_id == app.room.room_id and
                         (prev_timeslot + 1 == timeslot or  # Sequential within day
                         (prev_timeslot == timeslot_per_day - 1 and timeslot == 1))):  # Day boundary
@@ -90,7 +90,7 @@ def visualize(schedule: Schedule):
                 if is_continuation:
                     calendar_grid[(timeslot, judge_id)] = "#############"
                 else:
-                    calendar_grid[(timeslot, judge_id)] = f"C{app.case.case_id}:{print_case_info(cases, app.case.case_id)}/R{app.room.room_id}:{print_room_info(rooms, app.room.room_id)}"
+                    calendar_grid[(timeslot, judge_id)] = f"C{app.meeting.case.case_id}/M{app.meeting.meeting_id}:{print_case_info(cases, app.meeting.case.case_id)}/R{app.room.room_id}:{print_room_info(rooms, app.room.room_id)}"
                 
                 # Update previous appointment
                 prev_app = app

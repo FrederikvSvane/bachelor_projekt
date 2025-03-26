@@ -1,5 +1,5 @@
 from typing import List, Set
-from src.graph_construction.graph import UndirectedGraph, Node, CaseJudgeRoomNode
+from src.graph_construction.graph import UndirectedGraph, Node, MeetingJudgeRoomNode
 
 def get_saturation_degree(graph: UndirectedGraph, vertex: int) -> int:
     """
@@ -25,7 +25,7 @@ def get_next_node(graph: UndirectedGraph) -> int:
     """
     Get the next node to color based on DSatur algorithm.
     The DSatur algorithm chooses the vertex with the highest saturation degree.
-    In case of a tie, it chooses the vertex with the highest degree.
+    In meeting of a tie, it chooses the vertex with the highest degree.
     
     Args:
         graph: The undirected graph
@@ -100,9 +100,9 @@ def find_start_of_chain(graph: UndirectedGraph, vertex: int) -> int:
     Returns:
         The index of the first node in the chain
     """
-    node: CaseJudgeRoomNode = graph.get_node(vertex)
+    node: MeetingJudgeRoomNode = graph.get_node(vertex)
     
-    case_id = node.get_case().case_id
+    meeting_id = node.get_meeting().meeting_id
     judge_id = node.get_judge().judge_id
     room_id = node.get_room().room_id
     
@@ -110,8 +110,8 @@ def find_start_of_chain(graph: UndirectedGraph, vertex: int) -> int:
     chain_vertices = []
     for i in range(graph.get_num_nodes()):
         check_node = graph.get_node(i)
-        if isinstance(check_node, CaseJudgeRoomNode):
-            if (check_node.get_case().case_id == case_id and 
+        if isinstance(check_node, MeetingJudgeRoomNode):
+            if (check_node.get_meeting().meeting_id == meeting_id and 
                 check_node.get_judge().judge_id == judge_id and
                 check_node.get_room().room_id == room_id):
                 parts = check_node.identifier.split(",")
@@ -124,10 +124,10 @@ def find_start_of_chain(graph: UndirectedGraph, vertex: int) -> int:
         chain_vertices.sort(key=lambda x: x[1])
         return chain_vertices[0][0]
     
-    # If no chain found case is only 1 timeslot long
+    # If no chain found meeting is only 1 timeslot long
     return vertex
        
-def color_all_cases_in_chain(graph: UndirectedGraph, start_vertex: CaseJudgeRoomNode):
+def color_all_meetings_in_chain(graph: UndirectedGraph, start_vertex: MeetingJudgeRoomNode):
     """
     Color all vertices in a chain consecutively, starting from the given vertex.
     Uses the lowest possible starting color that doesn't conflict with neighbors.
@@ -136,8 +136,8 @@ def color_all_cases_in_chain(graph: UndirectedGraph, start_vertex: CaseJudgeRoom
         graph: The undirected graph
         start_vertex: The first vertex of the chain to color
     """
-    # Get case, judge, and room IDs to identify all nodes in this chain
-    case_id = start_vertex.get_case().case_id
+    # Get meeting, judge, and room IDs to identify all nodes in this chain
+    meeting_id = start_vertex.get_meeting().meeting_id
     judge_id = start_vertex.get_judge().judge_id
     room_id = start_vertex.get_room().room_id
     
@@ -146,9 +146,9 @@ def color_all_cases_in_chain(graph: UndirectedGraph, start_vertex: CaseJudgeRoom
     
     for i in range(graph.get_num_nodes()):
         node = graph.get_node(i)
-        if isinstance(node, CaseJudgeRoomNode):
+        if isinstance(node, MeetingJudgeRoomNode):
             # Check if this node is part of the same chain
-            if (node.get_case().case_id == case_id and 
+            if (node.get_meeting().meeting_id == meeting_id and 
                 node.get_judge().judge_id == judge_id and
                 node.get_room().room_id == room_id):
                 # Extract the meeting number from the identifier
@@ -162,7 +162,7 @@ def color_all_cases_in_chain(graph: UndirectedGraph, start_vertex: CaseJudgeRoom
     chain_indices = [idx for idx, _ in chain_vertices]
     
     if not chain_indices:
-        print(f"Warning: No vertices found for chain with case_id={case_id}, judge_id={judge_id}, room_id={room_id}")
+        print(f"Warning: No vertices found for chain with meeting_id={meeting_id}, judge_id={judge_id}, room_id={room_id}")
         return
     
     # For each potential starting color, check if it works for the entire chain
@@ -209,7 +209,7 @@ def DSatur(graph: UndirectedGraph) -> None:
         graph.get_node(i).set_color(-1)
     
     # Track which chains have been colored
-    colored_chains = set()  # set of (case_id, judge_id, room_id) tuples
+    colored_chains = set()  # set of (meeting_id, judge_id, room_id) tuples
     
     # Color nodes one by one
     while True:
@@ -220,9 +220,9 @@ def DSatur(graph: UndirectedGraph) -> None:
         
         node = graph.get_node(node_idx)
         
-        if isinstance(node, CaseJudgeRoomNode):
+        if isinstance(node, MeetingJudgeRoomNode):
             # Create a chain identifier
-            chain_id = (node.get_case().case_id, node.get_judge().judge_id, node.get_room().room_id)
+            chain_id = (node.get_meeting().meeting_id, node.get_judge().judge_id, node.get_room().room_id)
             
             # If this chain hasn't been colored yet
             if chain_id not in colored_chains:
@@ -231,7 +231,7 @@ def DSatur(graph: UndirectedGraph) -> None:
                 start_vertex = graph.get_node(start_idx)
                 
                 # Color all meetings in the chain
-                color_all_cases_in_chain(graph, start_vertex)
+                color_all_meetings_in_chain(graph, start_vertex)
                 
                 # Mark this chain as colored
                 colored_chains.add(chain_id)

@@ -9,7 +9,8 @@ from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.attribute_enum import Attribute
 from src.base_model.compatibility_checks import case_judge_compatible, case_room_compatible, judge_room_compatible
-from src.graph_construction.graph import CaseJudgeNode
+from src.graph_construction.graph import MeetingJudgeNode
+from src.base_model.meeting import Meeting
 
 class TruncatedNormalDistribution:
     """Generates a truncated normal distribution for case durations."""
@@ -74,6 +75,8 @@ def generate_test_data(n_cases: int, n_judges: int, n_rooms: int,
         raw_duration = duration_dist(gen)
         duration = round(raw_duration / 5.0) * 5
         
+        num_meetings = random.randint(1, 3)
+        
         # Generate random case type from the filtered list
         case_type = random.choice(case_types)
         
@@ -89,7 +92,8 @@ def generate_test_data(n_cases: int, n_judges: int, n_rooms: int,
             "duration": duration,
             "type": str(case_type),
             "virtual": is_virtual,
-            "security": needs_security
+            "security": needs_security,
+            "meetings": num_meetings
         }
         cases.append(case)
     
@@ -231,6 +235,7 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
 
         parsed_data["judges"].append(judge)
     
+    meeting_counter = 1
     # Parse cases (cases)
     for case_data in test_data["cases"]:
         case_attr = Attribute.from_string(case_data["type"])
@@ -257,7 +262,6 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             
         case = Case(
             case_id=case_data["id"],
-            case_duration=case_data["duration"],
             characteristics=characteristics,
             judge_requirements=judge_requirements,
             room_requirements=room_requirements
@@ -286,8 +290,24 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
                     if requirement == Attribute.SHORTDURATION:
                         case.case_duration = 120
                         case.characteristics.add(requirement)
+                 
+        
+        for i in range(case_data["meetings"]):
+            meeting = Meeting(
+                meeting_id=meeting_counter,
+                meeting_duration = case_data["duration"],
+                duration_of_stay = 0,
+                judge=None,
+                room=None,
+                case=case
+            )
+            case.meetings.append(meeting)
+            meeting_counter += 1  # Increment counter for next meeting
+        
 
         parsed_data["cases"].append(case)
+    
+    
     
    
     # Parse rooms
@@ -325,7 +345,7 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
     return parsed_data
 
 
-def ensure_jc_pair_room_compatibility(jc_pairs: list[CaseJudgeNode], rooms: list[Room]) -> list[Room]:
+def ensure_jm_pair_room_compatibility(jm_pairs: list[MeetingJudgeNode], rooms: list[Room]) -> list[Room]:
     """
     Check if each case-judge pair has at least one compatible room and fix if not.
     
@@ -338,9 +358,9 @@ def ensure_jc_pair_room_compatibility(jc_pairs: list[CaseJudgeNode], rooms: list
     """
     
     
-    for jc_pair in jc_pairs:
-        judge = jc_pair.get_judge()
-        case = jc_pair.get_case()
+    for jm_pair in jm_pairs:
+        judge = jm_pair.get_judge()
+        case = jm_pair.get_meeting().case
         
         # Check if this pair has at least one compatible room
         has_compatible_room = False

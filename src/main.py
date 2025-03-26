@@ -64,22 +64,22 @@ def main():
             initial_schedule = generate_schedule_using_double_flow(parsed_data)
         # Visualize the initial schedule
         visualize(initial_schedule)
-        score = calculate_score(initial_schedule, move=None, initial_calculation=True)
-        print(f"Initial score: {score}")
+        # score = calculate_score(initial_schedule, move=None, initial_calculation=True)
+        # print(f"Initial score: {score}")
         
-        final_schedule = run_local_search(initial_schedule)
+        # final_schedule = run_local_search(initial_schedule)
 
-        # Then the final schedule
-        visualize(final_schedule)
-        score = calculate_score(final_schedule, move=None, initial_calculation=True)
-        print(f"Initial score: {score}")        
+        # # Then the final schedule
+        # visualize(final_schedule)
+        # score = calculate_score(final_schedule, move=None, initial_calculation=True)
+        # print(f"Initial score: {score}")        
 
         # Write schedule to output file
-        output_path = Path(args.output)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(output_path, 'w') as f:
-            json.dump(final_schedule.to_json(), f, indent=2)
-        print(f"Schedule written to {args.output}")
+        # output_path = Path(args.output)
+        # output_path.parent.mkdir(parents=True, exist_ok=True)
+        # with open(output_path, 'w') as f:
+        #     json.dump(final_schedule.to_json(), f, indent=2)
+        # print(f"Schedule written to {args.output}")
 
         return 0
         

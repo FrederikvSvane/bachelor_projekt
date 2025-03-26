@@ -22,6 +22,7 @@ def calculate_score(schedule: Schedule, move: Move, initial_calculation = False,
     score = 0
     rule_scores = {}
     
+        
     # Apply each rule
     rules = [
         room_stability_per_day,
