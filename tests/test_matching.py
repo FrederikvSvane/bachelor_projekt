@@ -4,7 +4,8 @@ import unittest
 from src.base_model.case import Case
 from src.base_model.judge import Judge
 from src.base_model.attribute_enum import Attribute
-from src.graph_construction.graph import CaseJudgeNode, DirectedGraph
+from src.base_model.meeting import Meeting
+from src.graph_construction.graph import MeetingJudgeNode, DirectedGraph
 from src.graph_construction.matching import assign_cases_to_judges
 
 class TestMatching(unittest.TestCase):
@@ -29,21 +30,27 @@ class TestMatching(unittest.TestCase):
         
         # Create cases
         cases = [
-            Case(case_id=1, case_duration=60, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
-            Case(case_id=2, case_duration=120, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
-            Case(case_id=3, case_duration=180, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}),
-            Case(case_id=4, case_duration=240, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}),
-            Case(case_id=5, case_duration=300, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
-            Case(case_id=6, case_duration=360, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL})
+            Case(case_id=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE},meetings=[]),
+            Case(case_id=2, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE},meetings=[]),
+            Case(case_id=3, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG},meetings=[]),
+            Case(case_id=4, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG},meetings=[]),
+            Case(case_id=5, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL},meetings=[]),
+            Case(case_id=6, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL},meetings=[])
         ]
         
+        meetings = []
+        for case in cases:
+            case.meetings = [Meeting(case.case_id, 120, 0, None, None, case)]
+            meetings.extend(case.meetings)
+            
+        
         graph = DirectedGraph()
-        graph.initialize_case_to_judge_graph(cases, judges)
+        graph.initialize_meeting_to_judge_graph(meetings, judges)
         
         # Assign cases to judges
-        judge_case_assignments: List[CaseJudgeNode] = assign_cases_to_judges(graph)
+        judge_meeting_assignments: List[MeetingJudgeNode] = assign_cases_to_judges(graph)
         cases_per_judge = {judge.judge_id: 0 for judge in judges}
-        for node in judge_case_assignments:
+        for node in judge_meeting_assignments:
             cases_per_judge[node.get_judge().judge_id] += 1
         
         self.assertEqual(cases_per_judge[1], 2)
@@ -72,17 +79,24 @@ class TestMatching(unittest.TestCase):
         
         # Create cases - none require CIVIL
         cases = [
-            Case(case_id=1, case_duration=60, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
-            Case(case_id=2, case_duration=120, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
-            Case(case_id=3, case_duration=180, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}),
-            Case(case_id=4, case_duration=240, characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}),
+            Case(case_id=1,  characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}, meetings=[]),
+            Case(case_id=2,  characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}, meetings=[]),
+            Case(case_id=3,  characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}, meetings=[]),
+            Case(case_id=4,  characteristics={Attribute.TVANG}, judge_requirements={Attribute.TVANG}, meetings=[]),
         ]
         
+        meetings = []
+        for case in cases:
+            case.meetings = [Meeting(case.case_id, 120, 0, None, None, case)]
+            meetings.extend(case.meetings)
+        
+        
+        
         graph = DirectedGraph()
-        graph.initialize_case_to_judge_graph(cases, judges)
+        graph.initialize_meeting_to_judge_graph(meetings, judges)
         
         # Assign cases to judges
-        judge_case_assignments: List[CaseJudgeNode] = assign_cases_to_judges(graph)
+        judge_case_assignments: List[MeetingJudgeNode] = assign_cases_to_judges(graph)
         cases_per_judge = {judge.judge_id: 0 for judge in judges}
         for node in judge_case_assignments:
             cases_per_judge[node.get_judge().judge_id] += 1

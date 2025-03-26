@@ -1,11 +1,11 @@
 class Move:
-    def __init__(self, case_id, appointments, 
+    def __init__(self, meeting_id, appointments, 
                  old_judge=None, new_judge=None, 
                  old_room=None, new_room=None,
                  old_day=None, new_day=None,
                  old_start_timeslot=None, new_start_timeslot=None,
                  timeslots_per_day=None):
-        self.case_id = case_id
+        self.meeting_id = meeting_id
         self.appointments = appointments  # List of affected appointments
         self.old_judge = old_judge
         self.new_judge = new_judge
@@ -29,7 +29,7 @@ class Move:
         if self.new_start_timeslot is not None:
             move_type.append(f"timeslot {self.old_start_timeslot} → {self.new_start_timeslot}")
         
-        return f"Move(case {self.case_id}: {', '.join(move_type)})"
+        return f"Move(case {self.meeting_id}: {', '.join(move_type)})"
 
 
 def do_move(move: Move) -> None:

@@ -16,7 +16,11 @@ class TestRulesEngine(unittest.TestCase):
         cases = parsed_data["cases"]
         judges = parsed_data["judges"]
         rooms = parsed_data["rooms"]
+        meetings = []
         
+        for case in cases:
+            meetings.extend(case.meetings)
+            
         # Define case assignments (which judge and room handles which cases)
         assignments = [
             # (judge_index, room_index, case_indices)
