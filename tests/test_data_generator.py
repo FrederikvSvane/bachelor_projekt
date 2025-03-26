@@ -75,14 +75,18 @@ class TestDataGenerator(unittest.TestCase):
         cases = parsed_data["cases"]
         judges = parsed_data["judges"]
         
+        meetings = []
+        for case in cases:
+            meetings.extend(case.meetings)
+        
         # Import the capacity calculation function
         from src.base_model.capacity_calculator import calculate_all_judge_capacities
         
-        capacities = calculate_all_judge_capacities(cases, judges)
+        capacities = calculate_all_judge_capacities(meetings, judges)
         total_capacity = sum(capacities.values())
         
         self.assertEqual(
-            total_capacity, len(cases),
+            total_capacity, len(meetings),
             f"Total judge capacity ({total_capacity}) does not match number of cases ({len(cases)})"
         )
         

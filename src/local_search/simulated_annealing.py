@@ -31,11 +31,12 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
     alpha = calculate_alpha(K, start_temp, end_temp)
 
     cases = schedule.get_all_cases()
+    meetings = schedule.get_all_meetings()
     judges = schedule.get_all_judges()
     rooms = schedule.get_all_rooms() 
     
-    compatible_judges = calculate_compatible_judges(cases, judges)
-    compatible_rooms = calculate_compatible_rooms(cases, rooms)
+    compatible_judges = calculate_compatible_judges(meetings, judges)
+    compatible_rooms = calculate_compatible_rooms(meetings, rooms)
     
     # Initial full score calculation
     current_score = calculate_full_score(schedule)
@@ -101,7 +102,7 @@ def run_local_search(schedule: Schedule) -> Schedule:
         Optimized schedule
     """
     initial_schedule = deepcopy(schedule)
-    initial_score = calculate_full_score(schedule, move=Move(case_id=1, appointments=[]), initial_calculation=True)
+    initial_score = calculate_full_score(schedule, move=Move(meeting_id=1, appointments=[]), initial_calculation=True)
     print(f"Initial score: {initial_score}")
     
     # Parameter ranges to test
@@ -121,13 +122,14 @@ def run_local_search(schedule: Schedule) -> Schedule:
     print(f"{'Start Temp':^10} | {'End Temp':^8} | {'K':^4} | {'Score':^6}")
     print("-" * 35)
     
-    best_schedule = simulated_annealing(
-        initial_schedule,
-        iteration_counts[0],
-        100,  # Number of temperature steps
-        start_temperatures[0],
-        end_temperatures[0]
-    )
+    # best_schedule = simulated_annealing(
+    #     initial_schedule,
+    #     iteration_counts[0],
+    #     100,  # Number of temperature steps
+    #     start_temperatures[0],
+    #     end_temperatures[0]
+    # )
+    
     for start_temp in start_temperatures:
         for end_temp in end_temperatures:
             for n in iteration_counts:

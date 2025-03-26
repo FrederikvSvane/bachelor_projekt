@@ -4,6 +4,7 @@ from typing import List, Dict, Optional, Type
 from src.base_model.case import Case
 from src.base_model.judge import Judge
 from src.base_model.room import Room
+from src.base_model.meeting import Meeting
 from src.base_model.capacity_calculator import calculate_all_judge_capacities, calculate_all_room_capacities
 from src.base_model.compatibility_checks import case_judge_compatible, judge_room_compatible, case_room_compatible
 
@@ -38,13 +39,13 @@ class JudgeNode(Node):
         return self.judge
 
 
-class CaseNode(Node):
+class MeetingNode(Node):
     """Node representing a case."""
     
-    def __init__(self, identifier: str, capacity: int, case: Case):
+    def __init__(self, identifier: str, capacity: int, meeting: Meeting):
         super().__init__(identifier)
         self.capacity = capacity
-        self.case = case
+        self.meeting = meeting
         self.flow = 0
     
     def get_capacity(self):
@@ -56,8 +57,8 @@ class CaseNode(Node):
     def set_flow(self, flow):
         self.flow = flow
     
-    def get_case(self):
-        return self.case
+    def get_meeting(self):
+        return self.meeting
 
 
 class RoomNode(Node):
@@ -86,32 +87,32 @@ class JudgeRoomNode(Node):
         return self.room
 
 
-class CaseJudgeNode(Node):
+class MeetingJudgeNode(Node):
     """Node representing a case-judge assignment."""
     
-    def __init__(self, identifier: str, case: Case, judge: Judge):
+    def __init__(self, identifier: str, meeting: Meeting, judge: Judge):
         super().__init__(identifier)
-        self.case = case
+        self.meeting = meeting
         self.judge = judge
     
-    def get_case(self):
-        return self.case
+    def get_meeting(self):
+        return self.meeting
     
     def get_judge(self):
         return self.judge
 
 
-class CaseJudgeRoomNode(Node):
+class MeetingJudgeRoomNode(Node):
     """Node representing a case-judge-room assignment."""
     
-    def __init__(self, identifier: str, case: Case, judge: Judge, room: Room):
+    def __init__(self, identifier: str, meeting: Meeting, judge: Judge, room: Room):
         super().__init__(identifier)
-        self.case = case
+        self.meeting = meeting
         self.judge = judge
         self.room = room
     
-    def get_case(self):
-        return self.case
+    def get_meeting(self):
+        return self.meeting
     
     def get_judge(self):
         return self.judge
@@ -200,9 +201,9 @@ class DirectedGraph:
         """Get the number of nodes in the graph."""
         return len(self.nodes)
     
-    def get_case_nodes(self) -> List[CaseNode]:
+    def get_case_nodes(self) -> List[MeetingNode]:
         """Get all case nodes in the graph."""
-        return [node for node in self.nodes if isinstance(node, CaseNode)]
+        return [node for node in self.nodes if isinstance(node, MeetingNode)]
     
     def add_edge(self, from_id: int, to_id: int, capacity: int) -> None:
         if not (0 <= from_id < len(self.nodes) and 0 <= to_id < len(self.nodes)):
@@ -225,10 +226,10 @@ class DirectedGraph:
         
         return self.adj_list[from_id][to_id]
     
-    def initialize_case_to_judge_graph(self, cases: List[Case], judges: List[Judge]) -> None:
+    def initialize_meeting_to_judge_graph(self, meetings: list[Meeting], judges: List[Judge]) -> None:
         """Initialize a graph for assigning judges to cases."""
         # Set counts
-        self.num_cases = len(cases)
+        self.num_cases = len(meetings)
         self.num_judges = len(judges)
         
         # Create source node
@@ -236,11 +237,11 @@ class DirectedGraph:
         source_id = self.add_node(source_node)
         
         # Create case nodes
-        case_ids = []
-        for case in cases:
-            case_node = CaseNode(f"case_{case.case_id}", 1, case)
-            case_id = self.add_node(case_node)
-            case_ids.append(case_id)
+        meeting_ids = []
+        for meeting in meetings:
+            meeting_node = MeetingNode(f"meeting_{meeting.meeting_id}", 1, meeting)
+            meeting_id = self.add_node(meeting_node)
+            meeting_ids.append(meeting_id)
         
         # Create judge nodes
         judge_node_ids = []
@@ -254,30 +255,30 @@ class DirectedGraph:
         sink_id = self.add_node(sink_node)
         
         # Create edges from source to each case with capacity 1
-        for case_id in case_ids:
-            self.add_edge(source_id, case_id, 1)
+        for meeting_id in meeting_ids:
+            self.add_edge(source_id, meeting_id, 1)
         
         # Create edges from each case to compatible judges with capacity 1
-        for i, case_id in enumerate(case_ids):
-            case = cases[i]
+        for i, meeting_id in enumerate(meeting_ids):
+            meeting = meetings[i]
             for j, judge_node_id in enumerate(judge_node_ids):
                 judge = judges[j]
-                # Use one-directional compatibility checks
-                if (case_judge_compatible(case, judge)):
-                    self.add_edge(case_id, judge_node_id, 1)
+                # Use two-directional compatibility checks
+                if (case_judge_compatible(meeting.case, judge)):
+                    self.add_edge(meeting_id, judge_node_id, 1)
         
         # Create edges from each judge to the sink with balanced capacity
-        judge_capacities = calculate_all_judge_capacities(cases, judges)
+        judge_capacities = calculate_all_judge_capacities(meetings, judges)
         for i, judge_node_id in enumerate(judge_node_ids):
             judge_capacity = judge_capacities[judges[i].judge_id]
             self.add_edge(judge_node_id, sink_id, judge_capacity)
 
-    def initialize_case_judge_pair_to_room_graph(self, jc_pairs: List[CaseJudgeNode], rooms: List[Room]) -> None:
+    def initialize_case_judge_pair_to_room_graph(self, jm_pairs: List[MeetingJudgeNode], rooms: List[Room]) -> None:
         """Initialize a graph for assigning rooms to case-judge pairs."""
         # Set counts
-        self.num_cases = len(jc_pairs)
+        self.num_meetings = len(jm_pairs)
         self.num_rooms = len(rooms)
-        self.num_jm_pairs = len(jc_pairs)
+        self.num_jm_pairs = len(jm_pairs)
         
         # Create source node
         source_node = Node("source")
@@ -285,11 +286,11 @@ class DirectedGraph:
         
         # Create case-judge pair nodes and store their IDs
         jm_pair_ids = []
-        for jc_pair in jc_pairs:
-            jm_node = CaseJudgeNode(
-                f"jm_{jc_pair.get_case().case_id}_{jc_pair.get_judge().judge_id}", 
-                jc_pair.get_case(), 
-                jc_pair.get_judge()
+        for jm_pair in jm_pairs:
+            jm_node = MeetingJudgeNode(
+                f"jm_{jm_pair.get_meeting().meeting_id}_{jm_pair.get_judge().judge_id}", 
+                jm_pair.get_meeting(), 
+                jm_pair.get_judge()
             )
             jm_pair_id = self.add_node(jm_node)
             jm_pair_ids.append(jm_pair_id)
@@ -311,156 +312,157 @@ class DirectedGraph:
         
         # Create edges from judge_case pairs to rooms
         for i, jm_pair_id in enumerate(jm_pair_ids):
-            jc_pair = jc_pairs[i]
-            judge: Judge = jc_pair.get_judge()
-            case: Case = jc_pair.get_case()
+            jm_pair = jm_pairs[i]
+            judge: Judge = jm_pair.get_judge()
+            meeting: Meeting = jm_pair.get_meeting()
             for j, room_id in enumerate(room_ids):
                 room: Room = rooms[j]
-                if judge_room_compatible(judge, room) and case_room_compatible(case, room):
+                if judge_room_compatible(judge, room) and case_room_compatible(meeting.case, room):
                     self.add_edge(jm_pair_id, room_id, 1)
         
         # Create edges from rooms to sink
-        room_capacities = calculate_all_room_capacities(jc_pairs, rooms)
+        room_capacities = calculate_all_room_capacities(jm_pairs, rooms)
         for i, room_id in enumerate(room_ids):
             room_capacity = room_capacities[rooms[i].room_id]
             self.add_edge(room_id, sink_id, room_capacity)
     
     def visualize(self) -> None:
         """Visualize the graph structure with only forward edges."""
-        print("\nGraph Visualization:")
-        print("==================\n")
-        
-        # Print nodes with additional details
-        print("Nodes:")
-        print("------")
-        for i, node in enumerate(self.nodes):
-            print(f"Node {i} (ID: {node.get_identifier()}): ", end="")
+        if True:
+            print("\nGraph Visualization:")
+            print("==================\n")
             
-            # Check for source node
-            if node.get_identifier() == "source":
-                print("Source Node")
-            # Check for case node
-            elif isinstance(node, CaseNode):
-                m = node.get_case()
-                print(f"Case (ID: {m.case_id}, Duration: {m.case_duration}, Attributes: {m.characteristics}, Required: {m.judge_requirements})")
-            # Check for judge-room node
-            elif isinstance(node, JudgeRoomNode):
-                j = node.get_judge()
-                r = node.get_room()
-                characteristics_str = ", ".join(str(attribute) for attribute in j.characteristics)
-                print(f"Judge-Room (Judge ID: {j.judge_id}, Virtual: {j.judge_virtual}, "
-                    f"Skills: [{characteristics_str}], Room ID: {r.room_id}, "
-                    f"Virtual: {r.room_virtual})")
-            # Check for case-judge-room node
-            elif isinstance(node, CaseJudgeRoomNode):
-                m = node.get_case()
-                j = node.get_judge()
-                r = node.get_room()
-                print(f"Case-Judge-Room (Case ID: {m.case_id}, "
-                    f"Judge ID: {j.judge_id}, Room ID: {r.room_id})")
-            # Check for judge node
-            elif isinstance(node, JudgeNode):
-                j = node.get_judge()
-                print(f"Judge Node (Judge ID: {j.judge_id}), Skills: {j.characteristics}, case_reqs: {j.case_requirements}")
-            # Check for room node
-            elif isinstance(node, RoomNode):
-                r = node.get_room()
-                print(f"Room Node (Room ID: {r.room_id}, characteristics: {r.characteristics}, judge_reqs: {r.judge_requirements}, case_reqs: {r.case_requirements})")
-            # Check for case-judge node
-            elif isinstance(node, CaseJudgeNode):
-                m = node.get_case()
-                j = node.get_judge()
-                print(f"Case-Judge Node (Case ID: {m.case_id}, Judge ID: {j.judge_id}, case_room_reqs: {m.room_requirements}, judge_room_reqs: {j.room_requirements})")
-            # Check for sink node
-            elif node.get_identifier() == "sink":
-                print("Sink Node")
-            # Fall back to generic node label
-            else:
-                print(f"Generic Node: {node.get_identifier()}")
-        
-        # Filter out backward edges for display
-        forward_edges = [edge for edge in self.edges if edge.get_capacity() > 0]
-        
-        # Print edges
-        print("\nEdges:")
-        print("------")
-        if len(forward_edges) <= 50:  # Only print all edges for small graphs
-            for edge in forward_edges:
-                from_node = self.nodes[edge.get_from()]
-                to_node = self.nodes[edge.get_to()]
-                print(f"{edge.get_from()} ({from_node.get_identifier()}) -> {edge.get_to()} ({to_node.get_identifier()}) "
-                    f"(Capacity: {edge.get_capacity()}, Flow: {edge.get_flow()})")
-        else:
-            print(f"[Too many edges to display ({len(forward_edges)} edges)]")
-            # Show a sample of edges
-            print("Sample of edges:")
-            for i in range(min(10, len(forward_edges))):
-                edge = forward_edges[i]
-                from_node = self.nodes[edge.get_from()]
-                to_node = self.nodes[edge.get_to()]
-                print(f"{edge.get_from()} ({from_node.get_identifier()}) -> {edge.get_to()} ({to_node.get_identifier()}) "
-                    f"(Capacity: {edge.get_capacity()}, Flow: {edge.get_flow()})")
-        
-        # Print adjacency list
-        print("\nAdjacency List:")
-        print("--------------")
-        if len(self.adj_list) <= 50:  # Only print full list for small graphs
-            for i, edges in enumerate(self.adj_list):
-                node = self.nodes[i] if i < len(self.nodes) else None
-                node_id = node.get_identifier() if node else "Unknown"
+            # Print nodes with additional details
+            print("Nodes:")
+            print("------")
+            for i, node in enumerate(self.nodes):
+                print(f"Node {i} (ID: {node.get_identifier()}): ", end="")
                 
-                # Filter out backward edges
-                forward_outgoing = {to: edge for to, edge in edges.items() if edge and edge.get_capacity() > 0}
-                
-                print(f"{i} ({node_id}, {len(forward_outgoing)} outgoing edges) -> ", end="")
-                if not forward_outgoing:
-                    print("[]")
+                # Check for source node
+                if node.get_identifier() == "source":
+                    print("Source Node")
+                # Check for case node
+                elif isinstance(node, MeetingNode):
+                    m = node.get_meeting()
+                    print(f"Case (ID: {m.meeting_id}, Duration: {m.meeting_duration}, Attributes: {m.case.characteristics}, Required: {m.case.judge_requirements})")
+                # Check for judge-room node
+                elif isinstance(node, JudgeRoomNode):
+                    j = node.get_judge()
+                    r = node.get_room()
+                    characteristics_str = ", ".join(str(attribute) for attribute in j.characteristics)
+                    print(f"Judge-Room (Judge ID: {j.judge_id}, Virtual: {j.judge_virtual}, "
+                        f"Skills: [{characteristics_str}], Room ID: {r.room_id}, "
+                        f"Virtual: {r.room_virtual})")
+                # Check for case-judge-room node
+                elif isinstance(node, MeetingJudgeRoomNode):
+                    m = node.get_meeting()
+                    j = node.get_judge()
+                    r = node.get_room()
+                    print(f"Case-Judge-Room (Case ID: {m.meeting_id}, "
+                        f"Judge ID: {j.judge_id}, Room ID: {r.room_id})")
+                # Check for judge node
+                elif isinstance(node, JudgeNode):
+                    j = node.get_judge()
+                    print(f"Judge Node (Judge ID: {j.judge_id}), Skills: {j.characteristics}, case_reqs: {j.case_requirements}")
+                # Check for room node
+                elif isinstance(node, RoomNode):
+                    r = node.get_room()
+                    print(f"Room Node (Room ID: {r.room_id}, characteristics: {r.characteristics}, judge_reqs: {r.judge_requirements}, case_reqs: {r.case_requirements})")
+                # Check for case-judge node
+                elif isinstance(node, MeetingJudgeNode):
+                    m = node.get_meeting()
+                    j = node.get_judge()
+                    print(f"Case-Judge Node (Case ID: {m.meeting_id}, Judge ID: {j.judge_id}, case_room_reqs: {m.case.room_requirements}, judge_room_reqs: {j.room_requirements})")
+                # Check for sink node
+                elif node.get_identifier() == "sink":
+                    print("Sink Node")
+                # Fall back to generic node label
                 else:
-                    print("[ ", end="")
-                    for to, edge in forward_outgoing.items():
-                        to_node = self.nodes[to] if to < len(self.nodes) else None
-                        to_id = to_node.get_identifier() if to_node else "Unknown"
-                        print(f"{to} ({to_id}, cap:{edge.get_capacity()}, flow:{edge.get_flow()}) ", end="")
-                    print("]")
-        else:
-            print(f"[Adjacency list too large to display ({len(self.adj_list)} vertices)]")
-            # Show highest-degree vertices based on forward edges only
-            vertex_degrees = []
-            for i, edges in enumerate(self.adj_list):
-                if i < len(self.nodes):
-                    # Count only forward edges
-                    forward_count = sum(1 for edge in edges.values() if edge and edge.get_capacity() > 0)
-                    vertex_degrees.append((i, forward_count))
+                    print(f"Generic Node: {node.get_identifier()}")
             
-            vertex_degrees.sort(key=lambda x: x[1], reverse=True)
-            print("Top 10 highest-degree vertices:")
-            for i, degree in vertex_degrees[:10]:
-                node = self.nodes[i]
-                print(f"{i} ({node.get_identifier()}, {degree} outgoing edges)")
-        
-        # Print flow statistics (if there's flow in the graph)
-        if any(edge.get_flow() > 0 for edge in forward_edges):
-            print("\nFlow Statistics:")
-            print("---------------")
-            total_flow = sum(edge.get_flow() for edge in forward_edges 
-                            if self.nodes[edge.get_from()].get_identifier() == "source")
-            print(f"Total flow through network: {total_flow}")
+            # Filter out backward edges for display
+            forward_edges = [edge for edge in self.edges if edge.get_capacity() > 0]
             
-            # Find flow bottlenecks (edges where flow = capacity)
-            bottlenecks = [edge for edge in forward_edges 
-                        if edge.get_flow() == edge.get_capacity() and edge.get_capacity() > 0]
-            if bottlenecks:
-                print("\nBottleneck Edges (Flow = Capacity):")
-                for edge in bottlenecks[:10]:  # Show at most 10 bottlenecks
+            # Print edges
+            print("\nEdges:")
+            print("------")
+            if len(forward_edges) <= 50:  # Only print all edges for small graphs
+                for edge in forward_edges:
                     from_node = self.nodes[edge.get_from()]
                     to_node = self.nodes[edge.get_to()]
-                    print(f"{edge.get_from()} ({from_node.get_identifier()}) -> "
-                        f"{edge.get_to()} ({to_node.get_identifier()}) "
-                        f"(Flow/Capacity: {edge.get_flow()}/{edge.get_capacity()})")
-                if len(bottlenecks) > 10:
-                    print(f"... and {len(bottlenecks) - 10} more bottleneck edges")
-        
-        print()
+                    print(f"{edge.get_from()} ({from_node.get_identifier()}) -> {edge.get_to()} ({to_node.get_identifier()}) "
+                        f"(Capacity: {edge.get_capacity()}, Flow: {edge.get_flow()})")
+            else:
+                print(f"[Too many edges to display ({len(forward_edges)} edges)]")
+                # Show a sample of edges
+                print("Sample of edges:")
+                for i in range(min(10, len(forward_edges))):
+                    edge = forward_edges[i]
+                    from_node = self.nodes[edge.get_from()]
+                    to_node = self.nodes[edge.get_to()]
+                    print(f"{edge.get_from()} ({from_node.get_identifier()}) -> {edge.get_to()} ({to_node.get_identifier()}) "
+                        f"(Capacity: {edge.get_capacity()}, Flow: {edge.get_flow()})")
+            
+            # Print adjacency list
+            print("\nAdjacency List:")
+            print("--------------")
+            if len(self.adj_list) <= 50:  # Only print full list for small graphs
+                for i, edges in enumerate(self.adj_list):
+                    node = self.nodes[i] if i < len(self.nodes) else None
+                    node_id = node.get_identifier() if node else "Unknown"
+                    
+                    # Filter out backward edges
+                    forward_outgoing = {to: edge for to, edge in edges.items() if edge and edge.get_capacity() > 0}
+                    
+                    print(f"{i} ({node_id}, {len(forward_outgoing)} outgoing edges) -> ", end="")
+                    if not forward_outgoing:
+                        print("[]")
+                    else:
+                        print("[ ", end="")
+                        for to, edge in forward_outgoing.items():
+                            to_node = self.nodes[to] if to < len(self.nodes) else None
+                            to_id = to_node.get_identifier() if to_node else "Unknown"
+                            print(f"{to} ({to_id}, cap:{edge.get_capacity()}, flow:{edge.get_flow()}) ", end="")
+                        print("]")
+            else:
+                print(f"[Adjacency list too large to display ({len(self.adj_list)} vertices)]")
+                # Show highest-degree vertices based on forward edges only
+                vertex_degrees = []
+                for i, edges in enumerate(self.adj_list):
+                    if i < len(self.nodes):
+                        # Count only forward edges
+                        forward_count = sum(1 for edge in edges.values() if edge and edge.get_capacity() > 0)
+                        vertex_degrees.append((i, forward_count))
+                
+                vertex_degrees.sort(key=lambda x: x[1], reverse=True)
+                print("Top 10 highest-degree vertices:")
+                for i, degree in vertex_degrees[:10]:
+                    node = self.nodes[i]
+                    print(f"{i} ({node.get_identifier()}, {degree} outgoing edges)")
+            
+            # Print flow statistics (if there's flow in the graph)
+            if any(edge.get_flow() > 0 for edge in forward_edges):
+                print("\nFlow Statistics:")
+                print("---------------")
+                total_flow = sum(edge.get_flow() for edge in forward_edges 
+                                if self.nodes[edge.get_from()].get_identifier() == "source")
+                print(f"Total flow through network: {total_flow}")
+                
+                # Find flow bottlenecks (edges where flow = capacity)
+                bottlenecks = [edge for edge in forward_edges 
+                            if edge.get_flow() == edge.get_capacity() and edge.get_capacity() > 0]
+                if bottlenecks:
+                    print("\nBottleneck Edges (Flow = Capacity):")
+                    for edge in bottlenecks[:10]:  # Show at most 10 bottlenecks
+                        from_node = self.nodes[edge.get_from()]
+                        to_node = self.nodes[edge.get_to()]
+                        print(f"{edge.get_from()} ({from_node.get_identifier()}) -> "
+                            f"{edge.get_to()} ({to_node.get_identifier()}) "
+                            f"(Flow/Capacity: {edge.get_flow()}/{edge.get_capacity()})")
+                    if len(bottlenecks) > 10:
+                        print(f"... and {len(bottlenecks) - 10} more bottleneck edges")
+            
+            print()
 
 class UndirectedGraph:
     """Undirected graph implementation for graph coloring problems."""
@@ -772,7 +774,7 @@ class UndirectedGraph:
         for node in self.nodes:
             node.set_color(-1)
             
-def construct_conflict_graph(assigned_cases: List[CaseJudgeRoomNode], granularity):
+def construct_conflict_graph(assigned_meetings: List[MeetingJudgeRoomNode], granularity):
     """
     Construct a conflict graph where nodes are case-judge-room assignments
     and edges connect assignments that conflict (same judge or same room).
@@ -793,30 +795,30 @@ def construct_conflict_graph(assigned_cases: List[CaseJudgeRoomNode], granularit
     nodes_by_room = {}
     
     # Add nodes based on how many timeslots the meeting span
-    for assigned_case in assigned_cases:
-        length = max(1, assigned_case.get_case().case_duration // granularity)
+    for assigned_meeting in assigned_meetings:
+        length = max(1, assigned_meeting.get_meeting().meeting_duration // granularity)
         
         # Create nodes for each timeslot of this case
-        case_indices = []
+        meeting_indices = []
         for i in range(length):
             # Create a node identifier
-            node_id = f"meeting_{assigned_case.get_case().case_id},{i}"
+            node_id = f"meeting_{assigned_meeting.get_meeting().meeting_id},{i}"
             
             # Create a new node for each timeslot with all required parameters
-            node = CaseJudgeRoomNode(node_id, 
-                                     assigned_case.get_case(), 
-                                     assigned_case.get_judge(), 
-                                     assigned_case.get_room())
+            node = MeetingJudgeRoomNode(node_id, 
+                                     assigned_meeting.get_meeting(), 
+                                     assigned_meeting.get_judge(), 
+                                     assigned_meeting.get_room())
             
             # Add the node and get its index
             index = conflict_graph.add_node(node)
             node_to_index[node] = index  # Store mapping from node to index
             all_nodes.append(node)
-            case_indices.append(index)
+            meeting_indices.append(index)
             
             # Track nodes by judge and room for conflict detection
-            judge_id = assigned_case.get_judge().judge_id
-            room_id = assigned_case.get_room().room_id
+            judge_id = assigned_meeting.get_judge().judge_id
+            room_id = assigned_meeting.get_room().room_id
             
             if judge_id not in nodes_by_judge:
                 nodes_by_judge[judge_id] = []
@@ -827,9 +829,9 @@ def construct_conflict_graph(assigned_cases: List[CaseJudgeRoomNode], granularit
             nodes_by_room[room_id].append(index)
         
         # Add edges between all pairs of nodes in this case's chain
-        for i in range(len(case_indices)):
-            for j in range(i+1, len(case_indices)):
-                conflict_graph.add_edge(case_indices[i], case_indices[j])
+        for i in range(len(meeting_indices)):
+            for j in range(i+1, len(meeting_indices)):
+                conflict_graph.add_edge(meeting_indices[i], meeting_indices[j])
     
     # Add edges for conflicts (same judge or same room)
     # Process conflicts by judge

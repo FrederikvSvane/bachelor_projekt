@@ -5,6 +5,7 @@ from pathlib import Path
 from src.base_model.case import Case
 from src.base_model.room import Room
 from src.base_model.judge import Judge
+from src.base_model.meeting import Meeting
 from src.base_model.attribute_enum import Attribute
 
 def parse_input(input_path: Path) -> Dict:
@@ -47,18 +48,20 @@ def parse_input(input_path: Path) -> Dict:
                 characteristics.add(Attribute.SECURITY)
                 room_requirements.add(Attribute.SECURITY)
             
-        # Add SHORTDURATION if case is short (<120 min)
-        if case["duration"] < 120:
-            characteristics.add(Attribute.SHORTDURATION)
-            
         case = Case(
             case_id=case["id"],
-            case_duration=case["duration"],
             characteristics=characteristics,
             judge_requirements=judge_requirements,
-            room_requirements=room_requirements
+            room_requirements=room_requirements,
+            meetings=[Meeting(meeting_id=meeting["id"], meeting_duration=meeting["duration"], duration_of_stay=0 , judge=None, room=None, case=None) for meeting in case["meetings"]]
         )
         cases.append(case)
+        
+        for case in cases:
+            for meeting in case.meetings:
+                meeting.case = case
+        
+        
     
     # Parse judges
     judges = []

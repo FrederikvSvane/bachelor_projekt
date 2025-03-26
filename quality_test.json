@@ -5,143 +5,225 @@
     "cases": [
         {
             "id": 1,
-            "duration": 50,
             "type": "Doedsbo",
             "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 1,
+                    "duration": 50,
+                    "type": "Doedsbo",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 2,
+                    "duration": 50,
+                    "type": "Doedsbo",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 3,
+                    "duration": 100,
+                    "type": "Doedsbo",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 4,
+                    "duration": 75,
+                    "type": "Doedsbo",
+                    "virtual": false,
+                    "security": false
+                }
+            ]
         },
         {
             "id": 2,
-            "duration": 50,
-            "type": "Doedsbo",
+            "type": "Civil",
             "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 5,
+                    "duration": 50,
+                    "type": "Civil",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 6,
+                    "duration": 65,
+                    "type": "Civil",
+                    "virtual": false,
+                    "security": false
+                }
+                
+            ]
         },
         {
             "id": 3,
-            "duration": 100,
-            "type": "Doedsbo",
+            "type": "Tvang",
             "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 7,
+                    "duration": 50,
+                    "type": "Tvang",
+                    "virtual": false,
+                    "security": false
+                }
+            ]
+                
         },
         {
             "id": 4,
-            "duration": 75,
-            "type": "Doedsbo",
+            "type": "Tvang",
             "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 8,
+                    "duration": 50,
+                    "type": "Tvang",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 9,
+                    "duration": 45,
+                    "type": "Tvang",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 10,
+                    "duration": 55,
+                    "type": "Tvang",
+                    "virtual": false,
+                    "security": false
+                }
+            ]
         },
         {
             "id": 5,
-            "duration": 50,
-            "type": "Civil",
+            "type": "Grundlov",
             "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 11,
+                    "duration": 50,
+                    "type": "Grundlov",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 12,
+                    "duration": 60,
+                    "type": "Grundlov",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 13,
+                    "duration": 80,
+                    "type": "Grundlov",
+                    "virtual": false,
+                    "security": false
+                }
+            ]
         },
         {
             "id": 6,
-            "duration": 65,
             "type": "Civil",
             "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 14,
+                    "duration": 50,
+                    "type": "Civil",
+                    "virtual": false,
+                    "security": false
+                }
+            ]
         },
         {
             "id": 7,
-            "duration": 50,
-            "type": "Tvang",
+            "type": "Civil",
             "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 15,
+                    "duration": 50,
+                    "type": "Civil",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 16,
+                    "duration": 50,
+                    "type": "Civil",
+                    "virtual": false,
+                    "security": false
+                }
+            ]
         },
         {
             "id": 8,
-            "duration": 50,
-            "type": "Tvang",
+            "type": "Civil",
             "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 17,
+                    "duration": 50,
+                    "type": "Civil",
+                    "virtual": false,
+                    "security": false
+                }
+            ]
         },
         {
             "id": 9,
-            "duration": 45,
-            "type": "Tvang",
+            "type": "Civil",
             "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 18,
+                    "duration": 75,
+                    "type": "Civil",
+                    "virtual": false,
+                    "security": false
+                }
+            ]
         },
         {
             "id": 10,
-            "duration": 55,
-            "type": "Tvang",
-            "virtual": false,
-            "security": false
-        },
-        {
-            "id": 11,
-            "duration": 50,
-            "type": "Grundlov",
-            "virtual": false,
-            "security": false
-        },
-        {
-            "id": 12,
-            "duration": 60,
-            "type": "Grundlov",
-            "virtual": false,
-            "security": false
-        },
-        {
-            "id": 13,
-            "duration": 80,
-            "type": "Grundlov",
-            "virtual": false,
-            "security": false
-        },
-        {
-            "id": 14,
-            "duration": 50,
-            "type": "Civil",
-            "virtual": false,
-            "security": false
-        },
-        {
-            "id": 15,
-            "duration": 50,
-            "type": "Civil",
-            "virtual": false,
-            "security": false
-        },
-        {
-            "id": 16,
-            "duration": 50,
-            "type": "Civil",
-            "virtual": false,
-            "security": false
-        },
-        {
-            "id": 17,
-            "duration": 50,
-            "type": "Civil",
-            "virtual": false,
-            "security": false
-        },
-        {
-            "id": 18,
-            "duration": 75,
-            "type": "Civil",
-            "virtual": false,
-            "security": false
-        },
-        {
-            "id": 19,
-            "duration": 50,
             "type": "Straffe",
             "virtual": false,
-            "security": false
-        },
-        {
-            "id": 20,
-            "duration": 65,
-            "type": "Straffe",
-            "virtual": false,
-            "security": false
+            "security": false,
+            "meetings": [
+                {
+                    "id": 19,
+                    "duration": 50,
+                    "type": "Straffe",
+                    "virtual": false,
+                    "security": false
+                },
+                {
+                    "id": 20,
+                    "duration": 65,
+                    "type": "Straffe",
+                    "virtual": false,
+                    "security": false
+                }
+            ]
         }
     ],
     "judges": [

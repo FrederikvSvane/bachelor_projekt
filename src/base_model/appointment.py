@@ -3,11 +3,12 @@ from dataclasses import dataclass
 from src.base_model.case import Case
 from src.base_model.judge import Judge
 from src.base_model.room import Room
+from src.base_model.meeting import Meeting
 
 @dataclass
 class Appointment:
     """Class representing a scheduled appointment"""
-    case: Case
+    meeting: Meeting
     judge: Judge
     room: Room
     day: int # 1-indexed

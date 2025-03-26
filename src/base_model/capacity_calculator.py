@@ -3,10 +3,11 @@ from typing import List, Dict
 from src.base_model.case import Case
 from src.base_model.judge import Judge
 from src.base_model.room import Room
+from src.base_model.meeting import Meeting
 from src.base_model.compatibility_checks import (case_requires_from_judge, judge_requires_from_case,
                                                 case_room_compatible, judge_room_compatible)
 
-def calculate_all_judge_capacities(cases: List[Case], judges: List[Judge]) -> Dict[int, int]:
+def calculate_all_judge_capacities(meetings: list[Meeting], judges: List[Judge]) -> Dict[int, int]:
     """
     Calculate the capacities of all judges such that the sum of their weighted capacities equals the total number of cases.
 
@@ -19,11 +20,11 @@ def calculate_all_judge_capacities(cases: List[Case], judges: List[Judge]) -> Di
     """
     # Group cases by their judge requirements
     requirement_groups = {}
-    for case in cases:
-        req_key = frozenset(case.judge_requirements)
+    for meeting in meetings:
+        req_key = frozenset(meeting.case.judge_requirements)
         if req_key not in requirement_groups:
             requirement_groups[req_key] = []
-        requirement_groups[req_key].append(case)
+        requirement_groups[req_key].append(meeting.case)
     
     # Count cases per requirement group
     group_counts = {req: len(cases_list) for req, cases_list in requirement_groups.items()}
@@ -65,7 +66,7 @@ def calculate_all_judge_capacities(cases: List[Case], judges: List[Judge]) -> Di
     int_capacities = {judge_id: int(cap) for judge_id, cap in float_capacities.items()}
     
     # Distribute remaining cases using largest remainder method
-    total_cases = len(cases)
+    total_cases = len(meetings)
     current_sum = sum(int_capacities.values())
     remaining = total_cases - current_sum
     
@@ -83,7 +84,7 @@ def calculate_all_judge_capacities(cases: List[Case], judges: List[Judge]) -> Di
     return int_capacities
 
 
-def calculate_all_room_capacities(jc_pairs, rooms: list[Room]) -> dict[int, int]:
+def calculate_all_room_capacities(jm_pairs, rooms: list[Room]) -> dict[int, int]:
     """
     Calculate the capacities of all rooms such that the sum of their capacities 
     equals the total number of cases.
@@ -97,15 +98,15 @@ def calculate_all_room_capacities(jc_pairs, rooms: list[Room]) -> dict[int, int]
     """
     # Group case_judge pairs by their room requirements
     requirement_groups = {}
-    for jc_pair in jc_pairs:
+    for jm_pair in jm_pairs:
         # Combine requirements from both case and judge
         combined_req = frozenset(
-            list(jc_pair.case.room_requirements) + 
-            list(jc_pair.judge.room_requirements)
+            list(jm_pair.meeting.case.room_requirements) + 
+            list(jm_pair.judge.room_requirements)
         )
         if combined_req not in requirement_groups:
             requirement_groups[combined_req] = []
-        requirement_groups[combined_req].append(jc_pair)
+        requirement_groups[combined_req].append(jm_pair)
     
     
     # Count cases per requirement group
@@ -120,13 +121,13 @@ def calculate_all_room_capacities(jc_pairs, rooms: list[Room]) -> dict[int, int]
             if pairs_in_group:
                 sample_pair = pairs_in_group[0]
                 # Use one-directional compatibility checks
-                compatible = (case_room_compatible(sample_pair.get_case(), room) and judge_room_compatible(sample_pair.get_judge(), room))
+                compatible = (case_room_compatible(sample_pair.get_meeting().case, room) and judge_room_compatible(sample_pair.get_judge(), room))
             else:
                 compatible = False
 
             competing_rooms = sum(1 for r in rooms if 
-                                case_room_compatible(sample_pair.case, r) and 
-                                judge_room_compatible(sample_pair.judge, r))
+                                case_room_compatible(sample_pair.get_meeting().case, r) and 
+                                judge_room_compatible(sample_pair.get_judge(), r))
 
             
             # Weight is inversely proportional to number of rooms that can handle this group
@@ -147,7 +148,7 @@ def calculate_all_room_capacities(jc_pairs, rooms: list[Room]) -> dict[int, int]
     int_capacities = {room_id: int(cap) for room_id, cap in float_capacities.items()}
     
     # Distribute remaining cases using largest remainder method
-    total_pairs = len(jc_pairs)
+    total_pairs = len(jm_pairs)
     current_sum = sum(int_capacities.values())
     remaining = total_pairs - current_sum
     

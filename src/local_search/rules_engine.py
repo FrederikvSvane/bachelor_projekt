@@ -223,7 +223,7 @@ def unused_timeslots(schedule: Schedule, move: Move, initial_calculation: bool) 
                 latest_app = app
         
         # 2. Check if we're moving what was previously the latest appointment
-        move_contains_latest = any(app.case.case_id == latest_app.case.case_id for app in move.appointments)
+        move_contains_latest = any(app.meeting.meeting_id == latest_app.meeting.meeting_id for app in move.appointments)
         
         # 3. Calculate what will be the latest timeslot after the move
         new_day = move.new_day if move.new_day is not None else move.appointments[0].day
@@ -240,7 +240,7 @@ def unused_timeslots(schedule: Schedule, move: Move, initial_calculation: bool) 
                 # Find second latest appointment (simple approach)
                 second_latest = 0
                 for app in schedule.appointments:
-                    if any(a.case.case_id == app.case.case_id for a in move.appointments):
+                    if any(a.meeting.meeting_id == app.meeting.meeting_id for a in move.appointments):
                         continue  # Skip appointments in the move
                     global_slot = (app.day - 1) * schedule.timeslots_per_work_day + app.timeslot_in_day
                     second_latest = max(second_latest, global_slot)
@@ -300,12 +300,12 @@ def case_planned_longer_than_day(schedule: Schedule, move: Move, initial_calcula
         score = 0
         
         # Group timeslots by case_id
-        case_timeslots = defaultdict(set)
+        meeting_timeslots = defaultdict(set)
         for app in schedule.appointments:
-            case_timeslots[app.case.case_id].add(app.timeslot_in_day)
+            meeting_timeslots[app.meeting.meeting_id].add(app.timeslot_in_day)
         
         # Check each case
-        for case_id, timeslots in case_timeslots.items():
+        for meeting_id, timeslots in meeting_timeslots.items():
             # Check each day boundary
             for day in range(schedule.work_days - 1):
                 last_slot_of_day = (day + 1) * schedule.timeslots_per_work_day - 1
@@ -366,13 +366,13 @@ def check_hard_constraint(schedule: Schedule, move: Move, initial_calculation) -
             else:
                 judge_usage[judge_key] = 1
             
-            if not check_case_judge_compatibility(app.case.case_id, app.judge.judge_id):
+            if not check_case_judge_compatibility(app.meeting.case.case_id, app.judge.judge_id):
                 penalties["judge_case_compatibility"] = 1000
                 
             if not check_judge_room_compatibility(app.judge.judge_id, app.room.room_id):
                 penalties["judge_room_compatiblity"] = 1000
                 
-            if not check_case_room_compatibility(app.case.case_id, app.room.room_id):
+            if not check_case_room_compatibility(app.meeting.case.case_id, app.room.room_id):
                 penalties["case_room_compatibility"] = 1000
         
         for count in room_usage.values():
@@ -388,7 +388,7 @@ def check_hard_constraint(schedule: Schedule, move: Move, initial_calculation) -
     elif move is not None and move.appointments:
         if move.new_judge:
             for app in move.appointments:
-                if not check_case_judge_compatibility(app.case.case_id, move.new_judge.judge_id):
+                if not check_case_judge_compatibility(app.meeting.case.case_id, move.new_judge.judge_id):
                     penalties["judge_case_compatibility"] = 1000
                     break
             
@@ -400,7 +400,7 @@ def check_hard_constraint(schedule: Schedule, move: Move, initial_calculation) -
         
         if move.new_room:
             for app in move.appointments:
-                if not check_case_room_compatibility(app.case.case_id, move.new_room.room_id):
+                if not check_case_room_compatibility(app.meeting.case.case_id, move.new_room.room_id):
                     penalties["case_room_compatibility"] = 1000
                     break
             
@@ -427,7 +427,7 @@ def check_hard_constraint(schedule: Schedule, move: Move, initial_calculation) -
                 room_conflicts = sum(1 for a in schedule.appointments 
                                     if a.day == day and a.timeslot_in_day == timeslot and 
                                     a.room.room_id == move.new_room.room_id and
-                                    a.case.case_id != move.case_id)
+                                    a.meeting.meeting_id != move.meeting_id)
                 if room_conflicts > 0:
                     penalties["overbooked_room_in_timeslot"] += 1000
             
@@ -435,7 +435,7 @@ def check_hard_constraint(schedule: Schedule, move: Move, initial_calculation) -
                 judge_conflicts = sum(1 for a in schedule.appointments 
                                         if a.day == day and a.timeslot_in_day == timeslot and 
                                         a.judge.judge_id == move.new_judge.judge_id and
-                                        a.case.case_id != move.case_id)
+                                        a.meeting.meeting_id != move.meeting_id)
                 if judge_conflicts > 0:
                     penalties["overbooked_judge_in_timeslot"] += 1000
     

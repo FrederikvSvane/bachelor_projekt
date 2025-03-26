@@ -3,6 +3,7 @@ import unittest
 from src.base_model.case import Case
 from src.base_model.judge import Judge
 from src.base_model.attribute_enum import Attribute
+from src.base_model.meeting import Meeting
 from src.base_model.capacity_calculator import calculate_all_judge_capacities
 
 class TestJudgeCapacity(unittest.TestCase):
@@ -29,8 +30,8 @@ class TestJudgeCapacity(unittest.TestCase):
         for i in range(1, 51):
             case = Case(
                 case_id=i,
-                case_duration=60,
                 characteristics = {Attribute.CIVIL},
+                meetings=[]
             )
             cases.append(case)
             civil_cases.append(case)
@@ -40,11 +41,16 @@ class TestJudgeCapacity(unittest.TestCase):
         for i in range(51, 101):
             case = Case(
                 case_id=i,
-                case_duration=60,
                 characteristics= {Attribute.STRAFFE},
+                meetings=[]
             )
             cases.append(case)
             criminal_cases.append(case)
+        
+        meetings = []
+        for case in cases:
+            case.meetings = [Meeting(case.case_id, 120, 0, None, None, case)]
+            meetings.extend(case.meetings)
         
         # Create judges with different skill sets
         judges = [
@@ -61,7 +67,7 @@ class TestJudgeCapacity(unittest.TestCase):
         ]
         
         # Calculate capacity for each judge
-        capacities = calculate_all_judge_capacities(cases, judges)
+        capacities = calculate_all_judge_capacities(meetings, judges)
         
         # Test total capacities
         self.assertEqual(capacities[1], 20, "First civil-only judge should get 20 cases")
@@ -112,16 +118,16 @@ class TestJudgeCapacity(unittest.TestCase):
         Test that a judge with unapplicable skill gets 0 cases assigned
         """
         cases = [
-            Case(case_id=1, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
-            Case(case_id=2, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
-            Case(case_id=3, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
-            Case(case_id=4, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
-            Case(case_id=5, case_duration=1, characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
-            Case(case_id=6, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
-            Case(case_id=7, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
-            Case(case_id=8, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
-            Case(case_id=9, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
-            Case(case_id=10, case_duration=1, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=1,  characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=2,  characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=3,  characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=4,  characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=5,  characteristics={Attribute.CIVIL}, judge_requirements={Attribute.CIVIL}),
+            Case(case_id=6,  characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=7,  characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=8,  characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=9,  characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
+            Case(case_id=10, characteristics={Attribute.STRAFFE}, judge_requirements={Attribute.STRAFFE}),
         ]
         judges = [
             # This judge is incompatible with all cases (TVANG only)
@@ -134,7 +140,12 @@ class TestJudgeCapacity(unittest.TestCase):
             Judge(judge_id=5, characteristics={Attribute.CIVIL, Attribute.STRAFFE, Attribute.TVANG}, case_requirements=set()),
         ]
         
-        capacities = calculate_all_judge_capacities(cases, judges)
+        meetings = []
+        for case in cases:
+            case.meetings = [Meeting(case.case_id, 120, 0, None, None, case)]
+            meetings.extend(case.meetings)
+        
+        capacities = calculate_all_judge_capacities(meetings, judges)
         
         print(capacities)
         
