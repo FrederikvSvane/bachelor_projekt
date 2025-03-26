@@ -1,10 +1,11 @@
+from src.base_model.schedule import Schedule
+
 class Move:
     def __init__(self, case_id, appointments, 
                  old_judge=None, new_judge=None, 
                  old_room=None, new_room=None,
                  old_day=None, new_day=None,
-                 old_start_timeslot=None, new_start_timeslot=None,
-                 timeslots_per_day=None):
+                 old_start_timeslot=None, new_start_timeslot=None):
         self.case_id = case_id
         self.appointments = appointments  # List of affected appointments
         self.old_judge = old_judge
@@ -15,7 +16,6 @@ class Move:
         self.new_day = new_day
         self.old_start_timeslot = old_start_timeslot  # 1-indexed timeslot within day
         self.new_start_timeslot = new_start_timeslot  # 1-indexed timeslot within day
-        self.timeslots_per_day = timeslots_per_day
         self.is_applied = False
     
     def __str__(self):
@@ -33,15 +33,19 @@ class Move:
 
 
 def do_move(move: Move) -> None:
-    """Apply a move to the schedule"""
+    """
+    Realize that this does not apply the move to the schedule!
+    Instead, it updates the appointment chain that the move contains in place.
+    This is a feature!
+    """
     if move.is_applied:
         return
         
-    if move.new_judge:
+    if move.new_judge is not None:
         for app in move.appointments:
             app.judge = move.new_judge
             
-    if move.new_room:
+    if move.new_room is not None:
         for app in move.appointments:
             app.room = move.new_room
             
@@ -57,7 +61,6 @@ def do_move(move: Move) -> None:
 
 
 def undo_move(move: Move) -> None:
-    """Undo a previously applied move"""
     if not move.is_applied:
         return
         
@@ -78,3 +81,17 @@ def undo_move(move: Move) -> None:
             app.timeslot_in_day = move.old_start_timeslot + i
             
     move.is_applied = False
+
+def apply_move_to_schedule(schedule: Schedule, move: Move) -> Schedule:
+    """
+    Do a move, apply it to a schedule and return the updated schedule. Simple
+    """
+    if not move.is_applied:
+        do_move(move)
+    
+    move_case_id = move.case_id
+    schedule.appointments = [app for app in schedule.appointments if app.case.case_id != move_case_id]
+    schedule.appointments.extend(move.appointments)
+    
+    return schedule
+    

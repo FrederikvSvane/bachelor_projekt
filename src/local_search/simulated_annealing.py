@@ -6,7 +6,7 @@ from typing import Dict, List
 from src.base_model.schedule import Schedule
 from src.local_search.move import do_move, undo_move, Move
 from src.local_search.move_generator import generate_random_move, calculate_compatible_judges, calculate_compatible_rooms
-from src.local_search.rules_engine import calculate_score, print_score_summary
+from src.local_search.rules_engine import calculate_full_score
 
 def calculate_alpha(K: int, start_temperature: float, end_temperature: float) -> float:
     """
@@ -29,7 +29,7 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
     """
     iterations_per_temperature = n * (n - 1) // 2
     alpha = calculate_alpha(K, start_temp, end_temp)
-    
+
     cases = schedule.get_all_cases()
     judges = schedule.get_all_judges()
     rooms = schedule.get_all_rooms() 
@@ -38,7 +38,7 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
     compatible_rooms = calculate_compatible_rooms(cases, rooms)
     
     # Initial full score calculation
-    current_score = calculate_score(schedule, move=None, initial_calculation=True)
+    current_score = calculate_full_score(schedule)
     best_score = current_score
     best_schedule = deepcopy(schedule)
     
@@ -50,18 +50,15 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
         iteration_accepted = 0
         
         for i in range(iterations_per_temperature):
-            # Generate and apply a move
-            move = generate_random_move(schedule, compatible_judges, compatible_rooms)
+            move = generate_random_move(schedule, compatible_judges, compatible_rooms) # by this, the appointments in move are pointers to the appointments in the schedule
             
-            # Skip empty moves
             if (move.new_judge is None and move.new_room is None and 
                 move.new_day is None and move.new_start_timeslot is None):
                 continue
                 
-            # Calculate delta score before applying move
-            delta = calculate_score(schedule, move)
+            delta = calculate_full_score(schedule, move)
             
-            do_move(move)
+            do_move(move) # so this actually modifies the schedule in place
             total_moves += 1
             
             # Accept or reject move
@@ -91,7 +88,6 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
             break
     
     print(f"Search completed: {total_moves} moves attempted, {accepted_moves} accepted")
-    print_score_summary(best_schedule)
     return best_schedule
 
 def run_local_search(schedule: Schedule) -> Schedule:
@@ -105,7 +101,7 @@ def run_local_search(schedule: Schedule) -> Schedule:
         Optimized schedule
     """
     initial_schedule = deepcopy(schedule)
-    initial_score = calculate_score(schedule, move=Move(case_id=1, appointments=[]), initial_calculation=True)
+    initial_score = calculate_full_score(schedule, move=Move(case_id=1, appointments=[]), initial_calculation=True)
     print(f"Initial score: {initial_score}")
     
     # Parameter ranges to test
@@ -148,7 +144,7 @@ def run_local_search(schedule: Schedule) -> Schedule:
                 )
                 
                 # Calculate score of the optimized schedule
-                score = calculate_score(optimized_schedule, move=None, initial_calculation=True)
+                score = calculate_full_score(optimized_schedule, move=None, initial_calculation=True)
                 
                 # Print result for this combination
                 print(f"{start_temp:^10} | {end_temp:^8} | {n:^4} | {score:^6}")

@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Dict
 
 from src.util.data_generator import ensure_jc_pair_room_compatibility

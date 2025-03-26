@@ -3,151 +3,179 @@ from src.base_model.schedule import Schedule
 from src.base_model.appointment import Appointment
 from src.base_model.compatibility_checks import check_case_judge_compatibility, check_case_room_compatibility, check_judge_room_compatibility
 from src.local_search.move import Move, do_move, undo_move
+from sys import exit
 
-
-def calculate_score(schedule: Schedule, move: Move, initial_calculation = False, print_summary=False) -> int:
+def calculate_delta_score(schedule: Schedule, move: Move) -> int:
     """
-    Calculate overall score by applying all scoring rules
-    OR just the change (delta) in score that a certain move will imply, if a move is provided
-    
-    Args:
-        schedule: The schedule to evaluate
-        move: The move being applied, used for delta calculation
-        initial_calculation: Whether this is the first time the score is calculated
-        print_summary: If True, prints a detailed summary of scores
-        
-    Returns:
-        Total score as an integer
+    do the move AFTER calling this function.
+    NOT BEFORE!!!
     """
-    score = 0
-    rule_scores = {}
+    if move is None or move.old_judge is None or move.old_room is None or move.old_start_timeslot is None or move.old_day is None:
+        print("cant work with this move. set the old values to something that isnt None")
+        exit()
+    if move.is_applied:
+        print("fuck you. read the function description")
+        exit()
     
-    # Apply each rule
-    rules = [
-        room_stability_per_day,
-        case_planned_longer_than_day,
-        overbooked_room_in_timeslot,
-        overbooked_judge_in_timeslot,
-        judge_case_compatibility,
-        judge_room_compatiblity,
-        case_room_compatibility,
-        unused_timeslots,
-        schedule_length
-    ]
+    violations = 0
     
-    # Apply each rule and accumulate score
-    for rule_method in rules:
-        rule_name = rule_method.__name__
-        rule_score = rule_method(schedule, move, initial_calculation)
-        rule_scores[rule_name] = rule_score
-        score += rule_score
-        
-        if print_summary:
-            print(f"Rule: {rule_name} - Score: {rule_score}")
-    
-    if print_summary:
-        print("\n=== SCORE SUMMARY ===")
-        
-        hard_constraints = [
-            "overbooked_room_in_timeslot",
-            "overbooked_judge_in_timeslot",
-            "judge_case_compatibility",
-            "judge_room_compatiblity",
-            "case_room_compatibility"
-        ]
-        
-        soft_constraints = [
-            "room_stability_per_day",
-            "case_planned_longer_than_day",
-            "unused_timeslots"
-        ]
-        
-        print("\nHard Constraints:")
-        hard_total = sum(rule_scores[rule] for rule in hard_constraints)
-        for rule in hard_constraints:
-            print(f"  {rule}: {rule_scores[rule]}")
-        print(f"  Total Hard Constraints: {hard_total}")
-        
-        print("\nSoft Constraints:")
-        soft_total = sum(rule_scores[rule] for rule in soft_constraints)
-        for rule in soft_constraints:
-            print(f"  {rule}: {rule_scores[rule]}")
-        print(f"  Total Soft Constraints: {soft_total}")
-        
-        print(f"\nTOTAL SCORE: {score}")
-        print("==================\n")
-    
-    return score
-
-def print_score_summary(schedule: Schedule) -> None:
-    '''
-    Just a wrapper function. Calls calculate_score with print_summary=True.
-    This really just exists for code readability.
-    '''
-    calculate_score(schedule, move=None, print_summary=True)
-
-
-def room_stability_per_day(schedule: Schedule, move: Move, initial_calculation) -> int:
-    """
-    Check how many times judges change rooms per day.
-    Returns a negative score (-10 points per room change).
-    """
-    # Full calculation path
-    if initial_calculation:
-        score = 0
-        
-        by_day_judge = defaultdict(list)
-        for app in schedule.appointments:
-            key = ((app.day - 1), app.judge.judge_id)
-            by_day_judge[key].append(app)
-        
-        for (day, judge_id), apps in by_day_judge.items():
-            apps.sort(key=lambda a: a.timeslot_in_day)
-            
-            current_room = None
-            for app in apps:
-                if current_room is not None and app.room.room_id != current_room:
-                    score += 1
-                current_room = app.room.room_id
-        
-        return score
-    
-    # Delta calculation path
-    elif move is not None and (move.new_room is not None or move.new_judge is not None or move.new_day is not None): # Timeslot change won't ever affect total day-wise room stability! (im 98% sure. worked it out on paper)
-        affected_judge = move.new_judge.judge_id if move.new_judge else move.appointments[0].judge.judge_id
-        affected_day = move.new_day if move.new_day is not None else move.appointments[0].day
-        
-        old_changes = count_room_changes(schedule, affected_judge, affected_day)
-        
-        was_applied = move.is_applied
-        if not was_applied:
-            do_move(move)
-        
-        new_changes = count_room_changes(schedule, affected_judge, affected_day)
-        
-        if not was_applied:
-            undo_move(move)
-        
-        return new_changes - old_changes
+    violations += room_stability_per_day_delta(schedule, move)
     
     return 0
 
-def count_room_changes(schedule: Schedule, judge_id: int, day: int) -> int:
-    """Helper to count room changes for a judge on a specific day"""
-    changes = 0
+def calculate_full_score(schedule: Schedule) -> int:
+    score = 0
     
-    apps = [app for app in schedule.appointments 
-           if app.judge.judge_id == judge_id and app.day == day]
     
-    apps.sort(key=lambda a: a.timeslot_in_day)
+        
+    return score
+
+
+def room_stability_per_day_full(schedule: Schedule) -> int:
+    """
+    returns the total amount of room changes that all judges make, day by day.
+    that is, the amount of VIOLATIONS! not a score!
+    """
+    score = 0
+    by_day_judge = {}
+    for app in schedule.appointments:
+        key = (app.day, app.judge.judge_id)
+        if key not in by_day_judge:
+            by_day_judge[key] = []
+        by_day_judge[key].append(app)
+        
+    for (_, _), apps in by_day_judge.items():
+        apps.sort(key=lambda a: a.timeslot_in_day)
+        current_room = None
+
+        for app in apps:
+            if current_room is not None and app.room.room_id != current_room:
+                score += 1
+            current_room = app.room.room_id
     
+    return score
+
+def room_stability_per_day_delta(schedule: Schedule, move: Move) -> int:
+    """
+    returns amount of VIOLATIONS! not score!
+    """
+    # room stability can be affected by changing the timeslot, day, judge or room (yes, any of them)
+    timeslot_delta, day_delta, judge_delta, room_delta = 0, 0, 0, 0
+    
+    is_union_move = sum([
+        move.new_start_timeslot is not None,
+        move.new_day is not None,
+        move.new_judge is not None,
+        move.new_room is not None
+    ]) > 1
+    
+    if move.new_start_timeslot:
+        print("TIMESLOT MOVE")
+    if move.new_day:
+        print("DAY MOVE")
+    if move.new_judge:
+        print("JUDGE MOVE")
+    if move.new_room:
+        print("ROOM MOVE")
+    
+    if is_union_move:
+        print("UNION MOVE")
+        return room_stability_per_day_full(schedule)
+    
+    elif move.new_start_timeslot is not None:
+        # if timeslot is changed, the room stability is only affected for one judge and one day
+        judgeid = move.old_judge.judge_id
+        day = move.old_day
+        
+        old_stability_violations = count_room_changes_for_judge_on_specific_day(schedule, move, judgeid, day)
+        do_move(move)
+        new_stability_violations = count_room_changes_for_judge_on_specific_day(schedule, move, judgeid, day)
+        undo_move(move)
+        
+        timeslot_delta = new_stability_violations - old_stability_violations
+        
+    elif move.new_day is not None:
+        # if day is changed, the room stability is affected from one judge and two days
+        judgeid = move.old_judge.judge_id
+        old_day = move.old_day
+        new_day = move.new_day
+        
+        old_stability_violations_old_day = count_room_changes_for_judge_on_specific_day(schedule, move, judgeid, old_day)
+        old_stability_violations_new_day = count_room_changes_for_judge_on_specific_day(schedule, move, judgeid, new_day)
+        do_move(move)
+        new_stability_violations_old_day = count_room_changes_for_judge_on_specific_day(schedule, move, judgeid, old_day)
+        new_stability_violations_new_day = count_room_changes_for_judge_on_specific_day(schedule, move, judgeid, new_day)
+        undo_move(move)
+        
+        print(f"old old day: {old_stability_violations_old_day}, old new day: {old_stability_violations_new_day}")
+        print(f"new old day: {new_stability_violations_old_day}, new new day: {new_stability_violations_new_day}")
+        
+        old_stability_violations = old_stability_violations_old_day + old_stability_violations_new_day
+        new_stability_violations = new_stability_violations_old_day + new_stability_violations_new_day
+        
+        print(f"old: {old_stability_violations}, new: {new_stability_violations}")
+        
+        day_delta = new_stability_violations - old_stability_violations
+        print(f"day delta: {day_delta}")
+        
+    elif move.new_judge is not None:
+        # if judge is changed, the room stability is affected for two judges and one day  
+        old_judgeid = move.old_judge.judge_id
+        new_judgeid = move.new_judge.judge_id
+        day = move.old_day
+        
+        old_stability_violations_old_judge = count_room_changes_for_judge_on_specific_day(schedule, move, old_judgeid, day)
+        old_stability_violations_new_judge = count_room_changes_for_judge_on_specific_day(schedule, move, new_judgeid, day)
+        do_move(move)
+        new_stability_violations_old_judge = count_room_changes_for_judge_on_specific_day(schedule, move, old_judgeid, day)
+        new_stability_violations_new_judge = count_room_changes_for_judge_on_specific_day(schedule, move, new_judgeid, day)
+        undo_move(move)
+        
+        old_stability_violations = old_stability_violations_old_judge + old_stability_violations_new_judge
+        new_stability_violations = new_stability_violations_old_judge + new_stability_violations_new_judge
+        
+        judge_delta = new_stability_violations - old_stability_violations
+    
+    elif move.new_room is not None:
+        # if room is changed, the room stability is affected for one judge and one day
+        judgeid = move.old_judge.judge_id
+        day = move.old_day
+        
+        old_stability_violations = count_room_changes_for_judge_on_specific_day(schedule, move, judgeid, day)
+        do_move(move)
+        
+        new_stability_violations = count_room_changes_for_judge_on_specific_day(schedule, move, judgeid, day)
+        undo_move(move)
+        
+        room_delta = new_stability_violations - old_stability_violations
+    
+    print(f"timeslot delta: {timeslot_delta}, day delta: {day_delta}, judge delta: {judge_delta}, room delta: {room_delta}")
+    return timeslot_delta + day_delta + judge_delta + room_delta
+    
+        
+        
+def count_room_changes_for_judge_on_specific_day(schedule: Schedule, move: Move, judge_id: int, day: int) -> int:
+    # here we want to loop through all appointments for the judge on the day and count how many times the room changes
+    
+    # since the move has not modified the schedule, we need to remove the appointments that the move represents, because are not accurately represented in the schedule
+    scheduled_appointments_without_move_appointments = [app for app in schedule.appointments if judge_id == app.judge.judge_id and day == app.day and app.case.case_id != move.case_id]
+
+    # then we add the appointments that the move represents
+    appointments_in_move_chain = [app for app in move.appointments if judge_id == app.judge.judge_id and day == app.day]
+    appointments = scheduled_appointments_without_move_appointments + appointments_in_move_chain
+
+    appointments.sort(key=lambda a: a.timeslot_in_day)
+    
+    room_changes = 0
     current_room = None
-    for app in apps:
+    for app in appointments:
         if current_room is not None and app.room.room_id != current_room:
-            changes += 1
+            print(f"appoinment: {app}")
+            print(f"room change for judge {judge_id} on day {day} at timeslot {app.timeslot_in_day}")
+            room_changes += 1
         current_room = app.room.room_id
-    
-    return changes
+
+    return room_changes
     
 
 def unused_timeslots(schedule: Schedule, move: Move, initial_calculation: bool) -> int:
@@ -155,15 +183,13 @@ def unused_timeslots(schedule: Schedule, move: Move, initial_calculation: bool) 
     Counts the number of unused timeblocks in the schedule.
     Only calculates delta when the move affects the latest timeslot.
     """
-    # Full calculation path
     if initial_calculation:
         # Get all judges
-        appointment_judge_ids = set(app.judge.judge_id for app in schedule.appointments)
-        max_judge_id = max(appointment_judge_ids) if appointment_judge_ids else 0
-        all_judge_ids = set(range(1, max_judge_id + 1))
+        all_judge_ids = schedule.get_all_judges()
         
         # Find latest global timeslot
         latest_global_timeslot = 0
+        apps_descending = sorted(schedule.appointments, key=lambda app: app.day * schedule.timeslots_per_work_day + app.timeslot_in_day, reverse=True)
         for app in schedule.appointments:
             global_timeslot = (app.day - 1) * schedule.timeslots_per_work_day + app.timeslot_in_day
             latest_global_timeslot = max(latest_global_timeslot, global_timeslot)

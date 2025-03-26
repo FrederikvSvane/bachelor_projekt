@@ -7,7 +7,7 @@ import sys
 from src.util.parser import parse_input
 from src.base_model.schedule import generate_schedule_using_double_flow
 from src.util.schedule_visualizer import visualize
-from src.local_search.rules_engine import calculate_score, print_score_summary
+from src.local_search.rules_engine import calculate_full_score, print_score_summary
 from src.local_search.simulated_annealing import run_local_search
 from src.base_model.compatibility_checks import initialize_compatibility_matricies
 from src.local_search.move import Move
@@ -64,14 +64,14 @@ def main():
             initial_schedule = generate_schedule_using_double_flow(parsed_data)
         # Visualize the initial schedule
         visualize(initial_schedule)
-        score = calculate_score(initial_schedule, move=None, initial_calculation=True)
+        score = calculate_full_score(initial_schedule, move=None, initial_calculation=True)
         print(f"Initial score: {score}")
         
         final_schedule = run_local_search(initial_schedule)
 
         # Then the final schedule
         visualize(final_schedule)
-        score = calculate_score(final_schedule, move=None, initial_calculation=True)
+        score = calculate_full_score(final_schedule, move=None, initial_calculation=True)
         print(f"Initial score: {score}")        
 
         # Write schedule to output file

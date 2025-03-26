@@ -45,26 +45,19 @@ def identify_appointment_chains(schedule: Schedule) -> Dict:
 def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, List[Judge]], 
                         compatible_rooms_dict: Dict[int, List[Room]]) -> Move:
     """Generate a random valid move"""
-    # Select a random case and its appointments
     chain_dict = identify_appointment_chains(schedule)
     chosen_case_id = random.choice(list(chain_dict.keys()))
     
-    # Sort appointments by day and timeslot
-    chosen_appointments = sorted(chain_dict[chosen_case_id], 
-                               key=lambda app: (app.day, app.timeslot_in_day))
+    chosen_appointments = sorted(chain_dict[chosen_case_id], key=lambda app: (app.day, app.timeslot_in_day))
+    first_appointment = chosen_appointments[0]
+    current_day = first_appointment.day
+    current_start_timeslot = first_appointment.timeslot_in_day
     
-    # Get current values
-    first_app = chosen_appointments[0]
-    current_day = first_app.day
-    current_start_timeslot = first_app.timeslot_in_day
+    move = Move(chosen_case_id, chosen_appointments, timeslots_per_day=schedule.timeslots_per_work_day)
     
-    # Initialize move object
-    move = Move(chosen_case_id, chosen_appointments, 
-               timeslots_per_day=schedule.timeslots_per_work_day)
-    
-    # Randomly decide which type of move to make
     n_compatible_judges= len(compatible_judges_dict[chosen_case_id])
     n_compatible_rooms = len(compatible_rooms_dict[chosen_case_id])
+
     if n_compatible_judges == 1 and n_compatible_rooms == 1:
         move_type = random.choice(["day", "timeslot"])
     elif n_compatible_judges == 1:
@@ -76,7 +69,7 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
     
     # Fill in move details based on type
     if move_type == "judge" and compatible_judges_dict[chosen_case_id]:
-        old_judge = first_app.judge
+        old_judge = first_appointment.judge
         compatible_judges = compatible_judges_dict[chosen_case_id]
         if len(compatible_judges) > 1:  # Ensure there's a different judge to pick
             new_judge = random.choice([j for j in compatible_judges 
@@ -87,7 +80,7 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
             print("No compatible judges")
     
     elif move_type == "room" and compatible_rooms_dict[chosen_case_id]:
-        old_room = first_app.room
+        old_room = first_appointment.room
         compatible_rooms = compatible_rooms_dict[chosen_case_id]
         if len(compatible_rooms) > 1:  # Ensure there's a different room to pick
             new_room = random.choice([r for r in compatible_rooms 
