@@ -1,9 +1,12 @@
 from collections import defaultdict
+from sys import exit
+
 from src.base_model.schedule import Schedule
 from src.base_model.appointment import Appointment
 from src.base_model.compatibility_checks import check_case_judge_compatibility, check_case_room_compatibility, check_judge_room_compatibility
 from src.local_search.move import Move, do_move, undo_move
-from sys import exit
+from src.local_search.rules_engine_helpers import *
+
 
 # 2 ooms scale difference per category
 hard_containt_weight = 10,000,000
@@ -176,17 +179,17 @@ def nr29_room_stability_per_day_delta(schedule: Schedule, move: Move):
     if (move.new_day is None and move.new_judge is None and move.new_start_timeslot is None and move.new_room is None):
         return 0 # probably wont ever happen, but fine to have for future delete moves i guess
 
-    affected_day_judge_pairs = get_affected_entities_for_room_stability(schedule, move)
+    affected_day_judge_pairs = get_affected_pairs_for_room_stability(schedule, move)
     
     violations_before = 0
     for day, judge_id in affected_day_judge_pairs:
-        violations_before += count_room_changes_for_day_judge(schedule, day, judge_id)
+        violations_before += count_room_changes_for_day_judge_pair(schedule, day, judge_id)
     
     do_move(move)
     
     violations_after = 0
     for day, judge_id in affected_day_judge_pairs:
-        violations_after += count_room_changes_for_day_judge(schedule, day, judge_id)
+        violations_after += count_room_changes_for_day_judge_pair(schedule, day, judge_id)
         
     undo_move(move)
     
