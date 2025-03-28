@@ -211,10 +211,7 @@ def nr29_room_stability_per_day_full(schedule: Schedule):
         apps_pr_judge_pr_day[key].append(appointment)
     
     for (day, judge_id), appointments in apps_pr_judge_pr_day.items():
-        appointments.sort(key=lambda a: a.timeslot_in_day)
-        for appointment in appointments:
-            print("FULL APPOINTMENTS SORTING")
-            print(appointment)
+        appointments.sort(key=lambda a: (a.timeslot_in_day, a.meeting.meeting_id))
         current_room_id = None
         for appointment in appointments:
             if current_room_id is not None and appointment.room.room_id != current_room_id:
