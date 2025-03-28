@@ -15,7 +15,7 @@ class Appointment:
     timeslot_in_day: int # 1-indexed
         
     def __str__(self):
-        return (f"Appointment(C{self.case}, "
+        return (f"Appointment(C{self.meeting}, "
                 f"J{self.judge}, R{self.room}, "
                 f"T{self.timeslot_in_day})")
                 

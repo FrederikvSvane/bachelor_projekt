@@ -4,30 +4,12 @@ from src.base_model.appointment import Appointment
 from src.base_model.compatibility_checks import check_case_judge_compatibility, check_case_room_compatibility, check_judge_room_compatibility
 from src.local_search.move import Move, do_move, undo_move
 from sys import exit
+from src.local_search.rules_engine_helpers import *
 
 # 2 ooms scale difference per category
 hard_containt_weight = 10,000,000
 medm_containt_weight = 100,000
 soft_containt_weight = 1,000
-
-def calculate_delta_score(schedule: Schedule, move: Move) -> int:
-    """
-    do the move AFTER calling this function.
-    NOT BEFORE!!!
-    """
-    if move is None or move.old_judge is None or move.old_room is None or move.old_start_timeslot is None or move.old_day is None:
-        print("cant work with this move. set the old values to something that isnt None")
-        exit()
-    if move.is_applied:
-        print("nope. read the function description")
-        exit()
-    
-    # Hard rules
-    hard_violations = 0
-    
-    violations += nr29_room_stability_per_day_delta(schedule, move)
-    
-    return 0
 
 def calculate_full_score(schedule: Schedule) -> int:
     
@@ -48,15 +30,88 @@ def calculate_full_score(schedule: Schedule) -> int:
     score = hard_violations*hard_containt_weight + medm_violations*medm_containt_weight + soft_violations*soft_containt_weight        
     return score
 
+def calculate_delta_score(schedule: Schedule, move: Move) -> int:
+    """
+    do the move AFTER calling this function.
+    NOT BEFORE!!!
+    """
+    if move is None or move.old_judge is None or move.old_room is None or move.old_start_timeslot is None or move.old_day is None:
+        print("cant work with this move. set the old values to something that isnt None")
+        exit()
+    if move.is_applied:
+        print("nope. read the function description")
+        exit()
+    
+    # Hard rules
+    hard_violations = 0
+    
+    violations += nr29_room_stability_per_day_delta(schedule, move)
+    
+    return 0
+
+
 
 def nr1_overbooked_room_in_timeslot_full(schedule: Schedule):
+    """
+    Tjekker hvor mange gange et rum er booket i et givent timeslot.
+    """
     offset = 0
     step = 1
-    pass
+    violations = 0
+    room_usage =  {}
+
+    for appointment in schedule.appointments:
+        room = appointment.room
+        day = appointment.day
+        room_key = (room.room_id, day, appointment.timeslot_in_day)
+        if room_key in room_usage:
+            room_usage[room_key] += 1
+        else:
+            room_usage[room_key] = 1
+
+    for count in room_usage.values():
+            if count > 1:
+                violations += 1
+
+    return (offset + step*violations)
+        
 
 def nr1_overbooked_room_in_timeslot_delta(schedule: Schedule, move: Move):
+    """
+    Tjekker om et rum er overbooket i et givent timeslot.
+    """
+    
+    if move.new_room is None:
+        return 0
+    
     offset = 0
     step = 1
+    
+
+    old_appointments_in_time_range = get_all_appointments_starting_from_timeslot(schedule, move.old_day, move.old_start_timeslot)
+    room_usage = {}
+    # First check the entire span of the meeting for the old room and check if it is overbooked
+    meeting = move.appointments[0].meeting
+    old_room_key = (move.old_room.room_id, move.old_day, move.old_start_timeslot)
+    old_room_usage = 0
+    
+    
+    # Then check the entire span of the meeting for the new room and check if it is overbooked
+    
+    
+
+    new_room_key = (move.new_room.room_id, move.new_day, move.new_start_timeslot)
+    
+
+
+
+
+
+    
+    violations = 0
+    
+
+
     pass
 
 def nr2_overbooked_judge_in_timeslot_full(schedule: Schedule):

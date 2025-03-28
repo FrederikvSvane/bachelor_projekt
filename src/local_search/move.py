@@ -3,7 +3,7 @@ from src.base_model.meeting import Meeting
 from src.base_model.appointment import Appointment
 
 class Move:
-    def __init__(self, meeting_id, appointments: Appointment, 
+    def __init__(self, meeting_id, appointments: list[Appointment], 
                  old_judge=None, new_judge=None, 
                  old_room=None, new_room=None,
                  old_day=None, new_day=None,
@@ -91,8 +91,8 @@ def apply_move_to_schedule(schedule: Schedule, move: Move) -> Schedule:
     if not move.is_applied:
         do_move(move)
     
-    move_case_id = move.case_id
-    schedule.appointments = [app for app in schedule.appointments if app.case.case_id != move_case_id]
+    move_meeting_id = move.meeting_id
+    schedule.appointments = [app for app in schedule.appointments if app.meeting.meeting_id != move_meeting_id]
     schedule.appointments.extend(move.appointments)
     
     return schedule

@@ -23,6 +23,7 @@ class Schedule:
             granularity: Time slot granularity in minutes
         """
         self.appointments: Appointment = []
+        self.appointments_by_day = {}
         self.work_days = work_days # 1-indexed
         self.minutes_in_a_work_day = minutes_in_a_work_day
         self.granularity = granularity
@@ -162,6 +163,15 @@ class Schedule:
         
         return result
 
+def initialize_appointments_by_day(schedule: Schedule) -> None:
+    """
+    Initialize the appointments by day dictionary in the
+    schedule object.    
+    """
+    for app in schedule.appointments:
+        if app.day not in schedule.appointments_by_day:
+            schedule.appointments_by_day[app.day] = []
+        schedule.appointments_by_day[app.day].append(app)
 
 def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     """
@@ -189,8 +199,7 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     
     for case in cases:
         meetings.extend(case.meetings)
-                   
-    
+        
     # Flow 1: Assign judges to cases based on skills
     judge_meeting_graph = DirectedGraph() 
     judge_meeting_graph.initialize_meeting_to_judge_graph(meetings, judges)
@@ -214,6 +223,8 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     # Generate schedule
     schedule = Schedule(work_days, minutes_per_work_day, granularity)
     schedule.generate_schedule_from_colored_graph(conflict_graph)
+    
+    initialize_appointments_by_day(schedule)
     
     
     return schedule
