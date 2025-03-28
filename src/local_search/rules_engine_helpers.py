@@ -24,10 +24,7 @@ def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id
     appointments_for_judge = [a for a in appointments_in_day if a.judge.judge_id == judge_id]
 
 
-    appointments_for_judge.sort(key=lambda a: a.timeslot_in_day)
-
-    for app in appointments_for_judge:
-        print(app)
+    appointments_for_judge.sort(key=lambda a: (a.timeslot_in_day, a.meeting.meeting_id))
 
     current_room_id = None
     violations = 0
