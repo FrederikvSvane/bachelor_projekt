@@ -27,6 +27,7 @@ def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id
     appointments_for_judge.sort(key=lambda a: a.timeslot_in_day)
 
     for app in appointments_for_judge:
+        print("DELTA APPOINTMENTS SORTING")
         print(app)
 
     current_room_id = None

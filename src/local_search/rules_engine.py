@@ -213,6 +213,7 @@ def nr29_room_stability_per_day_full(schedule: Schedule):
     for (day, judge_id), appointments in apps_pr_judge_pr_day.items():
         appointments.sort(key=lambda a: a.timeslot_in_day)
         for appointment in appointments:
+            print("FULL APPOINTMENTS SORTING")
             print(appointment)
         current_room_id = None
         for appointment in appointments:
