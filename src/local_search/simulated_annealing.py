@@ -4,8 +4,9 @@ from copy import deepcopy
 from typing import Dict, List
 
 from src.base_model.schedule import Schedule
+from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.move import do_move, undo_move, Move
-from src.local_search.move_generator import generate_random_move, calculate_compatible_judges, calculate_compatible_rooms
+from src.local_search.move_generator import generate_random_move
 from src.local_search.rules_engine import calculate_full_score
 
 def calculate_alpha(K: int, start_temperature: float, end_temperature: float) -> float:

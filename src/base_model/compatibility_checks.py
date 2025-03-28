@@ -2,6 +2,7 @@ from typing import Set
 
 from src.base_model.attribute_enum import Attribute
 from src.base_model.case import Case
+from src.base_model.meeting import Meeting
 from src.base_model.judge import Judge
 from src.base_model.room import Room
 
@@ -65,6 +66,23 @@ def judge_room_compatible(judge: Judge, room: Room) -> bool:
     """Check if judge and room are compatible (bidirectional)."""
     return (is_compatible(judge.room_requirements, room.characteristics) and
             is_compatible(room.judge_requirements, judge.characteristics))
+
+
+def calculate_compatible_judges(meetings: list[Meeting], judges: list[Judge]) -> dict[int, list[Judge]]:
+    compatible_judges = {}
+    for meeting in meetings:
+        compatible_judges[meeting.meeting_id] = [judge for judge in judges 
+                                          if case_judge_compatible(meeting.case, judge)]
+        
+    return compatible_judges
+
+def calculate_compatible_rooms(meetings: list[Meeting], rooms: list[Room]) -> dict[int, list[Room]]:
+    compatible_rooms = {}
+    for meeting in meetings:
+        compatible_rooms[meeting.meeting_id] = [room for room in rooms 
+                                         if case_room_compatible(meeting.case, room)]
+        
+    return compatible_rooms
 
 case_judge_matrix = {}
 case_room_matrix = {}
@@ -133,3 +151,6 @@ def check_judge_room_compatibility(judge_id: int, room_id: int) -> bool:
     Return true if compatible, false otherwise.
     """
     return judge_room_matrix[judge_id][room_id]
+
+
+

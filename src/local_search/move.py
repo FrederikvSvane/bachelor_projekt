@@ -31,7 +31,7 @@ class Move:
         if self.new_start_timeslot is not None:
             move_type.append(f"timeslot {self.old_start_timeslot} → {self.new_start_timeslot}")
         
-        return f"Move(case {self.meeting}: {', '.join(move_type)})"
+        return f"Move(case {self.meeting_id}: {', '.join(move_type)})"
 
 
 def do_move(move: Move) -> None:
