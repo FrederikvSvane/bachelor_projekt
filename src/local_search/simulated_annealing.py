@@ -102,7 +102,7 @@ def run_local_search(schedule: Schedule) -> Schedule:
         Optimized schedule
     """
     initial_schedule = deepcopy(schedule)
-    initial_score = calculate_full_score(schedule, move=Move(meeting_id=1, appointments=[]), initial_calculation=True)
+    initial_score = calculate_full_score(schedule, move=Move(meeting=1, appointments=[]), initial_calculation=True)
     print(f"Initial score: {initial_score}")
     
     # Parameter ranges to test

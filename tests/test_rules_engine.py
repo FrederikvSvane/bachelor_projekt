@@ -4,6 +4,7 @@ from src.base_model.schedule import Schedule
 from src.base_model.case import Case
 from src.base_model.judge import Judge
 from src.base_model.room import Room
+from src.base_model.meeting import Meeting
 from src.local_search.move import Move, apply_move_to_schedule
 from src.util.schedule_visualizer import visualize
 from src.util.parser import parse_input
@@ -62,7 +63,7 @@ class TestRoomStabilityRule(unittest.TestCase):
         self.room2 = Room(2)
         self.room3 = Room(3)
         
-        self.case1 = Case(1, 30)
+        self.case1 = Case(1, meetings=[Meeting(1, 30)])
         self.case2 = Case(2, 30)
         self.case3 = Case(3, 30)
         self.case4 = Case(4, 30)

@@ -5,8 +5,6 @@ from src.base_model.case import Case
 from src.base_model.judge import Judge
 from src.base_model.room import Room
 
-
-
 # One-directional compatibility check
 def has_required_characteristics(requirements: Set[Attribute], 
                                characteristics: Set[Attribute]) -> bool:
@@ -68,17 +66,6 @@ def judge_room_compatible(judge: Judge, room: Room) -> bool:
     return (is_compatible(judge.room_requirements, room.characteristics) and
             is_compatible(room.judge_requirements, judge.characteristics))
 
-
-def check_case_judge_compatibility(case_id: int, judge_id: int) -> bool:
-    return case_judge_matrix[case_id][judge_id]
-
-def check_case_room_compatibility(case_id: int, room_id: int) -> bool:
-    return case_room_matrix[case_id][room_id]
-
-def check_judge_room_compatibility(judge_id: int, room_id: int) -> bool:
-    return judge_room_matrix[judge_id][room_id]
-
-
 case_judge_matrix = {}
 case_room_matrix = {}
 judge_room_matrix = {}
@@ -88,7 +75,7 @@ def initialize_compatibility_matricies(parsed_data):
     Initialize compatibility matricies for judges, rooms, and cases.
     
     Args:
-        parsed_data: Parsed data dictionary
+        parsed_data: Input data json, with judges, rooms, cases and meetings
     """
     global case_judge_matrix, case_room_matrix, judge_room_matrix
 
@@ -125,5 +112,24 @@ def initialize_compatibility_matricies(parsed_data):
             judge_room_matrix[judge_id][room_id] = judge_room_compatible(judge, room)
     
     
-    
-    
+# Efficient compatibility checks
+def check_case_judge_compatibility(case_id: int, judge_id: int) -> bool:
+    """
+    Efficiently check if a case and judge are compatible, using compatibility matrix.
+    Return true if compatible, false otherwise.
+    """
+    return case_judge_matrix[case_id][judge_id]
+
+def check_case_room_compatibility(case_id: int, room_id: int) -> bool:
+    """
+    Efficiently check if a case and room are compatible, using compatibility matrix.
+    Return true if compatible, false otherwise.
+    """
+    return case_room_matrix[case_id][room_id]
+
+def check_judge_room_compatibility(judge_id: int, room_id: int) -> bool:
+    """
+    Efficiently check if a judge and room are compatible, using compatibility matrix.
+    Return true if compatible, false otherwise.
+    """
+    return judge_room_matrix[judge_id][room_id]

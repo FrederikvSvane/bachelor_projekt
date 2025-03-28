@@ -1,7 +1,9 @@
 from src.base_model.schedule import Schedule
+from src.base_model.meeting import Meeting
+from src.base_model.appointment import Appointment
 
 class Move:
-    def __init__(self, meeting_id, appointments, 
+    def __init__(self, meeting_id, appointments: Appointment, 
                  old_judge=None, new_judge=None, 
                  old_room=None, new_room=None,
                  old_day=None, new_day=None,
@@ -29,7 +31,7 @@ class Move:
         if self.new_start_timeslot is not None:
             move_type.append(f"timeslot {self.old_start_timeslot} → {self.new_start_timeslot}")
         
-        return f"Move(case {self.meeting_id}: {', '.join(move_type)})"
+        return f"Move(case {self.meeting}: {', '.join(move_type)})"
 
 
 def do_move(move: Move) -> None:
