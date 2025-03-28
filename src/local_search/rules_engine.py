@@ -129,7 +129,9 @@ def nr2_overbooked_judge_in_timeslot_full(schedule: Schedule):
 def nr2_overbooked_judge_in_timeslot_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
-    pass
+    
+
+
 
 # ...
 
@@ -183,6 +185,48 @@ def nr8_judge_skillmatch_delta(_: Schedule, move: Move):
 
 # ...
 
+def nr14_virtual_case_has_virtual_judge_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr14_virtual_case_has_virtual_judge_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
+# ...
+
+def nr17_unused_timeblock_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr17_unused_timeblock_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
+def nr18_unused_timegrain_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr18_unused_timegrain_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
+def nr19_case_has_specific_judge_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr19_case_has_specific_judge_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
 def nr20_max_weekly_coverage_full(schedule: Schedule):
     offset = 0
     step = 1
@@ -193,7 +237,67 @@ def nr20_max_weekly_coverage_delta(schedule: Schedule, move: Move):
     step = 1
     pass
 
+def nr21_all_meetings_planned_for_case_full(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
+def nr21_all_meetings_planned_for_case_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
+def nr22_case_meetings_too_sparsely_planned_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr22_case_meetings_too_sparsely_planned_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
 # ...
+
+def nr25_room_missing_video_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr25_room_missing_video_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
+def nr26_room_missing_optional_entry_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr26_room_missing_optional_entry_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
+def nr27_overdue_case_not_planned_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr27_overdue_case_not_planned_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
+
+def nr28_overdue_case_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr28_overdue_case_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass
 
 def nr29_room_stability_per_day_full(schedule: Schedule):
     offset = 0
@@ -245,3 +349,13 @@ def nr29_room_stability_per_day_delta(schedule: Schedule, move: Move):
     print(f"returning: {violations_after - violations_before}")
 
     return (offset + step*(violations_after - violations_before))
+
+def nr30_schedule_length_full(schedule: Schedule):
+    offset = 0
+    step = 1
+    pass
+
+def nr30_schedule_length_delta(schedule: Schedule, move: Move):
+    offset = 0
+    step = 1
+    pass

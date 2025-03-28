@@ -41,7 +41,7 @@ class TestRulesEngine(unittest.TestCase):
         print(move)
 
         violations_before = nr29_room_stability_per_day_full(self.schedule)
-        do_move(move)
+        do_move(move, self.schedule)
         violations_after = nr29_room_stability_per_day_full(self.schedule)
 
         print(f"Violations before: {violations_before}")
