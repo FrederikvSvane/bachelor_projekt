@@ -162,16 +162,35 @@ class Schedule:
             result["appointments"].append(appointment_dict)
         
         return result
+    
+    def get_appointments_in_timeslot_range(self, day, start_slot, end_slot) -> list[Appointment]:
+        """Get all appointments within a specific timeslot range for a given day."""
+        result = []
+        for slot in range(start_slot, end_slot + 1):
+            if slot in self.appointments_by_day[day]:
+                result.extend(self.appointments_by_day[day][slot])
+        return result
 
 def initialize_appointments_by_day(schedule: Schedule) -> None:
     """
     Initialize the appointments by day dictionary in the
-    schedule object.    
+    schedule object. Organizes appointments by day and timeslot
+    for easy range access.
     """
+    # First create a nested dictionary structure: {day: {timeslot: [appointments]}}
     for app in schedule.appointments:
         if app.day not in schedule.appointments_by_day:
-            schedule.appointments_by_day[app.day] = []
-        schedule.appointments_by_day[app.day].append(app)
+            schedule.appointments_by_day[app.day] = {}
+        
+        timeslot = app.timeslot_in_day
+        if timeslot not in schedule.appointments_by_day[app.day]:
+            schedule.appointments_by_day[app.day][timeslot] = []
+        
+        schedule.appointments_by_day[app.day][timeslot].append(app)
+        
+
+    
+
 
 def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     """
@@ -225,6 +244,12 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     schedule.generate_schedule_from_colored_graph(conflict_graph)
     
     initialize_appointments_by_day(schedule)
+    
+    #print appoints in a given range 
+    apps = schedule.get_appointments_in_timeslot_range(1, 1, 5)
+
+    for app in apps:
+        print(f"{app}")
     
     
     return schedule

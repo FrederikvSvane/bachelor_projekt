@@ -89,22 +89,10 @@ def nr1_overbooked_room_in_timeslot_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
     
+    meeting_duration = move.appointments[0].meeting.meeting_duration
 
-    old_appointments_in_time_range = get_all_appointments_starting_from_timeslot(schedule, move.old_day, move.old_start_timeslot)
-    room_usage = {}
-    # First check the entire span of the meeting for the old room and check if it is overbooked
-    meeting = move.appointments[0].meeting
-    old_room_key = (move.old_room.room_id, move.old_day, move.old_start_timeslot)
-    old_room_usage = 0
+    old_appointments_in_time_range = schedule.get_appointments_in_timeslot_range(move.old_day, move.old_start_timeslot, move.old_start_timeslot + (meeting_duration) // schedule.granularity)
     
-    
-    # Then check the entire span of the meeting for the new room and check if it is overbooked
-    
-    
-
-    new_room_key = (move.new_room.room_id, move.new_day, move.new_start_timeslot)
-    
-
 
 
 

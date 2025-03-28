@@ -30,9 +30,6 @@ def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id
     
     return violations
 
-def get_all_appointments_starting_from_timeslot(schedule: Schedule, day: int, timeslot_start: int, timeslot_end: int):
-    appointments = []
-    
-    # Find all the appointments that are in the range timeslot_start and timeslot_end in the given day
-    # For all the appointments_by_day in the timeslot range
+
+
     
