@@ -22,7 +22,7 @@ class Schedule:
             minutes_in_a_work_day: Minutes in a working day
             granularity: Time slot granularity in minutes
         """
-        self.appointments = []
+        self.appointments: Appointment = []
         self.work_days = work_days # 1-indexed
         self.minutes_in_a_work_day = minutes_in_a_work_day
         self.granularity = granularity
