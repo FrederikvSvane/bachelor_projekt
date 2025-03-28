@@ -62,7 +62,7 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
         compatible_judges = compatible_judges_dict[chosen_meeting_id]
         if len(compatible_judges) > 1:  # Ensure there's a different judge to pick
             new_judge = random.choice([j for j in compatible_judges 
-                                     if j.judge_id != old_judge.judge_id])
+                                    if j.judge_id != old_judge.judge_id])
             move.new_judge = new_judge
         else:
             print("No compatible judges")
@@ -96,7 +96,7 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
         if max_start_timeslot > 1:  # Ensure there's room to move
             # Generate new timeslot different from current
             valid_timeslots = [t for t in range(1, max_start_timeslot + 1) 
-                             if t != current_start_timeslot]
+                            if t != current_start_timeslot]
             
             if valid_timeslots:  # Make sure there's at least one valid option
                 new_start_timeslot = random.choice(valid_timeslots)

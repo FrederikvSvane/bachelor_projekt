@@ -60,7 +60,16 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
             app.day = move.new_day
         
         if move.new_start_timeslot is not None:
-            app.timeslot_in_day = move.new_start_timeslot + i
+            new_timeslot = move.new_start_timeslot + i
+            
+            day_offset = (new_timeslot - 1) // schedule.timeslots_per_work_day
+            adjusted_timeslot = ((new_timeslot - 1) % schedule.timeslots_per_work_day) + 1
+            
+            if day_offset > 0:
+                app.day = move.new_day + day_offset if move.new_day is not None else app.day + day_offset
+                app.timeslot_in_day = adjusted_timeslot
+            else:
+                app.timeslot_in_day = new_timeslot
         
         # update the dict - add the appointments to the new position
         if schedule is not None and changing_position:
@@ -103,7 +112,16 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
             app.day = move.old_day
         
         if move.old_start_timeslot is not None:
-            app.timeslot_in_day = move.old_start_timeslot + i
+            new_timeslot = move.old_start_timeslot + i
+            
+            day_offset = (new_timeslot - 1) // schedule.timeslots_per_work_day
+            adjusted_timeslot = ((new_timeslot - 1) % schedule.timeslots_per_work_day) + 1
+            
+            if day_offset > 0:
+                app.day = move.old_day + day_offset if move.old_day is not None else app.day + day_offset
+                app.timeslot_in_day = adjusted_timeslot
+            else:
+                app.timeslot_in_day = new_timeslot
         
         # update the dict - add the appointments to the old position
         if schedule is not None and changing_position:

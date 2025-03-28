@@ -61,8 +61,10 @@ def nr1_overbooked_room_in_timeslot_full(schedule: Schedule):
     step = 1
     violations = 0
     room_usage =  {}
-
-    for appointment in schedule.iter_appointments():
+    
+    
+    appointments = schedule.get_all_appointments()
+    for appointment in appointments:
         room = appointment.room
         day = appointment.day
         room_key = (room.room_id, day, appointment.timeslot_in_day)
@@ -73,6 +75,7 @@ def nr1_overbooked_room_in_timeslot_full(schedule: Schedule):
 
     for count in room_usage.values():
             if count > 1:
+                #print(f"Day: {day}, timeslot: {appointment.timeslot_in_day}, room: {room.room_id}")
                 violations += 1
 
     return (offset + step*violations)
@@ -83,26 +86,37 @@ def nr1_overbooked_room_in_timeslot_delta(schedule: Schedule, move: Move):
     Tjekker om et rum er overbooket i et givent timeslot.
     """
     
-    if move.new_room is None:
+    if move.new_room is None and move.new_day is None and move.new_start_timeslot is None:
         return 0
     
     offset = 0
     step = 1
+    old_violations = 0
     
-    meeting_duration = move.appointments[0].meeting.meeting_duration
-
-    old_appointments_in_time_range = schedule.get_appointments_in_timeslot_range(move.old_day, move.old_start_timeslot, move.old_start_timeslot + (meeting_duration) // schedule.granularity)
+    for app in move.appointments:
+        appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
+        room_ids = [app.room.room_id for app in appointments_at_time]
+        double_booked = len(room_ids) != len(set(room_ids))
+        if double_booked:
+            old_violations += 1
     
-
-
-
+    do_move(move, schedule)
+    
+    new_violations = 0
+    for app in move.appointments:
+        appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
+        room_ids = [app.room.room_id for app in appointments_at_time]
+        double_booked = len(room_ids) != len(set(room_ids))
+        if double_booked:
+            new_violations += 1
+    
+    undo_move(move, schedule)
+    
+    #print(f"violations before: {old_violations}, violations after: {new_violations}")
+    #print(f"returning: {new_violations - old_violations}")
 
     
-    violations = 0
-    
-
-
-    pass
+    return (offset + step*(new_violations - old_violations))
 
 def nr2_overbooked_judge_in_timeslot_full(schedule: Schedule):
     offset = 0
@@ -111,7 +125,8 @@ def nr2_overbooked_judge_in_timeslot_full(schedule: Schedule):
     violations = 0
     judge_usage = {}
 
-    for appointment in schedule.iter_appointments():
+    appointments = schedule.get_all_appointments()
+    for appointment in appointments:
         judge = appointment.judge
         day = appointment.day
         judge_key = (judge.judge_id, day, appointment.timeslot_in_day)
@@ -127,11 +142,39 @@ def nr2_overbooked_judge_in_timeslot_full(schedule: Schedule):
     return (offset + step*violations)
 
 def nr2_overbooked_judge_in_timeslot_delta(schedule: Schedule, move: Move):
+    
+    if move.new_judge is None and move.new_day is None and move.new_start_timeslot is None:
+        return 0
+
     offset = 0
     step = 1
-    pass
-
+    old_violations = 0
+    
+    for app in move.appointments:
+        appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
+        judge_ids = [app.judge.judge_id for app in appointments_at_time]
+        double_booked = len(judge_ids) != len(set(judge_ids))
+        if double_booked:
+            old_violations += 1
+    
+    do_move(move, schedule)
+    
+    new_violations = 0
+    for app in move.appointments:
+        appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
+        judge_ids = [app.judge.judge_id for app in appointments_at_time]
+        double_booked = len(judge_ids) != len(set(judge_ids))
+        if double_booked:
+            new_violations += 1
+    
+    undo_move(move, schedule)
+    #print(f"violations before: {old_violations}, violations after: {new_violations}")
+    #print(f"returning: {new_violations - old_violations}")
+    
+    return (offset + step*(new_violations - old_violations))
+    
 # ...
+
 
 def nr6_virtual_room_must_have_virtual_meeting_full(schedule: Schedule):
     offset = 0
