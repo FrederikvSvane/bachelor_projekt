@@ -251,12 +251,56 @@ def nr17_unused_timeblock_delta(schedule: Schedule, move: Move):
 def nr18_unused_timegrain_full(schedule: Schedule):
     offset = 0
     step = 1
-    pass
+    
+    all_judge_ids = schedule.get_all_judges()
+    used_global_slots = set()
+    latest_global_timeslot = get_latest_global_timeslot(schedule)
+    
+    for app in schedule.iter_appointments():
+        judge_id = app.judge.judge_id
+        global_timeslot = (app.day - 1) * schedule.timeslots_per_work_day + app.timeslot_in_day
+        used_global_slots.add((judge_id, global_timeslot))
+    
+    total_possible_slots = len(all_judge_ids) * latest_global_timeslot
+    
+    violations = total_possible_slots - len(used_global_slots)
+    return (offset + step*violations)
+
 
 def nr18_unused_timegrain_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
+    
+    if (move.new_day is None and move.new_judge is None and move.new_start_timeslot is None and move.new_room is None):
+        return 0
+    
+    meeting_moved_in_time = move.new_day is not None or move.new_start_timeslot is not None
+
+    if not meeting_moved_in_time:
+        return 0
+
+    if move.new_start_timeslot is None: 
+        return 0
+    
+    get_latest_global_timeslot = get_latest_global_timeslot(schedule)
+
+
+    # TODO
+    # we need to find the distance between the latest global timeslot and the second latest global timeslot
+    # then do something smart
+
+    # TODO
+    # but in the normal case were we are not at the boundary of the schedule, we can just do something like
+    # look at the slice in the schedule that is affected by the move
+    # and if it is moved in time, then consider the slice in time before and after the move
+
+
+
+
     pass
+
+
+    return (offset + step * delta)
 
 def nr19_case_has_specific_judge_full(schedule: Schedule):
     offset = 0
@@ -385,9 +429,6 @@ def nr29_room_stability_per_day_delta(schedule: Schedule, move: Move):
         violations_after += count_room_changes_for_day_judge_pair(schedule, day, judge_id)
         
     undo_move(move, schedule)
-    
-    print(f"violations before: {violations_before}, violations after: {violations_after}")
-    print(f"returning: {violations_after - violations_before}")
 
     return (offset + step*(violations_after - violations_before))
 

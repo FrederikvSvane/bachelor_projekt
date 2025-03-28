@@ -37,4 +37,14 @@ def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id
 
 
 
+def get_latest_global_timeslot(schedule):
+    for day in range(schedule.work_days, 0, -1):
+        if day not in schedule.appointments_by_day:
+            continue
+        for timeslot in range(schedule.timeslots_per_work_day, 0, -1):
+            if timeslot not in schedule.appointments_by_day[day]:
+                continue
+            if schedule.appointments_by_day[day][timeslot]:  
+                return (day - 1) * schedule.timeslots_per_work_day + timeslot
     
+    return 0 # should only happen if schedule is empty
