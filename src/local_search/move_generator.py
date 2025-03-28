@@ -15,7 +15,7 @@ def identify_appointment_chains(schedule: Schedule) -> Dict:
     """
     appointment_chains = {}  # Key: case_id, Value: list of appointments
     
-    for appointment in schedule.appointments:
+    for appointment in schedule.iter_appointments():
         key = appointment.meeting.meeting_id
         if key not in appointment_chains:
             appointment_chains[key] = []

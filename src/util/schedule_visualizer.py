@@ -17,7 +17,7 @@ def visualize(schedule: Schedule):
     work_days = schedule.work_days
     timeslot_per_day = schedule.timeslots_per_work_day
     granularity = schedule.granularity
-    appointments = schedule.appointments
+    appointments = schedule.get_all_appointments()
     
     # Get all judges, sorted by ID
     all_judge_ids = sorted([j.judge_id for j in judges])

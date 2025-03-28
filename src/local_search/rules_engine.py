@@ -62,7 +62,7 @@ def nr1_overbooked_room_in_timeslot_full(schedule: Schedule):
     violations = 0
     room_usage =  {}
 
-    for appointment in schedule.appointments:
+    for appointment in schedule.iter_appointments():
         room = appointment.room
         day = appointment.day
         room_key = (room.room_id, day, appointment.timeslot_in_day)
@@ -107,7 +107,24 @@ def nr1_overbooked_room_in_timeslot_delta(schedule: Schedule, move: Move):
 def nr2_overbooked_judge_in_timeslot_full(schedule: Schedule):
     offset = 0
     step = 1
-    pass
+    
+    violations = 0
+    judge_usage = {}
+
+    for appointment in schedule.iter_appointments():
+        judge = appointment.judge
+        day = appointment.day
+        judge_key = (judge.judge_id, day, appointment.timeslot_in_day)
+        if judge_key in judge_usage:
+            judge_usage[judge_key] += 1
+        else:
+            judge_usage[judge_key] = 1
+    
+    for count in judge_usage.values():
+        if count > 1:
+            violations += 1
+    
+    return (offset + step*violations)
 
 def nr2_overbooked_judge_in_timeslot_delta(schedule: Schedule, move: Move):
     offset = 0
@@ -137,7 +154,7 @@ def nr8_judge_skillmatch_full(schedule: Schedule):
     step = 1
     
     violations = 0
-    for appointment in schedule.appointments:
+    for appointment in schedule.iter_appointments():
         judge = appointment.judge
         case = appointment.meeting.case
         if not check_case_judge_compatibility(case, judge):
@@ -145,22 +162,12 @@ def nr8_judge_skillmatch_full(schedule: Schedule):
     
     return (offset + step*violations)
 
-def nr8_judge_skillmatch_delta(schedule: Schedule, move: Move):
+def nr8_judge_skillmatch_delta(_: Schedule, move: Move):
     if move.new_judge is None:
         return 0
     
     offset = 0
     step = 1
-    
-    # this could follow the pattern:
-    # 1. get affected appointments
-    # 2. calculate violations before move
-    # 3. do move
-    # 4. calculate violations after move
-    # 5. undo move
-    # 6. return (offset + step*(violations_after - violations_before))
-    
-    # but since theres only going to be one affected meeting always, we can just do this:
     
     meeting = move.appointments[0].meeting
     
@@ -193,9 +200,11 @@ def nr29_room_stability_per_day_full(schedule: Schedule):
     step = 1
     
     violations = 0
+
+    appointments = schedule.get_all_appointments()
     
     apps_pr_judge_pr_day = {}
-    for appointment in schedule.appointments:
+    for appointment in appointments:
         key = (appointment.day, appointment.judge.judge_id)
         if key not in apps_pr_judge_pr_day:
             apps_pr_judge_pr_day[key] = []
@@ -203,7 +212,8 @@ def nr29_room_stability_per_day_full(schedule: Schedule):
     
     for (day, judge_id), appointments in apps_pr_judge_pr_day.items():
         appointments.sort(key=lambda a: a.timeslot_in_day)
-        
+        for appointment in appointments:
+            print(appointment)
         current_room_id = None
         for appointment in appointments:
             if current_room_id is not None and appointment.room.room_id != current_room_id:
@@ -225,13 +235,15 @@ def nr29_room_stability_per_day_delta(schedule: Schedule, move: Move):
     violations_before = 0
     for day, judge_id in affected_day_judge_pairs:
         violations_before += count_room_changes_for_day_judge_pair(schedule, day, judge_id)
-    
-    do_move(move)
-    
+    do_move(move, schedule)
+
     violations_after = 0
     for day, judge_id in affected_day_judge_pairs:
         violations_after += count_room_changes_for_day_judge_pair(schedule, day, judge_id)
         
-    undo_move(move)
+    undo_move(move, schedule)
     
+    print(f"violations before: {violations_before}, violations after: {violations_after}")
+    print(f"returning: {violations_after - violations_before}")
+
     return (offset + step*(violations_after - violations_before))
