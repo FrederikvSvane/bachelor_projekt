@@ -35,7 +35,6 @@ class TestRulesEngine(unittest.TestCase):
     
         
     def test_nr1_overbooked_room_in_timeslot(self):
-        
         move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
         delta = nr1_overbooked_room_in_timeslot_delta(self.schedule, move)
         
@@ -50,7 +49,6 @@ class TestRulesEngine(unittest.TestCase):
         
     
     def test_nr2_overbooked_judge_in_timeslot(self):
-        
         move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
         delta = nr2_overbooked_judge_in_timeslot_delta(self.schedule, move)
         
@@ -63,19 +61,12 @@ class TestRulesEngine(unittest.TestCase):
         self.assertEqual(violations_after - violations_before ,delta)
 
     def test_nr29_room_stability_per_day(self):
-        visualize(self.schedule)
-
         move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
         delta = nr29_room_stability_per_day_delta(self.schedule, move)
-        print(move)
 
         violations_before = nr29_room_stability_per_day_full(self.schedule)
-        do_move(move)
+        do_move(move, self.schedule)
         violations_after = nr29_room_stability_per_day_full(self.schedule)
-
-        print(f"Violations before: {violations_before}")
-        print(f"Violations after: {violations_after}")
-        print(f"Delta: {delta}")
 
         self.assertEqual(violations_after - violations_before ,delta)
         
