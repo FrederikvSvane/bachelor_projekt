@@ -158,7 +158,7 @@ def count_room_changes_for_judge_on_specific_day(schedule: Schedule, move: Move,
     # here we want to loop through all appointments for the judge on the day and count how many times the room changes
     
     # since the move has not modified the schedule, we need to remove the appointments that the move represents, because are not accurately represented in the schedule
-    scheduled_appointments_without_move_appointments = [app for app in schedule.appointments if judge_id == app.judge.judge_id and day == app.day and app.case.case_id != move.case_id]
+    scheduled_appointments_without_move_appointments = [app for app in schedule.appointments if judge_id == app.judge.judge_id and day == app.day and app.meeting.meeting_id != move.meeting_id]
 
     # then we add the appointments that the move represents
     appointments_in_move_chain = [app for app in move.appointments if judge_id == app.judge.judge_id and day == app.day]

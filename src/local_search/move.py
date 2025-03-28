@@ -89,8 +89,8 @@ def apply_move_to_schedule(schedule: Schedule, move: Move) -> Schedule:
     if not move.is_applied:
         do_move(move)
     
-    move_case_id = move.case_id
-    schedule.appointments = [app for app in schedule.appointments if app.case.case_id != move_case_id]
+    move_meeting_id = move.meeting_id
+    schedule.appointments = [app for app in schedule.appointments if app.meeting.meeting_id != move_meeting_id]
     schedule.appointments.extend(move.appointments)
     
     return schedule
