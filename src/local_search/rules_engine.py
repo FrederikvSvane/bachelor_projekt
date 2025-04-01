@@ -52,7 +52,6 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
     return 0
 
 
-
 def nr1_overbooked_room_in_timeslot_full(schedule: Schedule):
     """
     Tjekker hvor mange gange et rum er booket i et givent timeslot.
@@ -173,20 +172,44 @@ def nr2_overbooked_judge_in_timeslot_delta(schedule: Schedule, move: Move):
     
     return (offset + step*(new_violations - old_violations))
     
-# ...
-
 
 def nr6_virtual_room_must_have_virtual_meeting_full(schedule: Schedule):
     offset = 0
     step = 1
-    pass
+    violations = 0
+    
+    for app in schedule.iter_appointments():
+        meeting = app.meeting
+        room = app.room
+        if not check_case_room_compatibility(meeting.case.case_id, room.room_id):
+            violations += 1
+
+    return (offset + step*violations)        
 
 def nr6_virtual_room_must_have_virtual_meeting_delta(schedule: Schedule, move: Move):
+    if move.new_room is None:
+        return 0
+    
     offset = 0
     step = 1
-    pass
-
-# ...
+    old_violations = 0
+    for app in move.appointments:
+        meeting = app.meeting
+        room = app.room
+        if not check_case_room_compatibility(meeting.case.case_id, room.room_id):
+            old_violations += 1
+    do_move(move, schedule)
+    
+    new_violations = 0
+    for app in move.appointments:
+        meeting = app.meeting
+        room = app.room
+        if not check_case_room_compatibility(meeting.case.case_id, room.room_id):
+            new_violations += 1
+    undo_move(move, schedule)
+    
+    return (offset + step*(new_violations - old_violations))
+    
 
 def nr8_judge_skillmatch_full(schedule: Schedule):
     """
@@ -229,14 +252,38 @@ def nr8_judge_skillmatch_delta(_: Schedule, move: Move):
 def nr14_virtual_case_has_virtual_judge_full(schedule: Schedule):
     offset = 0
     step = 1
-    pass
+    violations = 0
+    for app in schedule.iter_appointments():
+        meeting = app.meeting
+        judge = app.judge
+        if not check_case_judge_compatibility(meeting.case.case_id, judge.judge_id):
+            violations += 1
+    
+    return (offset + step*violations)
 
 def nr14_virtual_case_has_virtual_judge_delta(schedule: Schedule, move: Move):
+    if move.new_judge is None:
+        return 0
+    
     offset = 0
     step = 1
-    pass
-
-# ...
+    old_violations = 0
+    for app in move.appointments:
+        meeting = app.meeting
+        judge = app.judge
+        if not check_case_judge_compatibility(meeting.case.case_id, judge.judge_id):
+            old_violations += 1
+    do_move(move, schedule)
+    
+    new_violations = 0
+    for app in move.appointments:
+        meeting = app.meeting
+        judge = app.judge
+        if not check_case_judge_compatibility(meeting.case.case_id, judge.judge_id):
+            new_violations += 1
+    undo_move(move, schedule)
+    return (offset + step*(new_violations - old_violations))
+    
 
 def nr17_unused_timeblock_full(schedule: Schedule):
     offset = 0

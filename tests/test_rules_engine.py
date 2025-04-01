@@ -59,6 +59,31 @@ class TestRulesEngine(unittest.TestCase):
         violations_after = nr2_overbooked_judge_in_timeslot_full(self.schedule)
         
         self.assertEqual(violations_after - violations_before ,delta)
+        
+    def test_nr6_virtual_room_must_have_virtual_meeting(self):
+        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+        delta = nr6_virtual_room_must_have_virtual_meeting_delta(self.schedule, move)
+        
+        violations_before = nr6_virtual_room_must_have_virtual_meeting_full(self.schedule)
+        
+        do_move(move, self.schedule)
+        
+        violations_after = nr6_virtual_room_must_have_virtual_meeting_full(self.schedule)
+        
+        self.assertEqual(violations_after - violations_before ,delta)
+        
+    def test_nr_14_virtual_judge_must_have_virtual_meeting(self):
+        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+        delta = nr14_virtual_case_has_virtual_judge_delta(self.schedule, move)
+        
+        violations_before = nr14_virtual_case_has_virtual_judge_full(self.schedule)
+        
+        do_move(move, self.schedule)
+        
+        violations_after = nr14_virtual_case_has_virtual_judge_full(self.schedule)
+        
+        self.assertEqual(violations_after - violations_before ,delta)
+    
 
     def test_nr29_room_stability_per_day(self):
         move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
