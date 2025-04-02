@@ -59,18 +59,19 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
         if move.new_day is not None:
             app.day = move.new_day
         
-        if move.new_start_timeslot is not None:
-            new_timeslot = move.new_start_timeslot + i
+        if move.new_start_timeslot is not None or move.new_day is not None:
+            start_day = move.new_day if move.new_day is not None else move.old_day
+            start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
+            global_timeslot = ((start_day - 1) * schedule.timeslots_per_work_day) + start_timeslot + i
             
-            day_offset = (new_timeslot - 1) // schedule.timeslots_per_work_day
-            adjusted_timeslot = ((new_timeslot - 1) % schedule.timeslots_per_work_day) + 1
+            app.day = ((global_timeslot - 1) // schedule.timeslots_per_work_day) + 1
+            app.timeslot_in_day = ((global_timeslot - 1) % schedule.timeslots_per_work_day) + 1
             
-            if day_offset > 0:
-                app.day = move.new_day + day_offset if move.new_day is not None else app.day + day_offset
-                app.timeslot_in_day = adjusted_timeslot
-            else:
-                app.timeslot_in_day = new_timeslot
-        
+            if app.day > schedule.work_days: # overflows the schedule boundary => increase the size of the schedule
+                schedule.work_days += 1
+                schedule.appointments_by_day[app.day] = {}
+                schedule.appointments_by_day[app.day][app.timeslot_in_day] = []
+            
         # update the dict - add the appointments to the new position
         if schedule is not None and changing_position:
             new_day = app.day

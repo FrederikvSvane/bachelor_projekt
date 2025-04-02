@@ -63,6 +63,7 @@ def nr1_overbooked_room_in_timeslot_full(schedule: Schedule):
     
     
     appointments = schedule.get_all_appointments()
+    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.room.room_id))
     for appointment in appointments:
         room = appointment.room
         day = appointment.day
@@ -91,9 +92,11 @@ def nr1_overbooked_room_in_timeslot_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
     old_violations = 0
+    move.appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.room.room_id))
     
     for app in move.appointments:
         appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
+        appointments_at_time.sort(key=lambda a: (a.room.room_id, a.judge.judge_id))
         room_ids = [app.room.room_id for app in appointments_at_time]
         double_booked = len(room_ids) != len(set(room_ids))
         if double_booked:
@@ -125,6 +128,8 @@ def nr2_overbooked_judge_in_timeslot_full(schedule: Schedule):
     judge_usage = {}
 
     appointments = schedule.get_all_appointments()
+    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.judge.judge_id))
+    
     for appointment in appointments:
         judge = appointment.judge
         day = appointment.day
@@ -148,6 +153,7 @@ def nr2_overbooked_judge_in_timeslot_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
     old_violations = 0
+    move.appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.judge.judge_id))
     
     for app in move.appointments:
         appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
@@ -177,8 +183,10 @@ def nr6_virtual_room_must_have_virtual_meeting_full(schedule: Schedule):
     offset = 0
     step = 1
     violations = 0
+    appointments = schedule.get_all_appointments()
+    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.room.room_id))
     
-    for app in schedule.iter_appointments():
+    for app in appointments:
         meeting = app.meeting
         room = app.room
         if not check_case_room_compatibility(meeting.case.case_id, room.room_id):
@@ -214,7 +222,10 @@ def nr8_judge_skillmatch_full(schedule: Schedule):
     step = 1
     
     violations = 0
-    for appointment in schedule.iter_appointments():
+    appointments = schedule.get_all_appointments()
+    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.judge.judge_id))
+    
+    for appointment in appointments:
         judge = appointment.judge
         case = appointment.meeting.case
         if not check_case_judge_compatibility(case, judge):
@@ -229,10 +240,10 @@ def nr8_judge_skillmatch_delta(_: Schedule, move: Move):
     offset = 0
     step = 1
     
-    meeting = move.appointments[0].meeting
+    case_id = move.appointments[0].meeting.case.case_id
     
-    old_judge_has_skills = check_case_judge_compatibility(move.old_judge, meeting)
-    new_judge_has_skills = check_case_judge_compatibility(move.new_judge, meeting)
+    old_judge_has_skills = check_case_judge_compatibility(case_id, move.old_judge.judge_id)
+    new_judge_has_skills = check_case_judge_compatibility(case_id, move.new_judge.judge_id)
     
     if old_judge_has_skills and not new_judge_has_skills:
         return (offset + step)
@@ -247,7 +258,11 @@ def nr14_virtual_case_has_virtual_judge_full(schedule: Schedule):
     offset = 0
     step = 1
     violations = 0
-    for app in schedule.iter_appointments():
+    
+    appointments = schedule.get_all_appointments()
+    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.judge.judge_id))
+    
+    for app in appointments:
         meeting = app.meeting
         judge = app.judge
         if not check_case_judge_compatibility(meeting.case.case_id, judge.judge_id):
@@ -258,26 +273,24 @@ def nr14_virtual_case_has_virtual_judge_full(schedule: Schedule):
 def nr14_virtual_case_has_virtual_judge_delta(schedule: Schedule, move: Move):
     if move.new_judge is None:
         return 0
+    # NOTE this is actually slower, but more correct. We leave it out.
+    # if move.appointments[0].case.characteristics.contains("virtual"):
+    #     return 0
     
     offset = 0
     step = 1
-    old_violations = 0
-    for app in move.appointments:
-        meeting = app.meeting
-        judge = app.judge
-        if not check_case_judge_compatibility(meeting.case.case_id, judge.judge_id):
-            old_violations += 1
-    do_move(move, schedule)
     
-    new_violations = 0
-    for app in move.appointments:
-        meeting = app.meeting
-        judge = app.judge
-        if not check_case_judge_compatibility(meeting.case.case_id, judge.judge_id):
-            new_violations += 1
-    undo_move(move, schedule)
-    return (offset + step*(new_violations - old_violations))
+    case_id = move.appointments[0].meeting.case.case_id
     
+    old_judge_is_virtual = check_case_judge_compatibility(case_id, move.old_judge.judge_id)
+    new_room_case_compatible = check_case_judge_compatibility(case_id, move.new_judge.judge_id)
+
+    if old_judge_is_virtual and not new_room_case_compatible:    
+        return (offset + step)
+    elif not old_judge_is_virtual and new_room_case_compatible:
+        return (offset - step)
+    else:
+        return 0
 
 def nr17_unused_timeblock_full(schedule: Schedule):
     offset = 0
@@ -312,36 +325,60 @@ def nr18_unused_timegrain_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
     
-    if (move.new_day is None and move.new_judge is None and move.new_start_timeslot is None and move.new_room is None):
+    if (move.new_day is None and move.new_judge is None and move.new_start_timeslot is None):
         return 0
     
-    meeting_moved_in_time = move.new_day is not None or move.new_start_timeslot is not None
-
-    if not meeting_moved_in_time:
-        return 0
-
-    if move.new_start_timeslot is None: 
-        return 0
+    block_size: int = len(move.appointments)
+    new_day = move.new_day if move.new_day is not None else move.old_day
+    new_start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
+    new_judge_id = move.new_judge.judge_id if move.new_judge is not None else move.old_judge.judge_id
     
-    get_latest_global_timeslot = get_latest_global_timeslot(schedule)
+    appointments_in_old_block: list[Appointment] = get_appointments_in_timeslot_range(schedule, start_day=move.old_day, start_slot=move.old_start_timeslot, end_slot=move.old_start_timeslot + len(move.appointments) - 1, judge_id=move.old_judge.judge_id)
+    appointments_in_new_block: list[Appointment] = get_appointments_in_timeslot_range(schedule, start_day=new_day, start_slot=new_start_timeslot, end_slot=new_start_timeslot + len(move.appointments) - 1, judge_id=new_judge_id, meeting_id=move.meeting_id)
+    
+    unused_timeslots_in_new_block: int = get_n_unused_timeslots_in_range(schedule, new_day, new_day, new_start_timeslot, new_start_timeslot + len(move.appointments) - 1, judge_id=new_judge_id, meeting_id=move.meeting_id)
+    
+    # block_delta = len(appointments_in_old_block) - len(appointments_in_new_block)
+    timeslot_delta = 0
+    total_possible_timeslots_delta = 0
+    
+    old_latest_global_timeslot = get_latest_global_timeslot(schedule)
+    all_judge_ids = schedule.get_all_judges()
 
+    old_frame = len(all_judge_ids) * old_latest_global_timeslot
+    do_move(move, schedule)
 
-    # TODO
-    # we need to find the distance between the latest global timeslot and the second latest global timeslot
-    # then do something smart
+    # de her ting kan ske:
+    # 1. antallet af appointments i old block er lig med antallet af appointments i move. ie. der er ingen dobble bookings i old block
+    if (len(appointments_in_old_block) == len(move.appointments)):
+        # 1.1: antallet af appointments i new block er nul. Så vi fjerner ingen dooble bookings, og laver ingen nye dobble bookings (very good also)
+        if (len(appointments_in_new_block) == 0):
+            pass
+        # 1.2: antallet af appointments i new block er større end 0. Så vi fjerner ingen dooble bookings, men tilføjer nye dobble bookings
+        if (len(appointments_in_new_block) > 0):
+            timeslot_delta = len(move.appointments) - unused_timeslots_in_new_block # we use all the previously unused timeslots in the new block
 
-    # TODO
-    # but in the normal case were we are not at the boundary of the schedule, we can just do something like
-    # look at the slice in the schedule that is affected by the move
-    # and if it is moved in time, then consider the slice in time before and after the move
-
-
-
-
-    pass
-
-
-    return (offset + step * delta)
+    # 2. antallet af appointments i old block er større end antallet af appointments i move => der er dobble bookings i old block
+    if (len(appointments_in_old_block) > len(move.appointments)):
+        unused_timeslots_in_old_block_after_move = get_n_unused_timeslots_in_range(schedule, move.old_day, move.old_day, move.old_start_timeslot, move.old_start_timeslot + len(move.appointments) - 1, judge_id=move.old_judge.judge_id)
+        # 2.1: antallet af appointments i new block er nul. Så vi fjerner dobble bookings og tilføjer ingen nye dobble bookings (very good)
+        if(len(appointments_in_new_block) == 0):
+            timeslot_delta -= unused_timeslots_in_old_block_after_move # FIXME maybe dont work?!
+        # 2.2: antallet af appointments i new block er større end nul. Så vi fjerner dobble bookings men tilføjer nye dobble bookings
+        if(len(appointments_in_new_block) > 0):
+            timeslot_delta = unused_timeslots_in_old_block_after_move - unused_timeslots_in_new_block
+    
+    new_latest_global_timeslot = get_latest_global_timeslot(schedule)
+    new_frame = len(all_judge_ids) * new_latest_global_timeslot
+    
+    if old_frame != new_frame: # the move doesnt affect the latest global timeslot
+        total_possible_timeslots_delta = new_frame - old_frame
+    
+    violations = total_possible_timeslots_delta + timeslot_delta
+     
+    undo_move(move, schedule)
+    
+    return (offset + step * violations)
 
 def nr19_case_has_specific_judge_full(schedule: Schedule):
     offset = 0
@@ -441,7 +478,7 @@ def nr29_room_stability_per_day_full(schedule: Schedule):
         apps_pr_judge_pr_day[key].append(appointment)
     
     for (day, judge_id), appointments in apps_pr_judge_pr_day.items():
-        appointments.sort(key=lambda a: (a.timeslot_in_day, a.meeting.meeting_id))
+        appointments.sort(key=lambda a: (a.timeslot_in_day, a.meeting.meeting_id, a.room.room_id))
         current_room_id = None
         for appointment in appointments:
             if current_room_id is not None and appointment.room.room_id != current_room_id:
