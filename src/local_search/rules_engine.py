@@ -192,24 +192,18 @@ def nr6_virtual_room_must_have_virtual_meeting_delta(schedule: Schedule, move: M
     
     offset = 0
     step = 1
-    old_violations = 0
-    for app in move.appointments:
-        meeting = app.meeting
-        room = app.room
-        if not check_case_room_compatibility(meeting.case.case_id, room.room_id):
-            old_violations += 1
-    do_move(move, schedule)
     
-    new_violations = 0
-    for app in move.appointments:
-        meeting = app.meeting
-        room = app.room
-        if not check_case_room_compatibility(meeting.case.case_id, room.room_id):
-            new_violations += 1
-    undo_move(move, schedule)
+    meeting = move.appointments[0].meeting
     
-    return (offset + step*(new_violations - old_violations))
+    old_room_has_compatibility = check_case_room_compatibility(meeting.case.case_id, move.old_room.room_id)
+    new_room_has_compatibility = check_case_room_compatibility(meeting.case.case_id, move.new_room.room_id)
     
+    if old_room_has_compatibility and not new_room_has_compatibility:
+        return (offset + step)
+    elif not old_room_has_compatibility and new_room_has_compatibility:
+        return (offset - step)
+    else:
+        return 0
 
 def nr8_judge_skillmatch_full(schedule: Schedule):
     """
