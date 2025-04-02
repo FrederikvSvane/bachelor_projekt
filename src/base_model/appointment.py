@@ -15,9 +15,10 @@ class Appointment:
     timeslot_in_day: int # 1-indexed
         
     def __str__(self):
-        return (f"Appointment(C{self.case}, "
+        return (f"Appointment(M{self.meeting}, "
                 f"J{self.judge}, R{self.room}, "
-                f"T{self.timeslot_in_day})")
+                f"T{self.timeslot_in_day}, "
+                f"D{self.day})")
                 
 def print_appointments(appointments: list[Appointment]):
     for app in appointments:

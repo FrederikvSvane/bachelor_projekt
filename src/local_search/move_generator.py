@@ -5,24 +5,9 @@ from src.base_model.meeting import Meeting
 from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.schedule import Schedule
-from src.base_model.compatibility_checks import case_judge_compatible, case_room_compatible
 from src.local_search.move import Move
 
-def calculate_compatible_judges(meetings: list[Meeting], judges: List[Judge]) -> Dict[int, List[Judge]]:
-    compatible_judges = {}
-    for meeting in meetings:
-        compatible_judges[meeting.meeting_id] = [judge for judge in judges 
-                                          if case_judge_compatible(meeting.case, judge)]
-        
-    return compatible_judges
 
-def calculate_compatible_rooms(meetings: list[Meeting], rooms: List[Room]) -> Dict[int, List[Room]]:
-    compatible_rooms = {}
-    for meeting in meetings:
-        compatible_rooms[meeting.meeting_id] = [room for room in rooms 
-                                         if case_room_compatible(meeting.case, room)]
-        
-    return compatible_rooms
 
 def identify_appointment_chains(schedule: Schedule) -> Dict:
     """
@@ -30,7 +15,7 @@ def identify_appointment_chains(schedule: Schedule) -> Dict:
     """
     appointment_chains = {}  # Key: case_id, Value: list of appointments
     
-    for appointment in schedule.appointments:
+    for appointment in schedule.iter_appointments():
         key = appointment.meeting.meeting_id
         if key not in appointment_chains:
             appointment_chains[key] = []
@@ -53,7 +38,11 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
     current_day = first_appointment.day
     current_start_timeslot = first_appointment.timeslot_in_day
     
-    move = Move(chosen_meeting_id, chosen_appointments, timeslots_per_day=schedule.timeslots_per_work_day)
+    move = Move(chosen_meeting_id, chosen_appointments)
+    move.old_judge = first_appointment.judge
+    move.old_room = first_appointment.room
+    move.old_day = current_day
+    move.old_start_timeslot = current_start_timeslot
     
     # Randomly decide which type of move to make
     n_compatible_judges= len(compatible_judges_dict[chosen_meeting_id])
@@ -73,8 +62,7 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
         compatible_judges = compatible_judges_dict[chosen_meeting_id]
         if len(compatible_judges) > 1:  # Ensure there's a different judge to pick
             new_judge = random.choice([j for j in compatible_judges 
-                                     if j.judge_id != old_judge.judge_id])
-            move.old_judge = old_judge
+                                    if j.judge_id != old_judge.judge_id])
             move.new_judge = new_judge
         else:
             print("No compatible judges")
@@ -85,7 +73,6 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
         if len(compatible_rooms) > 1:  # Ensure there's a different room to pick
             new_room = random.choice([r for r in compatible_rooms 
                                     if r.room_id != old_room.room_id])
-            move.old_room = old_room
             move.new_room = new_room
         else:
             print("No compatible rooms")
@@ -95,7 +82,6 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
         valid_days = [d for d in range(1, schedule.work_days + 1) if d != current_day]
         if valid_days:  # Make sure there's at least one other day
             new_day = random.choice(valid_days)
-            move.old_day = current_day
             move.new_day = new_day
         else:
             print("No valid days")
@@ -110,11 +96,10 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
         if max_start_timeslot > 1:  # Ensure there's room to move
             # Generate new timeslot different from current
             valid_timeslots = [t for t in range(1, max_start_timeslot + 1) 
-                             if t != current_start_timeslot]
+                            if t != current_start_timeslot]
             
             if valid_timeslots:  # Make sure there's at least one valid option
                 new_start_timeslot = random.choice(valid_timeslots)
-                move.old_start_timeslot = current_start_timeslot
                 move.new_start_timeslot = new_start_timeslot
             else:
                 print("No valid timeslots")
