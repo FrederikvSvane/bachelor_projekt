@@ -45,6 +45,50 @@ def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id
     
     return violations
 
+def get_affected_judge_day_pairs_for_unused_timegrains(schedule: Schedule, move: Move) -> set:
+    affected_pairs = set()
+    
+    affected_pairs.add((move.old_day, move.old_judge.judge_id))
+    if move.new_day is not None:
+        affected_pairs.add((move.new_day, move.old_judge.judge_id))
+    
+    if move.new_judge is not None:
+        affected_pairs.add((move.old_day, move.new_judge.judge_id))
+        if move.new_day is not None:
+            affected_pairs.add((move.new_day, move.new_judge.judge_id))
+    
+    last_day = schedule.work_days
+    if move.old_day == last_day or (move.new_day is not None and move.new_day >= last_day):
+        for judge in schedule.get_all_judges():
+            affected_pairs.add((last_day, judge.judge_id))
+            
+    return affected_pairs
+
+
+def count_unused_timeslots_in_day_for_judge_day_pair(schedule: Schedule, day: int, judge_id: int, is_last_day: bool) -> int:
+    used_timeslots = set()
+    
+    if day in schedule.appointments_by_day:
+        for timeslot in range(1, schedule.timeslots_per_work_day + 1):
+            if timeslot in schedule.appointments_by_day[day]:
+                for app in schedule.appointments_by_day[day][timeslot]:
+                    if app.judge.judge_id == judge_id:
+                        used_timeslots.add(timeslot)
+                        break
+    
+    # hvis det er sidste dag og judge ikke har nogle appointments, så tæller vi ingen unused timeslots
+    if is_last_day and not used_timeslots:
+        return 0
+    
+    return schedule.timeslots_per_work_day - len(used_timeslots)
+
+
+def calculate_unused_timeslots_for_all_judge_day_pairs(schedule: Schedule, affected_pairs: set, last_day: int) -> int:
+    total_violations = 0
+    for day, judge_id in affected_pairs:
+        is_last_day = (day == last_day)
+        total_violations += count_unused_timeslots_in_day_for_judge_day_pair(schedule, day, judge_id, is_last_day)
+    return total_violations
 
 
 def get_latest_global_timeslot(schedule):

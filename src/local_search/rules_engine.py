@@ -306,79 +306,59 @@ def nr18_unused_timegrain_full(schedule: Schedule):
     offset = 0
     step = 1
     
-    all_judge_ids = schedule.get_all_judges()
-    used_global_slots = set()
-    latest_global_timeslot = get_latest_global_timeslot(schedule)
+    judges = schedule.get_all_judges()
+    last_day = schedule.work_days
+    total_violations = 0
     
-    for app in schedule.iter_appointments():
-        judge_id = app.judge.judge_id
-        global_timeslot = (app.day - 1) * schedule.timeslots_per_work_day + app.timeslot_in_day
-        used_global_slots.add((judge_id, global_timeslot))
+    judges_with_appointments_on_last_day = set()
+    if last_day in schedule.appointments_by_day:
+        for timeslot in schedule.appointments_by_day[last_day]:
+            for app in schedule.appointments_by_day[last_day][timeslot]:
+                judges_with_appointments_on_last_day.add(app.judge.judge_id)
     
-    total_possible_slots = len(all_judge_ids) * latest_global_timeslot
+    for day in range(1, last_day + 1):
+        for judge in judges:
+            judge_id = judge.judge_id
+            
+            if day == last_day and judge_id not in judges_with_appointments_on_last_day:
+                continue
+            
+            used_timeslots = set()
+            if day in schedule.appointments_by_day:
+                for timeslot in range(1, schedule.timeslots_per_work_day + 1):
+                    if timeslot in schedule.appointments_by_day[day]:
+                        for app in schedule.appointments_by_day[day][timeslot]:
+                            if app.judge.judge_id == judge_id:
+                                used_timeslots.add(timeslot)
+                                break  # fandt et appointment i det her timeslot, ingen grund til at lede videre
+            
+            total_violations += schedule.timeslots_per_work_day - len(used_timeslots)
     
-    violations = total_possible_slots - len(used_global_slots)
-    return (offset + step*violations)
+    return (offset + step * total_violations)
 
 
 def nr18_unused_timegrain_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
     
-    if (move.new_day is None and move.new_judge is None and move.new_start_timeslot is None):
-        return 0
+    if move.new_day is None and move.new_judge is None and move.new_start_timeslot is None:
+        return 0 
     
-    block_size: int = len(move.appointments)
-    new_day = move.new_day if move.new_day is not None else move.old_day
-    new_start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
-    new_judge_id = move.new_judge.judge_id if move.new_judge is not None else move.old_judge.judge_id
+    affected_pairs = get_affected_judge_day_pairs_for_unused_timegrains(schedule, move)
+    before_violations = calculate_unused_timeslots_for_all_judge_day_pairs(schedule, affected_pairs, schedule.work_days)
     
-    appointments_in_old_block: list[Appointment] = get_appointments_in_timeslot_range(schedule, start_day=move.old_day, start_slot=move.old_start_timeslot, end_slot=move.old_start_timeslot + len(move.appointments) - 1, judge_id=move.old_judge.judge_id)
-    appointments_in_new_block: list[Appointment] = get_appointments_in_timeslot_range(schedule, start_day=new_day, start_slot=new_start_timeslot, end_slot=new_start_timeslot + len(move.appointments) - 1, judge_id=new_judge_id, meeting_id=move.meeting_id)
-    
-    unused_timeslots_in_new_block: int = get_n_unused_timeslots_in_range(schedule, new_day, new_day, new_start_timeslot, new_start_timeslot + len(move.appointments) - 1, judge_id=new_judge_id, meeting_id=move.meeting_id)
-    
-    # block_delta = len(appointments_in_old_block) - len(appointments_in_new_block)
-    timeslot_delta = 0
-    total_possible_timeslots_delta = 0
-    
-    old_latest_global_timeslot = get_latest_global_timeslot(schedule)
-    all_judge_ids = schedule.get_all_judges()
-
-    old_frame = len(all_judge_ids) * old_latest_global_timeslot
     do_move(move, schedule)
-
-    # de her ting kan ske:
-    # 1. antallet af appointments i old block er lig med antallet af appointments i move. ie. der er ingen dobble bookings i old block
-    if (len(appointments_in_old_block) == len(move.appointments)):
-        # 1.1: antallet af appointments i new block er nul. Så vi fjerner ingen dooble bookings, og laver ingen nye dobble bookings (very good also)
-        if (len(appointments_in_new_block) == 0):
-            pass
-        # 1.2: antallet af appointments i new block er større end 0. Så vi fjerner ingen dooble bookings, men tilføjer nye dobble bookings
-        if (len(appointments_in_new_block) > 0):
-            timeslot_delta = len(move.appointments) - unused_timeslots_in_new_block # we use all the previously unused timeslots in the new block
-
-    # 2. antallet af appointments i old block er større end antallet af appointments i move => der er dobble bookings i old block
-    if (len(appointments_in_old_block) > len(move.appointments)):
-        unused_timeslots_in_old_block_after_move = get_n_unused_timeslots_in_range(schedule, move.old_day, move.old_day, move.old_start_timeslot, move.old_start_timeslot + len(move.appointments) - 1, judge_id=move.old_judge.judge_id)
-        # 2.1: antallet af appointments i new block er nul. Så vi fjerner dobble bookings og tilføjer ingen nye dobble bookings (very good)
-        if(len(appointments_in_new_block) == 0):
-            timeslot_delta -= unused_timeslots_in_old_block_after_move # FIXME maybe dont work?!
-        # 2.2: antallet af appointments i new block er større end nul. Så vi fjerner dobble bookings men tilføjer nye dobble bookings
-        if(len(appointments_in_new_block) > 0):
-            timeslot_delta = unused_timeslots_in_old_block_after_move - unused_timeslots_in_new_block
     
-    new_latest_global_timeslot = get_latest_global_timeslot(schedule)
-    new_frame = len(all_judge_ids) * new_latest_global_timeslot
+    new_last_day = schedule.work_days
+    if new_last_day > schedule.work_days:
+        for judge in schedule.get_all_judges():
+            affected_pairs.add((new_last_day, judge.judge_id))
     
-    if old_frame != new_frame: # the move doesnt affect the latest global timeslot
-        total_possible_timeslots_delta = new_frame - old_frame
+    after_violations = calculate_unused_timeslots_for_all_judge_day_pairs(schedule, affected_pairs, new_last_day)
     
-    violations = total_possible_timeslots_delta + timeslot_delta
-     
     undo_move(move, schedule)
     
-    return (offset + step * violations)
+    return (offset + step * (after_violations - before_violations))
 
 def nr19_case_has_specific_judge_full(schedule: Schedule):
     offset = 0
