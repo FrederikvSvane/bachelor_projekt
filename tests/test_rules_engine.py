@@ -15,7 +15,7 @@ class TestRulesEngine(unittest.TestCase):
     
     def setUp(self):
         #generate a random schedule for every test
-        n_cases = 8
+        n_cases = 20
         n_judges = 4
         n_rooms = 4
         n_work_days = 2
@@ -33,89 +33,110 @@ class TestRulesEngine(unittest.TestCase):
         self.rooms = self.schedule.get_all_rooms() 
         self.compatible_judges = calculate_compatible_judges(self.meetings, self.judges)
         self.compatible_rooms = calculate_compatible_rooms(self.meetings, self.rooms)
+
+    def test_full_score_vs_delta_score(self):
+        # Generate a random move
+        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+        # Calculate the delta score
+        delta_score = calculate_delta_score(self.schedule, move)
+
+        # Calculate the full score before the move
+        full_score_before = calculate_full_score(self.schedule)
+
+        # Apply the move to the schedule
+        do_move(move, self.schedule)
+
+        # Calculate the full score after the move
+        full_score_after = calculate_full_score(self.schedule)
+
+        # Undo the move to restore the original schedule
+        undo_move(move, self.schedule)
+
+        # Assert that the delta score is equal to the difference in full scores
+        self.assertEqual(full_score_after - full_score_before, delta_score)
     
         
-    def test_nr1_overbooked_room_in_timeslot(self):
-        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-        delta = nr1_overbooked_room_in_timeslot_delta(self.schedule, move)
+    # def test_nr1_overbooked_room_in_timeslot(self):
+    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+    #     delta = nr1_overbooked_room_in_timeslot_delta(self.schedule, move)
         
-        violations_before = nr1_overbooked_room_in_timeslot_full(self.schedule)
+    #     violations_before = nr1_overbooked_room_in_timeslot_full(self.schedule)
         
-        do_move(move, self.schedule)
+    #     do_move(move, self.schedule)
         
-        violations_after = nr1_overbooked_room_in_timeslot_full(self.schedule)
+    #     violations_after = nr1_overbooked_room_in_timeslot_full(self.schedule)
         
         
-        self.assertEqual(violations_after - violations_before ,delta)
+    #     self.assertEqual(violations_after - violations_before ,delta)
         
     
-    def test_nr2_overbooked_judge_in_timeslot(self):
-        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-        delta = nr2_overbooked_judge_in_timeslot_delta(self.schedule, move)
+    # def test_nr2_overbooked_judge_in_timeslot(self):
+    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+    #     delta = nr2_overbooked_judge_in_timeslot_delta(self.schedule, move)
         
-        violations_before = nr2_overbooked_judge_in_timeslot_full(self.schedule)
+    #     violations_before = nr2_overbooked_judge_in_timeslot_full(self.schedule)
         
-        do_move(move, self.schedule)
+    #     do_move(move, self.schedule)
         
-        violations_after = nr2_overbooked_judge_in_timeslot_full(self.schedule)
+    #     violations_after = nr2_overbooked_judge_in_timeslot_full(self.schedule)
         
-        self.assertEqual(violations_after - violations_before ,delta)
+    #     self.assertEqual(violations_after - violations_before ,delta)
         
-    def test_nr6_virtual_room_must_have_virtual_meeting(self):
-        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-        delta = nr6_virtual_room_must_have_virtual_meeting_delta(self.schedule, move)
+    # def test_nr6_virtual_room_must_have_virtual_meeting(self):
+    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+    #     delta = nr6_virtual_room_must_have_virtual_meeting_delta(self.schedule, move)
         
-        violations_before = nr6_virtual_room_must_have_virtual_meeting_full(self.schedule)
+    #     violations_before = nr6_virtual_room_must_have_virtual_meeting_full(self.schedule)
         
-        do_move(move, self.schedule)
+    #     do_move(move, self.schedule)
         
-        violations_after = nr6_virtual_room_must_have_virtual_meeting_full(self.schedule)
+    #     violations_after = nr6_virtual_room_must_have_virtual_meeting_full(self.schedule)
         
-        self.assertEqual(violations_after - violations_before ,delta)
+    #     self.assertEqual(violations_after - violations_before ,delta)
         
-    def test_nr_14_virtual_judge_must_have_virtual_meeting(self):
-        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-        delta = nr14_virtual_case_has_virtual_judge_delta(self.schedule, move)
+    # def test_nr_14_virtual_judge_must_have_virtual_meeting(self):
+    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+    #     delta = nr14_virtual_case_has_virtual_judge_delta(self.schedule, move)
         
-        violations_before = nr14_virtual_case_has_virtual_judge_full(self.schedule)
+    #     violations_before = nr14_virtual_case_has_virtual_judge_full(self.schedule)
         
-        do_move(move, self.schedule)
+    #     do_move(move, self.schedule)
         
-        violations_after = nr14_virtual_case_has_virtual_judge_full(self.schedule)
+    #     violations_after = nr14_virtual_case_has_virtual_judge_full(self.schedule)
         
-        self.assertEqual(violations_after - violations_before ,delta)
+    #     self.assertEqual(violations_after - violations_before ,delta)
     
-    def test_nr18_unused_timegrain(self):
-        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-        delta = nr18_unused_timegrain_delta(self.schedule, move)
+    # def test_nr18_unused_timegrain(self):
+    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+    #     delta = nr18_unused_timegrain_delta(self.schedule, move)
         
-        violations_before = nr18_unused_timegrain_full(self.schedule)
-        do_move(move, self.schedule)
+    #     violations_before = nr18_unused_timegrain_full(self.schedule)
+    #     do_move(move, self.schedule)
         
-        violations_after = nr18_unused_timegrain_full(self.schedule)
+    #     violations_after = nr18_unused_timegrain_full(self.schedule)
         
-        self.assertEqual(violations_after - violations_before ,delta)
+    #     self.assertEqual(violations_after - violations_before ,delta)
 
-    def test_nr29_room_stability_per_day(self):
-        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-        delta = nr29_room_stability_per_day_delta(self.schedule, move)
+    # def test_nr29_room_stability_per_day(self):
+    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+    #     delta = nr29_room_stability_per_day_delta(self.schedule, move)
 
-        visualize(self.schedule)
+    #     visualize(self.schedule)
 
-        violations_before = nr29_room_stability_per_day_full(self.schedule)
-        do_move(move, self.schedule)
+    #     violations_before = nr29_room_stability_per_day_full(self.schedule)
+    #     do_move(move, self.schedule)
 
-        visualize(self.schedule)
+    #     visualize(self.schedule)
 
 
-        violations_after = nr29_room_stability_per_day_full(self.schedule)
+    #     violations_after = nr29_room_stability_per_day_full(self.schedule)
         
-        print(move)
-        print(f"violations before: {violations_before}")
-        print(f"violations after: {violations_after}")
-        print(f"delta: {delta}")
+    #     print(move)
+    #     print(f"violations before: {violations_before}")
+    #     print(f"violations after: {violations_after}")
+    #     print(f"delta: {delta}")
 
-        self.assertEqual(violations_after - violations_before ,delta)
+    #     self.assertEqual(violations_after - violations_before ,delta)
         
 if __name__ == '__main__':
     unittest.main()

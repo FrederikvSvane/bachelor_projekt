@@ -7,7 +7,7 @@ from src.base_model.schedule import Schedule
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.move import do_move, undo_move, Move
 from src.local_search.move_generator import generate_random_move
-from src.local_search.rules_engine import calculate_full_score
+from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
 
 def calculate_alpha(K: int, start_temperature: float, end_temperature: float) -> float:
     """
@@ -23,15 +23,13 @@ def calculate_alpha(K: int, start_temperature: float, end_temperature: float) ->
     """
     return (end_temperature / start_temperature) ** (1 / (K - 1))
 
-def simulated_annealing(schedule: Schedule, n: int, K: int, 
-                        start_temp: float, end_temp: float) -> Schedule:
+def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, end_temp: float) -> Schedule:
     """
     Perform simulated annealing optimization on the given schedule.
     """
     iterations_per_temperature = n * (n - 1) // 2
     alpha = calculate_alpha(K, start_temp, end_temp)
 
-    cases = schedule.get_all_cases()
     meetings = schedule.get_all_meetings()
     judges = schedule.get_all_judges()
     rooms = schedule.get_all_rooms() 
@@ -58,9 +56,9 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
                 move.new_day is None and move.new_start_timeslot is None):
                 continue
                 
-            delta = calculate_full_score(schedule, move)
+            delta = calculate_delta_score(schedule, move)
             
-            do_move(move) # so this actually modifies the schedule in place
+            do_move(move, schedule) # so this actually modifies the schedule in place
             total_moves += 1
             
             # Accept or reject move
@@ -77,7 +75,7 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
                     
             else:
                 # Reject move - undo it
-                undo_move(move)
+                undo_move(move, schedule)
         
         temperature *= alpha
         print(f"Iteration {k+1}/{K} - Temp: {temperature:.2f}, "
@@ -93,23 +91,10 @@ def simulated_annealing(schedule: Schedule, n: int, K: int,
     return best_schedule
 
 def run_local_search(schedule: Schedule) -> Schedule:
-    """
-    Run simulated annealing with parameter testing to find optimal settings.
-    
-    Args:
-        schedule: Initial schedule
-        
-    Returns:
-        Optimized schedule
-    """
-    initial_schedule = deepcopy(schedule)
-    initial_score = calculate_full_score(schedule, move=Move(meeting=1, appointments=[]), initial_calculation=True)
-    print(f"Initial score: {initial_score}")
-    
     # Parameter ranges to test
     start_temperatures = [300]
     end_temperatures = [1]
-    iteration_counts = [40]
+    iteration_counts = [80]
     
     # Track results
     results = []
@@ -134,25 +119,13 @@ def run_local_search(schedule: Schedule) -> Schedule:
     for start_temp in start_temperatures:
         for end_temp in end_temperatures:
             for n in iteration_counts:
-                # Create a fresh copy of the initial schedule
-                test_schedule = deepcopy(initial_schedule)
+                test_schedule = deepcopy(schedule)
                 
-                # Run simulated annealing
-                optimized_schedule = simulated_annealing(
-                    test_schedule,
-                    n,
-                    100,  # Number of temperature steps
-                    start_temp,
-                    end_temp
-                )
+                optimized_schedule = simulated_annealing(test_schedule, n, 100, start_temp, end_temp)
                 
-                # Calculate score of the optimized schedule
-                score = calculate_full_score(optimized_schedule, move=None, initial_calculation=True)
+                score = calculate_full_score(optimized_schedule)
                 
-                # Print result for this combination
                 print(f"{start_temp:^10} | {end_temp:^8} | {n:^4} | {score:^6}")
-                
-                # Save result
                 result = {
                     "start_temp": start_temp,
                     "end_temp": end_temp,
@@ -170,7 +143,6 @@ def run_local_search(schedule: Schedule) -> Schedule:
     
     # Print summary
     print("\n==== PARAMETER TESTING SUMMARY ====")
-    print(f"Initial score: {initial_score}")
     print(f"Best score: {best_score}")
     print(f"Best parameters: start_temp={best_params[0]}, end_temp={best_params[1]}, n={best_params[2]}")
     

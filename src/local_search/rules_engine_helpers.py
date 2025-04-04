@@ -1,6 +1,7 @@
 from src.base_model.schedule import Schedule
 from src.local_search.move import Move
 from src.base_model.appointment import Appointment
+from collections import defaultdict
 from sys import exit
 
 def get_affected_pairs_for_room_stability(schedule: Schedule, move: Move):
@@ -32,31 +33,38 @@ def get_affected_pairs_for_room_stability(schedule: Schedule, move: Move):
     return affected_day_judge_pairs
 
 def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id: int):
-    appointments_in_day_for_judge = get_appointments_in_timeslot_range_in_day(schedule=schedule, day=day, start_timeslot=1, end_timeslot=schedule.timeslots_per_work_day, judge_id=judge_id)
-
-    by_timeslot = {}
+    # Get all appointments for this judge on this day
+    appointments_in_day_for_judge = get_appointments_in_timeslot_range_in_day(
+        schedule=schedule,
+        day=day,
+        start_timeslot=1,
+        end_timeslot=schedule.timeslots_per_work_day,
+        judge_id=judge_id
+    )
+    
+    # Group room IDs by timeslotsnake
+    rooms_by_timeslot = defaultdict(set)
     for app in appointments_in_day_for_judge:
-        if app.timeslot_in_day not in by_timeslot:
-            by_timeslot[app.timeslot_in_day] = []
-        by_timeslot[app.timeslot_in_day].append(app)
+        rooms_by_timeslot[app.timeslot_in_day].add(app.room.room_id)
     
-    prev_room_ids = set()
+    # Get occupied timeslots and sort them
+    occupied_timeslots = sorted(rooms_by_timeslot.keys())
+    
+    # Early return if fewer than 2 occupied timeslots
+    if len(occupied_timeslots) < 2:
+        return 0
+    
     violations = 0
-    has_previous = False
+    prev_rooms = rooms_by_timeslot[occupied_timeslots[0]]
     
-    for timeslot in range(1, schedule.timeslots_per_work_day + 1):
-        if timeslot not in by_timeslot:
-            continue
-            
-        current_room_ids = {app.room.room_id for app in by_timeslot[timeslot]}
-        
-        if has_previous and prev_room_ids != current_room_ids:
+    for timeslot in occupied_timeslots[1:]:
+        current_rooms = rooms_by_timeslot[timeslot]
+        if prev_rooms != current_rooms:
             violations += 1
-            
-        prev_room_ids = current_room_ids
-        has_previous = True
+        prev_rooms = current_rooms
     
     return violations
+    
 def get_affected_judge_day_pairs_for_unused_timegrains(schedule: Schedule, move: Move) -> set:
     affected_pairs = set()
     
@@ -127,20 +135,20 @@ def get_appointments_in_timeslot_range_in_day(schedule: Schedule, day, start_tim
         print(f"Invalid end timeslot {end_timeslot} for day {day}.")
         exit()
     
-    result = []
+    if day not in schedule.appointments_by_day:
+        return []
+        
+    day_appointments = schedule.appointments_by_day[day]
     
-    for timeslot in range(start_timeslot, end_timeslot + 1):
-        if day in schedule.appointments_by_day and timeslot in schedule.appointments_by_day[day]:
-            timeslot_appointments = schedule.appointments_by_day[day][timeslot]
-            
-            if judge_id is not None:
-                timeslot_appointments = [app for app in timeslot_appointments if app.judge.judge_id == judge_id]
-            if meeting_id is not None:
-                timeslot_appointments = [app for app in timeslot_appointments if app.meeting.meeting_id != meeting_id]
-            
-            result.extend(timeslot_appointments)
-    
-    return result
+    # Single list comprehension with all filtering conditions
+    return [
+        app 
+        for timeslot in range(start_timeslot, end_timeslot + 1) 
+        if timeslot in day_appointments
+        for app in day_appointments[timeslot]
+        if (judge_id is None or app.judge.judge_id == judge_id) and 
+           (meeting_id is None or app.meeting.meeting_id != meeting_id)
+    ]
             
         
         

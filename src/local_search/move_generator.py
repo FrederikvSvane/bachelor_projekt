@@ -21,10 +21,6 @@ def identify_appointment_chains(schedule: Schedule) -> Dict:
             appointment_chains[key] = []
         appointment_chains[key].append(appointment)
     
-    # Sort each chain by day and timeslot
-    for key, appointments in appointment_chains.items():
-        appointments.sort(key=lambda app: (app.day, app.timeslot_in_day))
-    
     return appointment_chains
 
 def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, List[Judge]], 
