@@ -1,8 +1,22 @@
 #!/bin/bash
 
-failure_count=0
 n_tests=1000
-to_test="tests.test_rules_engine.TestRulesEngine.test_nr18_unused_timegrain"
+
+all="tests.test_rules_engine"
+
+room_overbookings="tests.test_rules_engine.TestRulesEngine.test_nr1_overbooked_room_in_timeslot"
+judge_overbookings="tests.test_rules_engine.TestRulesEngine.test_nr2_overbooked_judge_in_timeslot"
+time_grain="tests.test_rules_engine.TestRulesEngine.test_nr18_unused_timegrain"
+room_stability="tests.test_rules_engine.TestRulesEngine.test_nr29_room_stability_per_day"
+
+# ____
+
+to_test=$all
+
+# ____
+
+
+failure_count=0
 echo "Running test: $to_test for $n_tests times"
 for i in $(seq 1 $n_tests); 
 do

@@ -100,10 +100,20 @@ class TestRulesEngine(unittest.TestCase):
         move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
         delta = nr29_room_stability_per_day_delta(self.schedule, move)
 
+        visualize(self.schedule)
+
         violations_before = nr29_room_stability_per_day_full(self.schedule)
         do_move(move, self.schedule)
 
+        visualize(self.schedule)
+
+
         violations_after = nr29_room_stability_per_day_full(self.schedule)
+        
+        print(move)
+        print(f"violations before: {violations_before}")
+        print(f"violations after: {violations_after}")
+        print(f"delta: {delta}")
 
         self.assertEqual(violations_after - violations_before ,delta)
         

@@ -59,26 +59,14 @@ def nr1_overbooked_room_in_timeslot_full(schedule: Schedule):
     offset = 0
     step = 1
     violations = 0
-    room_usage =  {}
     
+    for day in range(1, schedule.work_days + 1):
+        if day in schedule.appointments_by_day:
+            for timeslot in range(1, schedule.timeslots_per_work_day + 1):
+                if timeslot in schedule.appointments_by_day[day]:
+                    violations += count_room_overbooking_for_day_timeslot(schedule, day, timeslot)
     
-    appointments = schedule.get_all_appointments()
-    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.room.room_id))
-    for appointment in appointments:
-        room = appointment.room
-        day = appointment.day
-        room_key = (room.room_id, day, appointment.timeslot_in_day)
-        if room_key in room_usage:
-            room_usage[room_key] += 1
-        else:
-            room_usage[room_key] = 1
-
-    for count in room_usage.values():
-            if count > 1:
-                #print(f"Day: {day}, timeslot: {appointment.timeslot_in_day}, room: {room.room_id}")
-                violations += 1
-
-    return (offset + step*violations)
+    return (offset + step * violations)
         
 
 def nr1_overbooked_room_in_timeslot_delta(schedule: Schedule, move: Move):
@@ -91,102 +79,66 @@ def nr1_overbooked_room_in_timeslot_delta(schedule: Schedule, move: Move):
     
     offset = 0
     step = 1
-    old_violations = 0
-    move.appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.room.room_id))
     
-    for app in move.appointments:
-        appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
-        appointments_at_time.sort(key=lambda a: (a.room.room_id, a.judge.judge_id))
-        room_ids = [app.room.room_id for app in appointments_at_time]
-        double_booked = len(room_ids) != len(set(room_ids))
-        if double_booked:
-            old_violations += 1
+    affected_pairs = get_affected_day_timeslot_pairs_for_overbookings(schedule, move)
+    
+    violations_before = 0
+    for day, timeslot in affected_pairs:
+        violations_before += count_room_overbooking_for_day_timeslot(schedule, day, timeslot)
     
     do_move(move, schedule)
     
-    new_violations = 0
-    for app in move.appointments:
-        appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
-        room_ids = [app.room.room_id for app in appointments_at_time]
-        double_booked = len(room_ids) != len(set(room_ids))
-        if double_booked:
-            new_violations += 1
+    violations_after = 0
+    for day, timeslot in affected_pairs:
+        violations_after += count_room_overbooking_for_day_timeslot(schedule, day, timeslot)
     
     undo_move(move, schedule)
     
-    #print(f"violations before: {old_violations}, violations after: {new_violations}")
-    #print(f"returning: {new_violations - old_violations}")
-
-    
-    return (offset + step*(new_violations - old_violations))
+    return (offset + step * (violations_after - violations_before))
 
 def nr2_overbooked_judge_in_timeslot_full(schedule: Schedule):
     offset = 0
     step = 1
-    
     violations = 0
-    judge_usage = {}
-
-    appointments = schedule.get_all_appointments()
-    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.judge.judge_id))
     
-    for appointment in appointments:
-        judge = appointment.judge
-        day = appointment.day
-        judge_key = (judge.judge_id, day, appointment.timeslot_in_day)
-        if judge_key in judge_usage:
-            judge_usage[judge_key] += 1
-        else:
-            judge_usage[judge_key] = 1
+    for day in range(1, schedule.work_days + 1):
+        if day in schedule.appointments_by_day:
+            for timeslot in range(1, schedule.timeslots_per_work_day + 1):
+                if timeslot in schedule.appointments_by_day[day]:
+                    violations += count_judge_overbooking_for_day_timeslot(schedule, day, timeslot)
     
-    for count in judge_usage.values():
-        if count > 1:
-            violations += 1
-    
-    return (offset + step*violations)
+    return (offset + step * violations)
 
 def nr2_overbooked_judge_in_timeslot_delta(schedule: Schedule, move: Move):
-    
     if move.new_judge is None and move.new_day is None and move.new_start_timeslot is None:
         return 0
-
+    
     offset = 0
     step = 1
-    old_violations = 0
-    move.appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.judge.judge_id))
     
-    for app in move.appointments:
-        appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
-        judge_ids = [app.judge.judge_id for app in appointments_at_time]
-        double_booked = len(judge_ids) != len(set(judge_ids))
-        if double_booked:
-            old_violations += 1
+    affected_pairs = get_affected_day_timeslot_pairs_for_overbookings(schedule, move)
+    
+    violations_before = 0
+    for day, timeslot in affected_pairs:
+        violations_before += count_judge_overbooking_for_day_timeslot(schedule, day, timeslot)
     
     do_move(move, schedule)
     
-    new_violations = 0
-    for app in move.appointments:
-        appointments_at_time = schedule.appointments_by_day[app.day][app.timeslot_in_day]
-        judge_ids = [app.judge.judge_id for app in appointments_at_time]
-        double_booked = len(judge_ids) != len(set(judge_ids))
-        if double_booked:
-            new_violations += 1
+    violations_after = 0
+    for day, timeslot in affected_pairs:
+        violations_after += count_judge_overbooking_for_day_timeslot(schedule, day, timeslot)
     
     undo_move(move, schedule)
-    #print(f"violations before: {old_violations}, violations after: {new_violations}")
-    #print(f"returning: {new_violations - old_violations}")
     
-    return (offset + step*(new_violations - old_violations))
+    return (offset + step * (violations_after - violations_before))
     
 
 def nr6_virtual_room_must_have_virtual_meeting_full(schedule: Schedule):
     offset = 0
     step = 1
     violations = 0
-    appointments = schedule.get_all_appointments()
-    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.room.room_id))
     
-    for app in appointments:
+    for app in schedule.iter_appointments():
         meeting = app.meeting
         room = app.room
         if not check_case_room_compatibility(meeting.case.case_id, room.room_id):
@@ -220,12 +172,9 @@ def nr8_judge_skillmatch_full(schedule: Schedule):
     """
     offset = 0
     step = 1
-    
     violations = 0
-    appointments = schedule.get_all_appointments()
-    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.judge.judge_id))
-    
-    for appointment in appointments:
+
+    for appointment in schedule.iter_appointments():
         judge = appointment.judge
         case = appointment.meeting.case
         if not check_case_judge_compatibility(case, judge):
@@ -259,10 +208,7 @@ def nr14_virtual_case_has_virtual_judge_full(schedule: Schedule):
     step = 1
     violations = 0
     
-    appointments = schedule.get_all_appointments()
-    appointments.sort(key=lambda a: (a.day, a.timeslot_in_day, a.judge.judge_id))
-    
-    for app in appointments:
+    for app in schedule.iter_appointments():
         meeting = app.meeting
         judge = app.judge
         if not check_case_judge_compatibility(meeting.case.case_id, judge.judge_id):
@@ -445,27 +391,16 @@ def nr28_overdue_case_delta(schedule: Schedule, move: Move):
 def nr29_room_stability_per_day_full(schedule: Schedule):
     offset = 0
     step = 1
-    
     violations = 0
-
-    appointments = schedule.get_all_appointments()
     
-    apps_pr_judge_pr_day = {}
-    for appointment in appointments:
-        key = (appointment.day, appointment.judge.judge_id)
-        if key not in apps_pr_judge_pr_day:
-            apps_pr_judge_pr_day[key] = []
-        apps_pr_judge_pr_day[key].append(appointment)
+    day_judge_pairs = set()
+    for appointment in schedule.iter_appointments():
+        day_judge_pairs.add((appointment.day, appointment.judge.judge_id))
     
-    for (day, judge_id), appointments in apps_pr_judge_pr_day.items():
-        appointments.sort(key=lambda a: (a.timeslot_in_day, a.meeting.meeting_id, a.room.room_id))
-        current_room_id = None
-        for appointment in appointments:
-            if current_room_id is not None and appointment.room.room_id != current_room_id:
-                violations += 1
-            current_room_id = appointment.room.room_id
+    for day, judge_id in day_judge_pairs:
+        violations += count_room_changes_for_day_judge_pair(schedule, day, judge_id)
     
-    return (offset + step*violations)
+    return (offset + step * violations)
                 
 
 def nr29_room_stability_per_day_delta(schedule: Schedule, move: Move):

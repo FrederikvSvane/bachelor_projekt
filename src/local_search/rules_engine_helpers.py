@@ -32,19 +32,31 @@ def get_affected_pairs_for_room_stability(schedule: Schedule, move: Move):
     return affected_day_judge_pairs
 
 def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id: int):
-    appointments_in_day = get_appointments_in_timeslot_range_in_day(schedule=schedule, day=day, start_timeslot=1, end_timeslot=schedule.timeslots_per_work_day, judge_id=judge_id)
+    appointments_in_day_for_judge = get_appointments_in_timeslot_range_in_day(schedule=schedule, day=day, start_timeslot=1, end_timeslot=schedule.timeslots_per_work_day, judge_id=judge_id)
 
-    appointments_in_day.sort(key=lambda a: (a.timeslot_in_day, a.meeting.meeting_id, a.room.room_id))
-
-    current_room_id = None
+    by_timeslot = {}
+    for app in appointments_in_day_for_judge:
+        if app.timeslot_in_day not in by_timeslot:
+            by_timeslot[app.timeslot_in_day] = []
+        by_timeslot[app.timeslot_in_day].append(app)
+    
+    prev_room_ids = set()
     violations = 0
-    for appointment in appointments_in_day:
-        if current_room_id is not None and appointment.room.room_id != current_room_id:
+    has_previous = False
+    
+    for timeslot in range(1, schedule.timeslots_per_work_day + 1):
+        if timeslot not in by_timeslot:
+            continue
+            
+        current_room_ids = {app.room.room_id for app in by_timeslot[timeslot]}
+        
+        if has_previous and prev_room_ids != current_room_ids:
             violations += 1
-        current_room_id = appointment.room.room_id
+            
+        prev_room_ids = current_room_ids
+        has_previous = True
     
     return violations
-
 def get_affected_judge_day_pairs_for_unused_timegrains(schedule: Schedule, move: Move) -> set:
     affected_pairs = set()
     
@@ -72,7 +84,7 @@ def count_unused_timeslots_in_day_for_judge_day_pair(schedule: Schedule, day: in
         for timeslot in range(1, schedule.timeslots_per_work_day + 1):
             if timeslot in schedule.appointments_by_day[day]:
                 for app in schedule.appointments_by_day[day][timeslot]:
-                    if app.judge.judge_id == judge_id:
+                    if app.judge.judge_id == judge_id: # TODO vi kunne nok spare nogle loops her, ved at opbevare appointments i en dict med judge_id som key
                         used_timeslots.add(timeslot)
                         break
     
@@ -103,47 +115,6 @@ def get_latest_global_timeslot(schedule):
     
     return 0 # should only happen if schedule is empty
 
-def get_n_unused_timeslots_in_range(schedule: Schedule, start_day: int, end_day: int, start_timeslot: int, end_timeslot: int, judge_id: int = None, meeting_id: int = None): #FIXME take a move as input insted of start, end day, start, end timeslot
-    # Calculate global start and end timeslots
-    global_start = ((start_day - 1) * schedule.timeslots_per_work_day) + start_timeslot
-    global_end = ((end_day - 1) * schedule.timeslots_per_work_day) + end_timeslot
-    
-    # Ensure we don't exceed the total available timeslots
-    total_timeslots = schedule.work_days * schedule.timeslots_per_work_day
-    global_end = min(global_end, total_timeslots)
-    
-    # Get all judges if not specified
-    if judge_id is None:
-        judges = schedule.get_all_judges()
-    else:
-        # Create a list with just the specified judge
-        judges = [j for j in schedule.get_all_judges() if j.judge_id == judge_id]
-    
-    # Track used slots as (judge_id, global_timeslot) pairs like in the full function
-    used_global_slots = set()
-    
-    # For each timeslot in range
-    for global_timeslot in range(global_start, global_end + 1):
-        # Convert global timeslot to day and timeslot within day
-        day = ((global_timeslot - 1) // schedule.timeslots_per_work_day) + 1
-        timeslot_in_day = ((global_timeslot - 1) % schedule.timeslots_per_work_day) + 1
-        
-        # If this day and timeslot exist in the schedule
-        if day in schedule.appointments_by_day and timeslot_in_day in schedule.appointments_by_day[day]:
-            for appointment in schedule.appointments_by_day[day][timeslot_in_day]:
-                if meeting_id is not None and appointment.meeting.meeting_id == meeting_id:
-                    continue
-                # Only track the specified judge(s)
-                if judge_id is None or appointment.judge.judge_id == judge_id:
-                    used_global_slots.add((appointment.judge.judge_id, global_timeslot))
-                    
-    
-    # Calculate total possible slots (same logic as full function)
-    total_possible_slots = len(judges) * (global_end - global_start + 1)
-    
-    # Return number of unused slots
-    return total_possible_slots - len(used_global_slots)
-
 def get_appointments_in_timeslot_range_in_day(schedule: Schedule, day, start_timeslot, end_timeslot, judge_id: int = None, meeting_id: int = None) -> list[Appointment]:
     """
     Optionally filter by judge_id (get all appointments for a specific judge).
@@ -160,11 +131,14 @@ def get_appointments_in_timeslot_range_in_day(schedule: Schedule, day, start_tim
     
     for timeslot in range(start_timeslot, end_timeslot + 1):
         if day in schedule.appointments_by_day and timeslot in schedule.appointments_by_day[day]:
-            result.extend(schedule.appointments_by_day[day][timeslot])
+            timeslot_appointments = schedule.appointments_by_day[day][timeslot]
+            
             if judge_id is not None:
-                result = [app for app in result if app.judge.judge_id == judge_id]
+                timeslot_appointments = [app for app in timeslot_appointments if app.judge.judge_id == judge_id]
             if meeting_id is not None:
-                result = [app for app in result if app.meeting.meeting_id != meeting_id]
+                timeslot_appointments = [app for app in timeslot_appointments if app.meeting.meeting_id != meeting_id]
+            
+            result.extend(timeslot_appointments)
     
     return result
             
@@ -192,6 +166,48 @@ def get_appointments_in_timeslot_range(schedule: Schedule, start_day, start_slot
                 result = [app for app in result if app.judge.judge_id == judge_id]
             if meeting_id is not None:
                 result = [app for app in result if app.meeting.meeting_id != meeting_id]
-                
     
     return result
+
+
+def get_affected_day_timeslot_pairs_for_overbookings(schedule: Schedule, move: Move) -> set:
+    affected_pairs = set()
+    
+    for app in move.appointments:
+        affected_pairs.add((app.day, app.timeslot_in_day))
+    
+    if move.new_day is not None or move.new_start_timeslot is not None:
+        start_day = move.new_day if move.new_day is not None else move.old_day
+        start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
+        
+        for i in range(len(move.appointments)):
+            global_timeslot = ((start_day - 1) * schedule.timeslots_per_work_day) + start_timeslot + i
+            new_day = ((global_timeslot - 1) // schedule.timeslots_per_work_day) + 1
+            new_timeslot = ((global_timeslot - 1) % schedule.timeslots_per_work_day) + 1
+            affected_pairs.add((new_day, new_timeslot))
+    
+    return affected_pairs
+
+def count_room_overbooking_for_day_timeslot(schedule: Schedule, day: int, timeslot: int) -> int:
+    if day not in schedule.appointments_by_day or timeslot not in schedule.appointments_by_day[day]:
+        return 0
+    
+    room_usage = {}
+    for app in schedule.appointments_by_day[day][timeslot]:
+        room_id = app.room.room_id
+        room_usage[room_id] = room_usage.get(room_id, 0) + 1
+    
+    # design choice: each room used more than once is 1 violation
+    return sum(1 for count in room_usage.values() if count > 1)
+
+def count_judge_overbooking_for_day_timeslot(schedule: Schedule, day: int, timeslot: int) -> int:
+    if day not in schedule.appointments_by_day or timeslot not in schedule.appointments_by_day[day]:
+        return 0
+    
+    judge_usage = {}
+    for app in schedule.appointments_by_day[day][timeslot]:
+        judge_id = app.judge.judge_id
+        judge_usage[judge_id] = judge_usage.get(judge_id, 0) + 1
+
+    # design choice: each room used more than once is 1 violation
+    return sum(1 for count in judge_usage.values() if count > 1)
