@@ -110,19 +110,6 @@ def calculate_unused_timeslots_for_all_judge_day_pairs(schedule: Schedule, affec
         total_violations += count_unused_timeslots_in_day_for_judge_day_pair(schedule, day, judge_id, is_last_day)
     return total_violations
 
-
-def get_latest_global_timeslot(schedule):
-    for day in range(schedule.work_days, 0, -1):
-        if day not in schedule.appointments_by_day:
-            continue
-        for timeslot in range(schedule.timeslots_per_work_day, 0, -1):
-            if timeslot not in schedule.appointments_by_day[day]:
-                continue
-            if schedule.appointments_by_day[day][timeslot]:  
-                return (day - 1) * schedule.timeslots_per_work_day + timeslot
-    
-    return 0 # should only happen if schedule is empty
-
 def get_appointments_in_timeslot_range_in_day(schedule: Schedule, day, start_timeslot, end_timeslot, judge_id: int = None, meeting_id: int = None) -> list[Appointment]:
     """
     Optionally filter by judge_id (get all appointments for a specific judge).
