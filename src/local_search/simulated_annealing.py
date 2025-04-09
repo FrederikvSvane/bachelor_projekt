@@ -2,11 +2,12 @@ import math
 import random
 from copy import deepcopy
 from typing import Dict, List
+from collections import deque
 
 from src.base_model.schedule import Schedule
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.move import do_move, undo_move, Move
-from src.local_search.move_generator import generate_random_move
+from src.local_search.move_generator import generate_random_move, generate_list_random_move
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
 
 def calculate_alpha(K: int, start_temperature: float, end_temperature: float) -> float:
@@ -22,6 +23,58 @@ def calculate_alpha(K: int, start_temperature: float, end_temperature: float) ->
         Alpha cooling rate
     """
     return (end_temperature / start_temperature) ** (1 / (K - 1))
+
+def check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
+    """
+    Checks if a move is in the tabu list
+    """
+    meeting_id = move.meeting_id
+
+    if move.new_judge is not None:
+        potential_tabu_item = (meeting_id, 'judge', move.new_judge.judge_id)
+        if potential_tabu_item in tabu_list:
+            # print(f"DEBUG: Move blocked by Tabu (Judge): {potential_tabu_item}") # Optional debug
+            return True
+
+    if move.new_room is not None:
+        potential_tabu_item = (meeting_id, 'room', move.new_room.room_id)
+        if potential_tabu_item in tabu_list:
+            # print(f"DEBUG: Move blocked by Tabu (Room): {potential_tabu_item}") # Optional debug
+            return True
+
+    if move.new_day is not None or move.new_start_timeslot is not None:
+        target_day = move.new_day if move.new_day is not None else move.old_day
+        target_start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
+
+        potential_tabu_item = (meeting_id, 'position', target_day, target_start_timeslot)
+        if potential_tabu_item in tabu_list:
+            # print(f"DEBUG: Move blocked by Tabu (Position): {potential_tabu_item}") # Optional debug
+            return True
+
+    return False
+
+def add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
+    """
+    Adds the reverse of the accepted move to the tabu list.
+    """
+    meeting_id = move.meeting_id
+
+    if move.new_judge is not None and move.new_judge.judge_id != move.old_judge.judge_id:
+         tabu_item = (meeting_id, 'judge', move.old_judge.judge_id)
+         tabu_list.append(tabu_item)
+         # print(f"DEBUG: Adding Tabu: {tabu_item}") # Optional debug print
+
+    if move.new_room is not None and move.new_room.room_id != move.old_room.room_id:
+         tabu_item = (meeting_id, 'room', move.old_room.room_id)
+         tabu_list.append(tabu_item)
+         # print(f"DEBUG: Adding Tabu: {tabu_item}") # Optional debug print
+
+    position_changed = (move.new_day is not None and move.new_day != move.old_day) or \
+                       (move.new_start_timeslot is not None and move.new_start_timeslot != move.old_start_timeslot)
+    if position_changed:
+         tabu_item = (meeting_id, 'position', move.old_day, move.old_start_timeslot)
+         tabu_list.append(tabu_item)
+         # print(f"DEBUG: Adding Tabu: {tabu_item}") # Optional debug print
 
 def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, end_temp: float) -> Schedule:
     """
@@ -42,31 +95,47 @@ def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, e
     best_score = current_score
     best_schedule = deepcopy(schedule)
     
+    tabu_list = deque(maxlen=20)
+    
     temperature = start_temp
     total_moves = 0
     accepted_moves = 0
     
+    #moves = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list)
+    
+    # for move in moves:
+    #     print(f"Move: {move}")  
+        
     for k in range(K):
         iteration_accepted = 0
         
         for i in range(iterations_per_temperature):
-            move = generate_random_move(schedule, compatible_judges, compatible_rooms) # by this, the appointments in move are pointers to the appointments in the schedule
+            # move = generate_random_move(schedule, compatible_judges, compatible_rooms) # by this, the appointments in move are pointers to the appointments in the schedule
             
-            if (move.new_judge is None and move.new_room is None and 
-                move.new_day is None and move.new_start_timeslot is None):
+            # if (move.new_judge is None and move.new_room is None and 
+            #     move.new_day is None and move.new_start_timeslot is None):
+            #     continue
+            
+            best_move = None
+            # Generate a list of moves
+            moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+            if not moves:
                 continue
-                
-            delta = calculate_delta_score(schedule, move)
             
-            do_move(move, schedule) # so this actually modifies the schedule in place
+            # Chose the best move based on delta
+            moves.sort(key=lambda x: x[1]) # Sort by delta score
+            best_move, best_delta = moves[0]                
+            
+            do_move(best_move, schedule) # so this actually modifies the schedule in place
             total_moves += 1
             
             # Accept or reject move
-            if delta < 0 or random.random() < math.exp(-delta / temperature):
+            if best_delta < 0 or random.random() < math.exp(-best_delta / temperature):
                 # Accept move
-                current_score += delta
+                current_score += best_delta
                 iteration_accepted += 1
                 accepted_moves += 1
+                add_move_to_tabu_list(best_move, tabu_list)
                 
                 # Update best solution if needed
                 if current_score < best_score:
@@ -75,12 +144,12 @@ def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, e
                     
             else:
                 # Reject move - undo it
-                undo_move(move, schedule)
+                undo_move(best_move, schedule)
         
         temperature *= alpha
         print(f"Iteration {k+1}/{K} - Temp: {temperature:.2f}, "
-              f"Accepted: {iteration_accepted}/{iterations_per_temperature}, "
-              f"Current: {current_score}, Best: {best_score}")
+            f"Accepted: {iteration_accepted}/{iterations_per_temperature}, "
+            f"Current: {current_score}, Best: {best_score}")
         
         # Early termination if no progress
         if iteration_accepted == 0:
@@ -93,8 +162,8 @@ def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, e
 def run_local_search(schedule: Schedule) -> Schedule:
     # Parameter ranges to test
     start_temperatures = [300]
-    end_temperatures = [1]
-    iteration_counts = [80]
+    end_temperatures = [10]
+    iteration_counts = [40]
     
     # Track results
     results = []
