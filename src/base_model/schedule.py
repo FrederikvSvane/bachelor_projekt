@@ -37,6 +37,75 @@ class Schedule:
             self.appointments_by_day[day] = {}
             for timeslot in range(1, self.timeslots_per_work_day + 1):
                 self.appointments_by_day[day][timeslot] = []
+    
+    def __eq__(self, other):
+        """Compare two Schedule objects for equality."""
+        if not isinstance(other, Schedule):
+            return False
+            
+        if (self.work_days != other.work_days or
+                self.minutes_in_a_work_day != other.minutes_in_a_work_day or
+                self.granularity != other.granularity or
+                self.timeslots_per_work_day != other.timeslots_per_work_day):
+            return False
+            
+        self_days = set(self.appointments_by_day.keys())
+        other_days = set(other.appointments_by_day.keys())
+        if self_days != other_days:
+            return False
+            
+        for day in self_days:
+            self_timeslots = set(self.appointments_by_day[day].keys())
+            other_timeslots = set(other.appointments_by_day[day].keys())
+            if self_timeslots != other_timeslots:
+                return False
+                
+            for timeslot in self_timeslots:
+                self_appointments = set(self.appointments_by_day[day][timeslot])
+                other_appointments = set(other.appointments_by_day[day][timeslot])
+                
+                for app in self.appointments_by_day[day][timeslot]:
+                    if app not in other.appointments_by_day[day][timeslot]:
+                        return False
+                        
+                if len(self_appointments) != len(other_appointments):
+                    return False
+        
+        if (self.all_judges is None) != (other.all_judges is None):
+            return False
+            
+        if self.all_judges is not None:
+            if len(self.all_judges) != len(other.all_judges):
+                return False
+                
+            self_judges_map = {j.judge_id: j for j in self.all_judges}
+            other_judges_map = {j.judge_id: j for j in other.all_judges}
+            
+            if set(self_judges_map.keys()) != set(other_judges_map.keys()):
+                return False
+                
+            for judge_id, judge in self_judges_map.items():
+                if judge != other_judges_map[judge_id]:
+                    return False
+        
+        if (self.all_rooms is None) != (other.all_rooms is None):
+            return False
+            
+        if self.all_rooms is not None:
+            if len(self.all_rooms) != len(other.all_rooms):
+                return False
+                
+            self_rooms_map = {r.room_id: r for r in self.all_rooms}
+            other_rooms_map = {r.room_id: r for r in other.all_rooms}
+            
+            if set(self_rooms_map.keys()) != set(other_rooms_map.keys()):
+                return False
+                
+            for room_id, room in self_rooms_map.items():
+                if room != other_rooms_map[room_id]:
+                    return False
+        
+        return True
             
     def iter_appointments(self):
         """
@@ -134,6 +203,26 @@ class Schedule:
                             self.appointments_by_day[app.day][app.timeslot_in_day] = []
                         
                         self.appointments_by_day[app.day][app.timeslot_in_day].append(app)
+    
+    def trim_schedule_length_if_possible(self) -> None:
+        """
+        Checks if the last day of the schedule is empty and removes it if so.
+        Continues until a non-empty day is found or only one day remains.
+        """
+        while self.work_days > 1:
+            last_day = self.work_days
+            is_empty = True
+
+            if last_day in self.appointments_by_day:
+                for _timeslot, appointments in self.appointments_by_day[last_day].items():
+                    if appointments:
+                        is_empty = False
+                        break 
+
+            if is_empty:
+                self.work_days -= 1
+            else:
+                break
         
     
     def to_json(self) -> Dict:

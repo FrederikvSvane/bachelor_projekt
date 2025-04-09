@@ -13,3 +13,12 @@ class Judge:
     
     def __str__(self):
         return f"{self.judge_id}"
+    
+    def __eq__(self, other):
+        if not isinstance(other, Judge):
+            return False
+        
+        return (self.judge_id == other.judge_id and
+                self.characteristics == other.characteristics and
+                self.case_requirements == other.case_requirements and
+                self.room_requirements == other.room_requirements)

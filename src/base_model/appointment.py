@@ -19,6 +19,19 @@ class Appointment:
                 f"J{self.judge}, R{self.room}, "
                 f"T{self.timeslot_in_day}, "
                 f"D{self.day})")
+    
+    def __eq__(self, other):
+        if not isinstance(other, Appointment):
+            return False
+        
+        return (self.meeting.meeting_id == other.meeting.meeting_id and
+                self.judge.judge_id == other.judge.judge_id and
+                self.room.room_id == other.room.room_id and
+                self.day == other.day and
+                self.timeslot_in_day == other.timeslot_in_day)
+        
+    def __hash__(self):
+        return hash((self.meeting.meeting_id, self.judge.judge_id, self.room.room_id, self.day, self.timeslot_in_day))
                 
 def print_appointments(appointments: list[Appointment]):
     for app in appointments:

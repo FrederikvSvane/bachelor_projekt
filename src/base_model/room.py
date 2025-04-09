@@ -15,3 +15,13 @@ class Room:
         #char_str = ", ".join(str(char) for char in self.characteristics)
         #return f"Room(id={self.room_id}, chars=[{char_str}])"
         return f"{self.room_id}"
+    
+    def __eq__(self, other):
+        if not isinstance(other, Room):
+            return False
+        
+        return (self.room_id == other.room_id and
+                self.characteristics == other.characteristics and
+                self.case_requirements == other.case_requirements and
+                self.judge_requirements == other.judge_requirements)
+        

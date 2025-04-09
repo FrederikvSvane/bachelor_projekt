@@ -1,8 +1,9 @@
 import unittest
 from src.base_model.appointment import Appointment
 from src.base_model.schedule import Schedule, generate_schedule_using_double_flow
-from src.local_search.move import Move
+from src.local_search.move import Move, do_move, undo_move
 from src.util.schedule_visualizer import visualize
+from copy import deepcopy
 from src.local_search.rules_engine import *
 
 from src.util.data_generator import generate_test_data_parsed
@@ -16,8 +17,8 @@ class TestRulesEngine(unittest.TestCase):
     def setUp(self):
         #generate a random schedule for every test
         n_cases = 20
-        n_judges = 4
-        n_rooms = 4
+        n_judges = 8
+        n_rooms = 10
         n_work_days = 2
         granularity = 5
         min_per_work_day = 390
@@ -26,6 +27,7 @@ class TestRulesEngine(unittest.TestCase):
 
         self.schedule = generate_schedule_using_double_flow(json)
         self.schedule.move_all_dayboundary_violations()
+        self.schedule.trim_schedule_length_if_possible()
 
         self.cases = self.schedule.get_all_cases()
         self.meetings = self.schedule.get_all_meetings()
@@ -34,27 +36,30 @@ class TestRulesEngine(unittest.TestCase):
         self.compatible_judges = calculate_compatible_judges(self.meetings, self.judges)
         self.compatible_rooms = calculate_compatible_rooms(self.meetings, self.rooms)
 
-    def test_full_score_vs_delta_score(self):
-        # Generate a random move
-        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-        # Calculate the delta score
-        delta_score = calculate_delta_score(self.schedule, move)
+    def test_full_score_vs_delta_score_and_move_reversibility(self):
+        """
+        Tests if delta score matches full score difference
+        and if undo_move correctly reverts the schedule state over multiple iterations.
+        """
+        iterations = 100
 
-        # Calculate the full score before the move
-        full_score_before = calculate_full_score(self.schedule)
+        for i in range(iterations):
+            schedule_initial = deepcopy(self.schedule)
+            full_score_initial = calculate_full_score(self.schedule)
+            
+            move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+            delta_score = calculate_delta_score(self.schedule, move)
+            do_move(move, self.schedule)
+            
+            full_score_after_do = calculate_full_score(self.schedule)
+            score_diff = full_score_after_do - full_score_initial
+            self.assertEqual(score_diff, delta_score, f"Iteration {i}: Delta score ({delta_score}) != Full score difference ({score_diff}). Move: {move}")
 
-        # Apply the move to the schedule
-        do_move(move, self.schedule)
-
-        # Calculate the full score after the move
-        full_score_after = calculate_full_score(self.schedule)
-
-        # Undo the move to restore the original schedule
-        undo_move(move, self.schedule)
-
-        # Assert that the delta score is equal to the difference in full scores
-        self.assertEqual(full_score_after - full_score_before, delta_score)
-    
+            undo_move(move, self.schedule)
+            full_score_after_do_undo = calculate_full_score(self.schedule)
+            schedule_after_do_undo = deepcopy(self.schedule)
+            self.assertEqual(full_score_initial, full_score_after_do_undo, f"Iteration {i+1}: Full score not restored after undo ({full_score_initial} -> {full_score_after_do} -> {full_score_after_do_undo}). Move: {move}")
+            self.assertEqual(schedule_initial, schedule_after_do_undo, f"Iteration {i+1}: Schedules differs after undo. Move: {move}")
         
     # def test_nr1_overbooked_room_in_timeslot(self):
     #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
