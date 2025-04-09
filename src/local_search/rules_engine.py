@@ -31,7 +31,8 @@ def calculate_full_score(schedule: Schedule) -> int:
     soft_violations = 0
     soft_violations += nr29_room_stability_per_day_full(schedule)
 
-    full_score = hard_violations * hard_containt_weight + medm_violations * medm_containt_weight + soft_violations * soft_containt_weight        
+    full_score = hard_violations * hard_containt_weight + medm_violations * medm_containt_weight + soft_violations * soft_containt_weight
+    print(f"Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations}")  
     
     return full_score
 

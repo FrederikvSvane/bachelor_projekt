@@ -1,5 +1,7 @@
 import math
 import random
+import os
+import multiprocessing
 from copy import deepcopy
 from typing import Dict, List
 from collections import deque
@@ -75,6 +77,69 @@ def add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
          tabu_item = (meeting_id, 'position', move.old_day, move.old_start_timeslot)
          tabu_list.append(tabu_item)
          # print(f"DEBUG: Adding Tabu: {tabu_item}") # Optional debug print
+         
+
+def calculate_moves_in_parallel(pool, schedule: Schedule, moves_with_gen_int: List[tuple[Move, int]]) -> List[tuple[Move, int]]:
+    """
+    Calculate the delta scores for a list of moves in parallel
+    """
+    if not moves_with_gen_int:
+        return []
+
+    #print(f"Calculating delta scores for {len(moves_with_gen_int)} moves in parallel...")
+    actual_moves: List[Move] = [move for move, _ in moves_with_gen_int]
+
+    starmap_args: List[tuple[Schedule, Move]] = [(schedule, move) for move in actual_moves]
+
+    delta_scores: List[int] = pool.starmap(calculate_delta_score, starmap_args)
+
+    results_combined: List[tuple[Move, int]] = list(zip(actual_moves, delta_scores))
+
+    return results_combined
+    
+    
+def find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
+    moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+    
+    if not moves:
+        return None, 0
+
+    results = calculate_moves_in_parallel(pool, schedule, moves)
+    results.sort(key=lambda x: x[1])  # Sort by delta score
+    
+    return results[0]
+
+def find_best_move_sequential(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
+    """
+    Find the best move by generating random moves and calculating their delta scores.
+    """
+    moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+    
+    if not moves:
+        return None, 0
+
+    sequential_results = []
+
+    # Sort moves by delta score
+    for move, _ in moves:
+        delta_score = calculate_delta_score(schedule, move)
+        sequential_results.append((move, delta_score))
+        
+    sequential_results.sort(key=lambda x: x[1])  # Sort by delta score
+    return sequential_results[0]
+        
+def find_best_move_single(schedule, compatible_judges, compatible_rooms) -> tuple[Move, int]:
+    """
+    Find the best move by generating random moves and calculating their delta scores.
+    """
+    move = generate_random_move(schedule, compatible_judges, compatible_rooms)
+    
+    if move is None:
+        return None, 0
+
+    delta_score = calculate_delta_score(schedule, move)
+    
+    return move, delta_score
 
 def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, end_temp: float) -> Schedule:
     """
@@ -101,76 +166,57 @@ def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, e
     total_moves = 0
     accepted_moves = 0
     
-    #moves = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list)
+    n_cores = os.cpu_count()
+    print(f"Using {n_cores} CPU cores for parallel processing")
     
-    # for move in moves:
-    #     print(f"Move: {move}")  
-        
-    for k in range(K):
-        iteration_accepted = 0
-        
-        for i in range(iterations_per_temperature):
-            move = generate_random_move(schedule, compatible_judges, compatible_rooms) # by this, the appointments in move are pointers to the appointments in the schedule
-            
-            if (move.new_judge is None and move.new_room is None and 
-                move.new_day is None and move.new_start_timeslot is None):
-                continue
-            
-            # best_move = None
-            # # Generate a list of moves
-            # moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
-            # if not moves:
-            #     continue
-            
-            # # Chose the best move based on delta
-            # moves.sort(key=lambda x: x[1]) # Sort by delta score
-            # best_move, best_delta = moves[0]
-                 
-            is_tabu = check_if_move_is_tabu(move, tabu_list) # Need a helper function
-            potential_delta = 0
-            if is_tabu:
-                potential_delta = calculate_delta_score(schedule, move) # Calculate delta just for aspiration check
-                aspiration_met = (current_score + potential_delta) < best_score
 
-                if aspiration_met:
-                    delta = potential_delta
-                else:
-                    continue # Skip to next iteration, generate new move
+     
+    #with multiprocessing.Pool(processes=n_cores) as pool:
+    if True:
+        for k in range(K):
+            iteration_accepted = 0
             
-            else:
-                delta = calculate_delta_score(schedule, move)
-                add_move_to_tabu_list(move, tabu_list)
+            for i in range(iterations_per_temperature):
                 
-            do_move(move, schedule) # so this actually modifies the schedule in place
-            total_moves += 1
-            
-            # Accept or reject move
-            if delta < 0 or random.random() < math.exp(-delta / temperature):
-                # Accept move
-                current_score += delta
-                iteration_accepted += 1
-                accepted_moves += 1
+                #best_move, best_delta = find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+                #best_move, best_delta = find_best_move_sequential(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+                best_move, best_delta = find_best_move_single(schedule, compatible_judges, compatible_rooms)
                 
-                # Update best solution if needed
-                if current_score < best_score:
-                    best_score = current_score
-                    best_schedule = deepcopy(schedule)
+                if best_move is None:
+                    continue
+                
+                do_move(best_move, schedule) # so this actually modifies the schedule in place
+                total_moves += 1
+                
+                # Accept or reject move
+                if best_delta < 0 or random.random() < math.exp(-best_delta / temperature):
+                    # Accept move
+                    #print(f"Accepted move: {best_move} with delta: {best_delta}")
+                    current_score += best_delta
+                    iteration_accepted += 1
+                    accepted_moves += 1
+                    add_move_to_tabu_list(best_move, tabu_list)
                     
-            else:
-                # Reject move - undo it
-                undo_move(move, schedule)
+                    # Update best solution if needed
+                    if current_score < best_score:
+                        best_score = current_score
+                        best_schedule = deepcopy(schedule)
+                        
+                else:
+                    # Reject move - undo it
+                    undo_move(best_move, schedule)
+            
+            temperature *= alpha
+            print(f"Iteration {k+1}/{K} - Temp: {temperature:.2f}, "
+                f"Accepted: {iteration_accepted}/{iterations_per_temperature}, "
+                f"Current: {current_score}, Best: {best_score}")
+            
+            # Early termination if no progress
+            if iteration_accepted == 0:
+                print("Early termination: No moves accepted in this iteration")
+                break
         
-        temperature *= alpha
-        print(f"Iteration {k+1}/{K} - Temp: {temperature:.2f}, "
-            f"Accepted: {iteration_accepted}/{iterations_per_temperature}, "
-            f"Current: {current_score}, Best: {best_score}")
-        
-        # Early termination if no progress
-        if iteration_accepted == 0:
-            print("Early termination: No moves accepted in this iteration")
-            break
-    
-    print(f"Search completed: {total_moves} moves attempted, {accepted_moves} accepted")
+        print(f"Search completed: {total_moves} moves attempted, {accepted_moves} accepted")
     return best_schedule
 
 def run_local_search(schedule: Schedule) -> Schedule:
