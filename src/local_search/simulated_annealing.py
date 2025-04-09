@@ -110,32 +110,46 @@ def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, e
         iteration_accepted = 0
         
         for i in range(iterations_per_temperature):
-            # move = generate_random_move(schedule, compatible_judges, compatible_rooms) # by this, the appointments in move are pointers to the appointments in the schedule
+            move = generate_random_move(schedule, compatible_judges, compatible_rooms) # by this, the appointments in move are pointers to the appointments in the schedule
             
-            # if (move.new_judge is None and move.new_room is None and 
-            #     move.new_day is None and move.new_start_timeslot is None):
-            #     continue
-            
-            best_move = None
-            # Generate a list of moves
-            moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
-            if not moves:
+            if (move.new_judge is None and move.new_room is None and 
+                move.new_day is None and move.new_start_timeslot is None):
                 continue
             
-            # Chose the best move based on delta
-            moves.sort(key=lambda x: x[1]) # Sort by delta score
-            best_move, best_delta = moves[0]                
+            # best_move = None
+            # # Generate a list of moves
+            # moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+            # if not moves:
+            #     continue
             
-            do_move(best_move, schedule) # so this actually modifies the schedule in place
+            # # Chose the best move based on delta
+            # moves.sort(key=lambda x: x[1]) # Sort by delta score
+            # best_move, best_delta = moves[0]
+                 
+            is_tabu = check_if_move_is_tabu(move, tabu_list) # Need a helper function
+            potential_delta = 0
+            if is_tabu:
+                potential_delta = calculate_delta_score(schedule, move) # Calculate delta just for aspiration check
+                aspiration_met = (current_score + potential_delta) < best_score
+
+                if aspiration_met:
+                    delta = potential_delta
+                else:
+                    continue # Skip to next iteration, generate new move
+            
+            else:
+                delta = calculate_delta_score(schedule, move)
+                add_move_to_tabu_list(move, tabu_list)
+                
+            do_move(move, schedule) # so this actually modifies the schedule in place
             total_moves += 1
             
             # Accept or reject move
-            if best_delta < 0 or random.random() < math.exp(-best_delta / temperature):
+            if delta < 0 or random.random() < math.exp(-delta / temperature):
                 # Accept move
-                current_score += best_delta
+                current_score += delta
                 iteration_accepted += 1
                 accepted_moves += 1
-                add_move_to_tabu_list(best_move, tabu_list)
                 
                 # Update best solution if needed
                 if current_score < best_score:
@@ -144,7 +158,7 @@ def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, e
                     
             else:
                 # Reject move - undo it
-                undo_move(best_move, schedule)
+                undo_move(move, schedule)
         
         temperature *= alpha
         print(f"Iteration {k+1}/{K} - Temp: {temperature:.2f}, "
@@ -163,7 +177,7 @@ def run_local_search(schedule: Schedule) -> Schedule:
     # Parameter ranges to test
     start_temperatures = [300]
     end_temperatures = [10]
-    iteration_counts = [40]
+    iteration_counts = [80]
     
     # Track results
     results = []
