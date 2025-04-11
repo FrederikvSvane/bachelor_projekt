@@ -340,8 +340,27 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         )
 
         parsed_data["rooms"].append(room)
+        
+    attributes_to_ensure = [
+        Attribute.VIRTUAL,
+        Attribute.ACCESSIBILITY,
+        Attribute.SECURITY
+    ]
 
-    
+    if parsed_data["rooms"]:
+        for attribute_to_check in attributes_to_ensure:
+            attribute_found = False
+            for room in parsed_data["rooms"]:
+                if attribute_to_check in room.characteristics:
+                    attribute_found = True
+                    break
+
+            if not attribute_found:
+                for room_candidate in parsed_data["rooms"]:
+                    if not room_candidate.characteristics:
+                        room_candidate.characteristics.add(attribute_to_check)
+                        break
+
     return parsed_data
 
 

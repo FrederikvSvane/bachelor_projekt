@@ -1,6 +1,7 @@
 import math
 import random
 import os
+import time
 import multiprocessing
 from copy import deepcopy
 from typing import Dict, List
@@ -13,6 +14,7 @@ from src.base_model.compatibility_checks import calculate_compatible_judges, cal
 from src.local_search.move import do_move, undo_move, Move
 from src.local_search.move_generator import generate_single_move, generate_list_random_move, generate_compound_move, generate_delete_move
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
+from src.util.schedule_visualizer import visualize
 
 def _check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
     """
@@ -143,9 +145,9 @@ def _calculate_cooling_rate(K: int, start_temperature: float, end_temperature: f
     return (end_temperature / start_temperature) ** (1 / (K - 1))
 
 
-def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, total_outer_iterations: int, start_temp: float, end_temp: float) -> Schedule:
-    cooling_rate = _calculate_cooling_rate(total_outer_iterations, start_temp, end_temp)
-
+def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1) -> Schedule:
+    start_time = time.time()
+    
     meetings = schedule.get_all_meetings()
     judges = schedule.get_all_judges()
     rooms = schedule.get_all_rooms() 
@@ -164,99 +166,112 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, tot
     low_temp_threshold = full_temp_range * 0 # bottom 10% of the temperature range 
     
     plateau_count = 0
+    cooling_rate = _calculate_cooling_rate(100, start_temp, end_temp)  # Initial cooling rate
     
     tabu_list = deque(maxlen=20)
+    time_used = 0
+    current_iteration = 0
     
-    #with multiprocessing.Pool(processes=n_cores) as pool:
-    if True:
-        for k in range(total_outer_iterations):
-            moves_explored_this_iteration = 0
-            moves_accepted_this_iteration = 0
-            best_score_improved_this_iteration = False
-            best_score_this_iteration = current_score
 
-            for i in range(iterations_per_temperature):
-                
-                # HIGH TEMP
-                if current_temperature > high_temp_threshold: 
-                    p_do_compound_move = 0.2
-                    if random.random() < p_do_compound_move: 
-                        # compound move
-                        p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
-                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
-                    else: 
-                        # single move
-                        move = generate_single_move(schedule, compatible_judges, compatible_rooms)
-                        
-                # MEDIUM TEMP
-                elif medium_temp_threshold < current_temperature < high_temp_threshold: 
-                    p_do_compound_move = 0.6
-                    if random.random() < p_do_compound_move: 
-                        # compound move
-                        p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
-                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
-                    else: 
-                        # single move
-                        move = generate_single_move(schedule, compatible_judges, compatible_rooms)
-                        
-                # LOW TEMP
-                else: 
-                    RnR_allowed = True
-                    p_do_compound_move = 0.8
-                    if random.random() < p_do_compound_move: 
-                        # compound move
-                        p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
-                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
-                    else: 
-                        # single move
-                        move = generate_single_move(schedule, compatible_judges, compatible_rooms)
-                    
-                delta = calculate_delta_score(schedule, move)
-                
-                moves_explored_this_iteration += 1
-                if move is None:
-                    print("No valid moves found, skipping iteration")
-                    continue
-                
-                do_move(move, schedule) 
-                
-                if delta < 0 or random.random() < math.exp(-delta / current_temperature): # accept move
-                    moves_accepted_this_iteration += 1
-                    current_score += delta
-                    best_score_this_iteration = min(best_score_this_iteration, current_score) # just for printing. remove for performance
-                    _add_move_to_tabu_list(move, tabu_list)
-                    
-                    if current_score < best_score:
-                        best_score = current_score
-                        best_schedule = deepcopy(schedule)
-                        plateau_count = 0
-                        best_score_improved_this_iteration = True
-                        
-                else: # reject move
-                    undo_move(move, schedule)
+    while time_used < max_time_seconds:
+        time_used = time.time() - start_time
             
-            current_temperature *= cooling_rate
-
-            if not best_score_improved_this_iteration:
-                plateau_count += 1
+        moves_explored_this_iteration = 0
+        moves_accepted_this_iteration = 0
+        best_score_improved_this_iteration = False
+        best_score_this_iteration = current_score
+        
+        for i in range(iterations_per_temperature):
+            # HIGH TEMP
+            if current_temperature > high_temp_threshold: 
+                p_do_compound_move = 0.2
+                if random.random() < p_do_compound_move: 
+                    # compound move
+                    p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
+                    move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                else: 
+                    # single move
+                    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+                    
+            # MEDIUM TEMP
+            elif medium_temp_threshold < current_temperature < high_temp_threshold: 
+                p_do_compound_move = 0.6
+                if random.random() < p_do_compound_move: 
+                    # compound move
+                    p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
+                    move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                else: 
+                    # single move
+                    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+                    
+            # LOW TEMP
+            else: 
+                RnR_allowed = True
+                p_do_compound_move = 0.8
+                if random.random() < p_do_compound_move: 
+                    # compound move
+                    p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
+                    move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                else: 
+                    # single move
+                    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
                 
-            if moves_accepted_this_iteration == 0: # no progress in this iteration => consider stopping
-                print("No moves accepted for this temperature. Consider terminating.")
+            delta = calculate_delta_score(schedule, move)
+            
+            moves_explored_this_iteration += 1
+            if move is None:
+                print("No valid moves found, skipping iteration")
                 continue
             
-            print(f"Iteration {k+1}/{total_outer_iterations} - Temp: {current_temperature:.2f}, "
-                f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, "
-                f"Current: {best_score_this_iteration}, Best: {best_score}"
-                f"{' - Plateau detected!' if plateau_count > 5 else ''}")
+            do_move(move, schedule) 
+            
+            if delta < 0 or random.random() < math.exp(-delta / current_temperature): # accept move
+                moves_accepted_this_iteration += 1
+                current_score += delta
+                best_score_this_iteration = min(best_score_this_iteration, current_score) # just for printing. remove for performance
+                _add_move_to_tabu_list(move, tabu_list)
+                
+                if current_score < best_score:
+                    best_score = current_score
+                    best_schedule = deepcopy(schedule)
+                    plateau_count = 0
+                    best_score_improved_this_iteration = True
+                    
+            else: # reject move
+                undo_move(move, schedule)
+
+        current_iteration += 1
+        current_temperature *= cooling_rate
+        
+        if not best_score_improved_this_iteration:
+            plateau_count += 1
+        
+        # Reheat if temperature gets too low but we still have time
+        if current_temperature < end_temp:
+            print("Reheating")
+            current_temperature = start_temp
+        
+        # Exit if no progress is being made
+        if moves_accepted_this_iteration == 0:
+            print("No moves accepted for this temperature. Consider terminating.")
+            continue
+        
+        if current_iteration % 50 == 0:
+            visualize(best_schedule)
+                
+        # Print progress information
+        print(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
+              f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}"
+              f"{' - Plateau detected!' if plateau_count > 5 else ''}")
                     
     return best_schedule
 
 def run_local_search(schedule: Schedule) -> Schedule:
     iterations_per_temperature = 5000
-    total_outer_iterations = 100
+    max_time_seconds = 60 * 5  
     start_temp = 300
-    end_temp = 1
+    end_temp = 10
     
-    optimized_schedule = simulated_annealing(schedule, iterations_per_temperature, total_outer_iterations, start_temp, end_temp)
+    optimized_schedule = simulated_annealing(schedule, iterations_per_temperature, max_time_seconds, start_temp, end_temp)
     
     return optimized_schedule

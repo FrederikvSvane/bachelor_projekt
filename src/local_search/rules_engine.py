@@ -30,8 +30,10 @@ def calculate_full_score(schedule: Schedule) -> int:
     # Soft
     soft_violations = 0
     soft_violations += nr29_room_stability_per_day_full(schedule)
+    soft_violations += nr31_distance_between_meetings_full(schedule)
 
     full_score = hard_violations * hard_containt_weight + medm_violations * medm_containt_weight + soft_violations * soft_containt_weight
+    
     print(f"Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations}")  
     
     return full_score
@@ -64,12 +66,14 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
     # Soft rules
     soft_violations = 0    
     soft_violations += nr29_room_stability_per_day_delta(schedule, move)
+    soft_violations += nr31_distance_between_meetings_delta(schedule, move)
 
     delta_score = hard_containt_weight * hard_violations + medm_containt_weight * medm_violations + soft_containt_weight * soft_violations
 
     return delta_score
 
-
+ 
+        
 def nr1_overbooked_room_in_timeslot_full(schedule: Schedule):
     """
     Tjekker hvor mange gange et rum er booket i et givent timeslot.
@@ -314,7 +318,7 @@ def nr18_unused_timegrain_delta(schedule: Schedule, move: Move):
     if move.new_day is None and move.new_judge is None and move.new_start_timeslot is None:
         return 0 
     
-    affected_pairs = get_affected_judge_day_pairs_for_unused_timegrains(schedule, move)
+    affected_pairs = get_affected_judge_day_pairs(schedule, move)
     before_violations = calculate_unused_timeslots_for_all_judge_day_pairs(schedule, affected_pairs, schedule.work_days)
     
     do_move(move, schedule)
@@ -458,3 +462,49 @@ def nr30_schedule_length_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
     pass
+
+def nr31_distance_between_meetings_full(schedule: Schedule):
+    """
+    Tjekker hvor langt der er mellem hvert møde
+    """
+    
+    offset = 0
+    step = 1
+    violations = 0
+    
+    violations = 0
+    
+    judges = schedule.get_all_judges()
+    for judge in judges:
+        violations += calculate_gaps_between_appointments(schedule, judge.judge_id)
+        
+    return (offset + step * violations)
+
+def nr31_distance_between_meetings_delta(schedule: Schedule, move: Move):
+    """
+    Tjekker hvor langt der er mellem hvert møde
+    """
+    if move.new_day is None and move.new_judge is None and move.new_start_timeslot is None:
+        return 0 
+    
+    offset = 0
+    step = 1
+    before_violations = 0
+    
+    affected_pairs = get_affected_judge_day_pairs(schedule, move)
+    for day, judge in affected_pairs:
+        before_violations += calculate_gaps_between_appointments(schedule, judge, day)  
+        
+    do_move(move, schedule)
+    
+    new_last_day = schedule.work_days
+    if new_last_day > schedule.work_days:
+        for judge in schedule.get_all_judges():
+            affected_pairs.add((new_last_day, judge.judge_id))
+    
+    after_violations = 0
+    for day, judge in affected_pairs:
+        after_violations += calculate_gaps_between_appointments(schedule, judge, day)
+    undo_move(move, schedule)
+    
+    return (offset + step * (after_violations - before_violations))

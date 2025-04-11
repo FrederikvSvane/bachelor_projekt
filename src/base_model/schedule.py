@@ -108,6 +108,14 @@ class Schedule:
         
         return True
     
+    def add_meeting_to_schedule(self, appointment: Appointment):
+        if appointment.day not in self.appointments_by_day_and_timeslot:
+            self.appointments_by_day_and_timeslot[appointment.day] = {}
+        if appointment.timeslot_in_day not in self.appointments_by_day_and_timeslot[appointment.day]:
+            self.appointments_by_day_and_timeslot[appointment.day][appointment.timeslot_in_day] = []
+        self.appointments_by_day_and_timeslot[appointment.day][appointment.timeslot_in_day].append(appointment)
+        
+    
     def add_to_unplanned_meetings(self, meeting: Meeting) -> None:
         if meeting is None:
             raise ValueError("Meeting cannot be None")

@@ -65,7 +65,7 @@ def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id
     
     return violations
     
-def get_affected_judge_day_pairs_for_unused_timegrains(schedule: Schedule, move: Move) -> set:
+def get_affected_judge_day_pairs(schedule: Schedule, move: Move) -> set:
     affected_pairs = set()
     
     affected_pairs.add((move.old_day, move.old_judge.judge_id))
@@ -206,3 +206,26 @@ def count_judge_overbooking_for_day_timeslot(schedule: Schedule, day: int, times
 
     # design choice: each room used more than once is 1 violation
     return sum(1 for count in judge_usage.values() if count > 1)
+
+
+def calculate_gaps_between_appointments(schedule: Schedule, judge_id: int, specific_day: int = None):
+    total_gaps = 0
+    
+    days_to_process = [specific_day] if specific_day is not None else range(1, schedule.work_days + 1)
+    
+    for current_day in days_to_process:
+        day_appointments = get_appointments_in_timeslot_range_in_day(
+            schedule, current_day, 1, schedule.timeslots_per_work_day, judge_id
+        )
+        
+        if day_appointments:
+            occupied_timeslots = {app.timeslot_in_day for app in day_appointments}
+            last_timeslot = max(occupied_timeslots)
+            total_gaps += last_timeslot - len(occupied_timeslots)
+    
+    return total_gaps
+                
+                
+    
+    
+    

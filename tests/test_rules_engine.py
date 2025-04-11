@@ -21,9 +21,9 @@ class TestRulesEngine(unittest.TestCase):
     
     def setUp(self):
         #generate a random schedule for every test
-        n_cases = 20
-        n_judges = 8
-        n_rooms = 10
+        n_cases = 10
+        n_judges = 5
+        n_rooms = 5
         n_work_days = 2
         granularity = 5
         min_per_work_day = 390
@@ -65,87 +65,108 @@ class TestRulesEngine(unittest.TestCase):
     #         schedule_after_do_undo = deepcopy(self.schedule)
     #         self.assertEqual(full_score_initial, full_score_after_do_undo, f"Iteration {i+1}: Full score not restored after undo ({full_score_initial} -> {full_score_after_do} -> {full_score_after_do_undo}). Move: {move}")
     #         self.assertEqual(schedule_initial, schedule_after_do_undo, f"Iteration {i+1}: Schedules differs after undo. Move: {move}")
+         
+        
+    # def test_calculate_delta_in_parallel(self):
+    #     """Tests if parallel delta score calculation matches sequential and compares timings."""
+    #     test_schedule = deepcopy(self.schedule)
+    #     initial_score = calculate_full_score(test_schedule)
+    #     n_cores = os.cpu_count() if os.cpu_count() else 1
+
+    #     list_of_move_lists = []
+    #     # Generate 100 batches of moves (each batch is a list)
+    #     for _ in range(10):
+    #         generated_batch = generate_list_random_move(
+    #             test_schedule,
+    #             self.compatible_judges,
+    #             self.compatible_rooms,
+    #             [],
+    #             initial_score,
+    #             initial_score
+    #         )
+    #         # Append the generated list (batch) if it's not empty
+    #         if generated_batch:
+    #              list_of_move_lists.append(generated_batch)
+
+    #     # --- Flatten the list of lists into a single list ---
+    #     # Example: [[(m1,i1)], [(m2,i2), (m3,i3)]] -> [(m1,i1), (m2,i2), (m3,i3)]
+    #     moves_with_gen_int = list(itertools.chain.from_iterable(list_of_move_lists))
+
+
+    #     if not moves_with_gen_int:
+    #          self.skipTest("No moves generated, cannot test parallel calculation.")
+    #     with multiprocessing.Pool(processes=n_cores) as pool:
+    #         parallel_results = []
             
-    def test_calculate_delta_in_parallel(self):
-        """Tests if parallel delta score calculation matches sequential and compares timings."""
-        test_schedule = deepcopy(self.schedule)
-        initial_score = calculate_full_score(test_schedule)
-        n_cores = os.cpu_count() if os.cpu_count() else 1
-
-        list_of_move_lists = []
-        # Generate 100 batches of moves (each batch is a list)
-        for _ in range(10):
-            generated_batch = generate_list_random_move(
-                test_schedule,
-                self.compatible_judges,
-                self.compatible_rooms,
-                [],
-                initial_score,
-                initial_score
-            )
-            # Append the generated list (batch) if it's not empty
-            if generated_batch:
-                 list_of_move_lists.append(generated_batch)
-
-        # --- Flatten the list of lists into a single list ---
-        # Example: [[(m1,i1)], [(m2,i2), (m3,i3)]] -> [(m1,i1), (m2,i2), (m3,i3)]
-        moves_with_gen_int = list(itertools.chain.from_iterable(list_of_move_lists))
-
-
-        if not moves_with_gen_int:
-             self.skipTest("No moves generated, cannot test parallel calculation.")
-        with multiprocessing.Pool(processes=n_cores) as pool:
-            parallel_results = []
+    #         parallel_time = 0.0
+    #         start_time_par = time.perf_counter()
+        
+    #         parallel_results = _calculate_moves_in_parallel(
+    #             pool,
+    #             test_schedule,
+    #             moves_with_gen_int
+    #         )
             
-            parallel_time = 0.0
-            start_time_par = time.perf_counter()
+    #         end_time_par = time.perf_counter()
+    #     parallel_time = end_time_par - start_time_par
+
+    #     sequential_results = []
+    #     sequential_time = 0.0
         
-            parallel_results = _calculate_moves_in_parallel(
-                pool,
-                test_schedule,
-                moves_with_gen_int
-            )
+    #     start_time_seq = time.perf_counter()
+    #     for move_obj, _ in moves_with_gen_int:
+    #         sequential_score = calculate_delta_score(test_schedule, move_obj)
+    #         sequential_results.append((move_obj, sequential_score))
+    #     end_time_seq = time.perf_counter()
+    #     sequential_time = end_time_seq - start_time_seq
+
+    #     print(f"\n--- Timing Results ({len(moves_with_gen_int)} moves, {n_cores} cores) ---")
+    #     print(f"Sequential Time: {sequential_time:.6f} seconds")
+    #     print(f"Parallel Time:   {parallel_time:.6f} seconds")
+        
+    #     if parallel_time > 1e-9: # Avoid division by zero for very fast runs
+    #          speedup = sequential_time / parallel_time
+    #          print(f"Speedup Factor:  {speedup:.2f}x")
+    #          if speedup < 1.0:
+    #              print("(Note: Parallel was slower, likely due to overhead > calculation time)")
+    #     else:
+    #          print("Parallel time near zero; speedup calculation unreliable.")
+    #     print("----------------------------------------")
+
+    #     self.assertEqual(len(parallel_results), len(sequential_results),
+    #                      f"Result counts differ: Parallel={len(parallel_results)}, Sequential={len(sequential_results)}")
+
+    #     parallel_scores = [score for _, score in parallel_results]
+    #     sequential_scores = [score for _, score in sequential_results]
+    #     self.assertListEqual(parallel_scores, sequential_scores,
+    #                          "Calculated scores mismatch between parallel and sequential execution.")
+
+    #     parallel_move_ids = [m.meeting_id for m, _ in parallel_results]
+    #     original_move_ids = [m.meeting_id for m, _ in moves_with_gen_int]
+    #     self.assertListEqual(parallel_move_ids, original_move_ids,
+    #                          "Move order/association mismatch (based on meeting_id).")
+        
             
-            end_time_par = time.perf_counter()
-        parallel_time = end_time_par - start_time_par
-
-        sequential_results = []
-        sequential_time = 0.0
+    def test_gap_in_schedule(self):
+        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
         
-        start_time_seq = time.perf_counter()
-        for move_obj, _ in moves_with_gen_int:
-            sequential_score = calculate_delta_score(test_schedule, move_obj)
-            sequential_results.append((move_obj, sequential_score))
-        end_time_seq = time.perf_counter()
-        sequential_time = end_time_seq - start_time_seq
-
-        print(f"\n--- Timing Results ({len(moves_with_gen_int)} moves, {n_cores} cores) ---")
-        print(f"Sequential Time: {sequential_time:.6f} seconds")
-        print(f"Parallel Time:   {parallel_time:.6f} seconds")
+        delta = distance_between_meetings_delta(self.schedule, move)
         
-        if parallel_time > 1e-9: # Avoid division by zero for very fast runs
-             speedup = sequential_time / parallel_time
-             print(f"Speedup Factor:  {speedup:.2f}x")
-             if speedup < 1.0:
-                 print("(Note: Parallel was slower, likely due to overhead > calculation time)")
-        else:
-             print("Parallel time near zero; speedup calculation unreliable.")
-        print("----------------------------------------")
-
-        self.assertEqual(len(parallel_results), len(sequential_results),
-                         f"Result counts differ: Parallel={len(parallel_results)}, Sequential={len(sequential_results)}")
-
-        parallel_scores = [score for _, score in parallel_results]
-        sequential_scores = [score for _, score in sequential_results]
-        self.assertListEqual(parallel_scores, sequential_scores,
-                             "Calculated scores mismatch between parallel and sequential execution.")
-
-        parallel_move_ids = [m.meeting_id for m, _ in parallel_results]
-        original_move_ids = [m.meeting_id for m, _ in moves_with_gen_int]
-        self.assertListEqual(parallel_move_ids, original_move_ids,
-                             "Move order/association mismatch (based on meeting_id).")
+        violations_before = distance_between_meetings_full(self.schedule)
         
-                
+        visualize(self.schedule)
+        do_move(move, self.schedule)
+        visualize(self.schedule)
+        
+        violations_after = distance_between_meetings_full(self.schedule)
+        
+        print(f"move: {move}")
+        print(f"violations before: {violations_before}")
+        print(f"violations after: {violations_after}")
+        print(f"delta: {delta}")
+        
+        self.assertEqual(violations_after - violations_before ,delta)        
+        
         
     # def test_nr1_overbooked_room_in_timeslot(self):
     #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)

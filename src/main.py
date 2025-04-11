@@ -11,6 +11,7 @@ from src.local_search.simulated_annealing import run_local_search
 from src.base_model.compatibility_checks import initialize_compatibility_matricies
 from src.local_search.move import Move, do_move, undo_move
 from src.local_search.move_generator import generate_delete_move, generate_compound_move
+from src.heuristic_construction.linear_assignment import generate_schedule
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -22,7 +23,7 @@ def parse_arguments():
     group.add_argument('--test', nargs='+', type=int, 
                        help='Generate test data with [n_cases] [n_judges] [n_rooms] [n_work_days]')
     
-    parser.add_argument('--method', type=str, choices=['graph', 'ilp'], default='graph',
+    parser.add_argument('--method', type=str, choices=['graph', 'ilp', 'heuristic'], default='graph',
                         help='Method to use for scheduling (default: graph)')
     
     parser.add_argument('--output', type=str, default='output.json',
@@ -62,22 +63,37 @@ def main():
         elif args.method == 'graph':
             print("Using graph-based scheduling method")
             initial_schedule: Schedule = generate_schedule_using_double_flow(parsed_data)
+        elif args.method == 'heuristic':
+            print("Using heuristic-based scheduling method")
+            initial_schedule: Schedule = generate_schedule(parsed_data)
 
 
-
-
-        # ___ main operations ___
+        
+        # ___ main operations ___'
+        #final_schedule = initial_schedule
+        #final_schedule.move_all_dayboundary_violations()
+        #visualize(final_schedule)
+        #initial_score = calculate_full_score(final_schedule)
+        #print("Initial score: ", initial_score)
+        
+        # _______________________
         initial_schedule.move_all_dayboundary_violations()
         initial_schedule.trim_schedule_length_if_possible()
         initial_score = calculate_full_score(initial_schedule)
         visualize(initial_schedule)
         
         final_schedule = run_local_search(initial_schedule)
-
+        
         final_score = calculate_full_score(final_schedule)
         visualize(final_schedule)
         print(f"Initial score: {initial_score}")
-        print(f"Final score: {final_score}")        
+        print(f"Final score: {final_score}")
+
+        # final_score = calculate_full_score(final_schedule)
+        # visualize(final_schedule)
+        # print(f"Initial score: {initial_score}")
+        # print(f"Final score: {final_score}")        
+        # _______________________
         
         # visualize(initial_schedule)
         # for app in initial_schedule.iter_appointments():
