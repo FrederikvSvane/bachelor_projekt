@@ -16,27 +16,21 @@ from src.graph_construction.coloring import DSatur
 class Schedule:
     """Class that manages the court schedule."""
     
-    def __init__(self, work_days: int, minutes_in_a_work_day: int, granularity: int, judges: list = None, rooms: list = None):
-        """
-        Initialize a schedule with basic parameters.
-        
-        Args:
-            work_days: Number of working days
-            minutes_in_a_work_day: Minutes in a working day
-            granularity: Time slot granularity in minutes
-        """
-        self.appointments_by_day = {}
-        self.work_days = work_days # 1-indexed
-        self.minutes_in_a_work_day = minutes_in_a_work_day
-        self.granularity = granularity
-        self.timeslots_per_work_day = minutes_in_a_work_day // granularity
-        self.all_judges = judges
-        self.all_rooms = rooms
+    def __init__(self, work_days: int, minutes_in_a_work_day: int = 390, granularity: int = 5, judges: list[Judge] = None, rooms: list[Room] = None):
+        self.appointments_by_day_and_timeslot: dict[int, Dict[int, list[Appointment]]] = {} # the main schedule dictionary. Stores appointments by day and timeslot
+        self.unplanned_meetings: list[Meeting] = [] # list of unplanned meetings. Ie meetings that are supposed to be scheduled, but are not yet in the schedule
+        self.work_days: int = work_days # Amount of workdays in the schedule / the total length of the schedule. (1-indexed)
+        self.minutes_in_a_work_day: int = minutes_in_a_work_day # minutes in a work day (default: 390 min = 6.5 hours)
+        self.granularity: int = granularity # how many minutes in a timeslot (default: 5)
+        self.timeslots_per_work_day: int = minutes_in_a_work_day // granularity
+        self.all_judges: list[Judge] = judges
+        self.all_rooms: list[Room] = rooms
 
+        # initializing the appointments_by_day_and_timeslot dictionary
         for day in range(1, self.work_days + 1):
-            self.appointments_by_day[day] = {}
+            self.appointments_by_day_and_timeslot[day] = {}
             for timeslot in range(1, self.timeslots_per_work_day + 1):
-                self.appointments_by_day[day][timeslot] = []
+                self.appointments_by_day_and_timeslot[day][timeslot] = []
     
     def __eq__(self, other):
         """Compare two Schedule objects for equality."""
@@ -49,23 +43,30 @@ class Schedule:
                 self.timeslots_per_work_day != other.timeslots_per_work_day):
             return False
             
-        self_days = set(self.appointments_by_day.keys())
-        other_days = set(other.appointments_by_day.keys())
+        self_days = set(self.appointments_by_day_and_timeslot.keys())
+        other_days = set(other.appointments_by_day_and_timeslot.keys())
         if self_days != other_days:
             return False
             
+        for unplanned_meeting in self.unplanned_meetings:
+            if unplanned_meeting not in other.unplanned_meetings:
+                return False
+        for other_unplanned_meeting in other.unplanned_meetings:
+            if other_unplanned_meeting not in self.unplanned_meetings:
+                return False
+        
         for day in self_days:
-            self_timeslots = set(self.appointments_by_day[day].keys())
-            other_timeslots = set(other.appointments_by_day[day].keys())
+            self_timeslots = set(self.appointments_by_day_and_timeslot[day].keys())
+            other_timeslots = set(other.appointments_by_day_and_timeslot[day].keys())
             if self_timeslots != other_timeslots:
                 return False
                 
             for timeslot in self_timeslots:
-                self_appointments = set(self.appointments_by_day[day][timeslot])
-                other_appointments = set(other.appointments_by_day[day][timeslot])
+                self_appointments = set(self.appointments_by_day_and_timeslot[day][timeslot])
+                other_appointments = set(other.appointments_by_day_and_timeslot[day][timeslot])
                 
-                for app in self.appointments_by_day[day][timeslot]:
-                    if app not in other.appointments_by_day[day][timeslot]:
+                for app in self.appointments_by_day_and_timeslot[day][timeslot]:
+                    if app not in other.appointments_by_day_and_timeslot[day][timeslot]:
                         return False
                         
                 if len(self_appointments) != len(other_appointments):
@@ -106,7 +107,40 @@ class Schedule:
                     return False
         
         return True
-            
+    
+    def add_to_unplanned_meetings(self, meeting: Meeting) -> None:
+        if meeting is None:
+            raise ValueError("Meeting cannot be None")
+        if meeting in self.unplanned_meetings:
+            raise ValueError(f"Meeting {meeting} already exists in unplanned meetings")
+        else:
+            self.unplanned_meetings.append(meeting)
+
+    def pop_meeting_from_unplanned_meetings(self, meeting_id: int) -> Meeting:
+        """
+        Args:
+            meeting_id: The ID of the meeting to retrieve
+        Returns:
+            The meeting object if found in unplanned meetings
+        """
+        for i, meeting in enumerate(self.unplanned_meetings):
+            if meeting.meeting_id == meeting_id:
+                return self.unplanned_meetings.pop(i)
+
+        raise ValueError(f"Meeting with ID {meeting_id} not found in unplanned meetings")
+    
+    def get_all_unplanned_meetings(self) -> list[Meeting]:
+        return self.unplanned_meetings    
+    
+    def print_unplanned_meetings(self) -> None:
+        if not self.unplanned_meetings:
+            print("No unplanned meetings.")
+            return
+
+        print("Unplanned meetings:")
+        for meeting in self.unplanned_meetings:
+            print(f"  {meeting}")
+    
     def iter_appointments(self):
         """
         Iterate through all appointments in the schedule
@@ -114,20 +148,20 @@ class Schedule:
         for app in schedule.iter_appointments():
         """
         for day in range(1, self.work_days + 1):
-            if day in self.appointments_by_day:
+            if day in self.appointments_by_day_and_timeslot:
                 for timeslot in range(1, self.timeslots_per_work_day + 1):
-                    if timeslot in self.appointments_by_day[day]:
-                        for app in self.appointments_by_day[day][timeslot]:
+                    if timeslot in self.appointments_by_day_and_timeslot[day]:
+                        for app in self.appointments_by_day_and_timeslot[day][timeslot]:
                             yield app
 
     def get_all_appointments(self) -> list[Appointment]:
         """Return flat list of all appointments"""
         appointments = []
         for day in range(1, self.work_days + 1):
-            if day in self.appointments_by_day:
+            if day in self.appointments_by_day_and_timeslot:
                 for timeslot in range(1, self.timeslots_per_work_day + 1):
-                    if timeslot in self.appointments_by_day[day]:
-                        appointments.extend(self.appointments_by_day[day][timeslot])
+                    if timeslot in self.appointments_by_day_and_timeslot[day]:
+                        appointments.extend(self.appointments_by_day_and_timeslot[day][timeslot])
         return appointments
             
     def get_all_judges(self) -> list:
@@ -188,21 +222,21 @@ class Schedule:
                         last_valid_slot = 1
                     
                     for app in appointments:
-                        if app.day in self.appointments_by_day and app.timeslot_in_day in self.appointments_by_day[app.day]:
-                            if app in self.appointments_by_day[app.day][app.timeslot_in_day]:
-                                self.appointments_by_day[app.day][app.timeslot_in_day].remove(app)
+                        if app.day in self.appointments_by_day_and_timeslot and app.timeslot_in_day in self.appointments_by_day_and_timeslot[app.day]:
+                            if app in self.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day]:
+                                self.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day].remove(app)
                     
                     for i, app in enumerate(appointments):
                         new_timeslot = last_valid_slot + i
                         app.day = first_day
                         app.timeslot_in_day = new_timeslot
                         
-                        if app.day not in self.appointments_by_day:
-                            self.appointments_by_day[app.day] = {}
-                        if app.timeslot_in_day not in self.appointments_by_day[app.day]:
-                            self.appointments_by_day[app.day][app.timeslot_in_day] = []
+                        if app.day not in self.appointments_by_day_and_timeslot:
+                            self.appointments_by_day_and_timeslot[app.day] = {}
+                        if app.timeslot_in_day not in self.appointments_by_day_and_timeslot[app.day]:
+                            self.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day] = []
                         
-                        self.appointments_by_day[app.day][app.timeslot_in_day].append(app)
+                        self.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day].append(app)
     
     def trim_schedule_length_if_possible(self) -> None:
         """
@@ -213,8 +247,8 @@ class Schedule:
             last_day = self.work_days
             is_empty = True
 
-            if last_day in self.appointments_by_day:
-                for _timeslot, appointments in self.appointments_by_day[last_day].items():
+            if last_day in self.appointments_by_day_and_timeslot:
+                for _timeslot, appointments in self.appointments_by_day_and_timeslot[last_day].items():
                     if appointments:
                         is_empty = False
                         break 
@@ -270,29 +304,49 @@ class Schedule:
         Args:
             graph: The colored undirected graph
         """
+        
+        # For safety, clear the schedule first
+        self.appointments_by_day_and_timeslot = {day: {ts: [] for ts in range(1, self.timeslots_per_work_day + 1)} for day in range(1, self.work_days + 1)}
+        
+        max_color = -1 # tracking the maximum color (timeslot) used
+        
         for i in range(graph.get_num_nodes()):
-            # Get the CaseJudgeRoomNode from the graph
-            node = graph.get_node(i)
+            node = graph.get_node(i) # getting the CaseJudgeRoomNode from the graph
+            
             if not isinstance(node, MeetingJudgeRoomNode):
-                continue
-                
-            # Determine the day based on timeslot (color) and timeslots per day
-            day = node.get_color() // self.timeslots_per_work_day + 1
-            timeslot_in_day = node.get_color() % self.timeslots_per_work_day + 1
+                raise ValueError(f"Node {i} is not a MeetingJudgeRoomNode. Cannot add to schedule. Terminating.")
             
-            if day > self.work_days:
-                self.appointments_by_day[day] = {}
-                self.appointments_by_day[day][timeslot_in_day] = []
+            # Determining the day and timeslot in day based on assigned color
+            color = node.get_color()
+            if color == -1:
+                raise ValueError(f"Node {i} has no color assigned. Cannot add to schedule. Terminating.")
+            day = color // self.timeslots_per_work_day + 1
+            timeslot_in_day = color % self.timeslots_per_work_day + 1
+            max_color = max(max_color, color)            
             
+            # Also for safety, initialize empty appointment list for the day and timeslot
+            if day not in self.appointments_by_day_and_timeslot:
+                self.appointments_by_day_and_timeslot[day] = {}
+            if timeslot_in_day not in self.appointments_by_day_and_timeslot[day]:
+                self.appointments_by_day_and_timeslot[day][timeslot_in_day] = []
+
             # Create an appointment
             appointment = Appointment(
-                node.get_meeting(),
-                node.get_judge(),
-                node.get_room(),
-                day,
-                timeslot_in_day,
+                meeting = node.get_meeting(),
+                judge = node.get_judge(),
+                room = node.get_room(),
+                day = day,
+                timeslot_in_day = timeslot_in_day,
                 )
-            self.appointments_by_day[day][timeslot_in_day].append(appointment)
+            
+            appointment.meeting.judge = appointment.judge
+            appointment.meeting.room = appointment.room
+            
+            self.appointments_by_day_and_timeslot[day][timeslot_in_day].append(appointment)
+            
+        # Adjusting the length of the schedule based on amount of days used
+        max_day_used = max_color // self.timeslots_per_work_day + 1
+        self.work_days = max(self.work_days, max_day_used)
 
 def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     """

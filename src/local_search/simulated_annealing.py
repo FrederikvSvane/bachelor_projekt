@@ -139,7 +139,6 @@ def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, e
             
             else:
                 delta = calculate_delta_score(schedule, move)
-                add_move_to_tabu_list(move, tabu_list)
                 
             do_move(move, schedule) # so this actually modifies the schedule in place
             total_moves += 1
@@ -150,6 +149,7 @@ def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, e
                 current_score += delta
                 iteration_accepted += 1
                 accepted_moves += 1
+                add_move_to_tabu_list(move, tabu_list)
                 
                 # Update best solution if needed
                 if current_score < best_score:

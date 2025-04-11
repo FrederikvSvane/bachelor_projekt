@@ -4,12 +4,13 @@ from pathlib import Path
 import sys
 
 from src.util.parser import parse_input
-from src.base_model.schedule import generate_schedule_using_double_flow
+from src.base_model.schedule import Schedule, generate_schedule_using_double_flow
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import calculate_full_score
 from src.local_search.simulated_annealing import run_local_search
 from src.base_model.compatibility_checks import initialize_compatibility_matricies
-from src.local_search.move import Move
+from src.local_search.move import Move, do_move, undo_move
+from src.local_search.move_generator import generate_delete_move, generate_compound_move
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -48,7 +49,7 @@ def main():
             
             from src.util.data_generator import generate_test_data_parsed
             n_cases, n_judges, n_rooms, n_work_days = args.test[:4]
-            parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_work_days, granularity=5, min_per_work_day=390)
+            parsed_data: dict = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_work_days, granularity=5, min_per_work_day=390)
         
 
         initialize_compatibility_matricies(parsed_data)
@@ -57,22 +58,56 @@ def main():
         if args.method == 'ilp':
             print("Using ILP-based scheduling method")
             from src.ilp_construction.ilp_solver import generate_schedule_using_ilp
-            initial_schedule = generate_schedule_using_ilp(parsed_data)
+            initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data)
         elif args.method == 'graph':
             print("Using graph-based scheduling method")
-            initial_schedule = generate_schedule_using_double_flow(parsed_data)
+            initial_schedule: Schedule = generate_schedule_using_double_flow(parsed_data)
 
-        initial_schedule.move_all_dayboundary_violations()
-        initial_schedule.trim_schedule_length_if_possible()
-        initial_score = calculate_full_score(initial_schedule)
-        visualize(initial_schedule)
+
+
+
+        # ___ main operations ___
+        # initial_schedule.move_all_dayboundary_violations()
+        # initial_schedule.trim_schedule_length_if_possible()
+        # initial_score = calculate_full_score(initial_schedule)
+        # visualize(initial_schedule)
         
-        final_schedule = run_local_search(initial_schedule)
+        # final_schedule = run_local_search(initial_schedule)
 
-        final_score = calculate_full_score(final_schedule)
-        visualize(final_schedule)
-        print(f"Initial score: {initial_score}")
-        print(f"Final score: {final_score}")        
+        # final_score = calculate_full_score(final_schedule)
+        # visualize(final_schedule)
+        # print(f"Initial score: {initial_score}")
+        # print(f"Final score: {final_score}")        
+        
+        visualize(initial_schedule)
+        for app in initial_schedule.iter_appointments():
+            print(app)
+        initial_schedule.print_unplanned_meetings()        
+
+        all_meetings = initial_schedule.get_all_meetings()
+        
+        first_meeting = all_meetings[0]
+        first_meeting_id = first_meeting.meeting_id 
+        move: Move = generate_delete_move(initial_schedule, first_meeting_id)
+        print(f"Generated move: {move}")
+        print(f"Move uses the judge {move.old_judge} and room {move.old_room}")
+        do_move(move, initial_schedule)
+        
+        visualize(initial_schedule)
+        for app in initial_schedule.iter_appointments():
+            print(app)
+        initial_schedule.print_unplanned_meetings()        
+        
+        undo_move(move, initial_schedule)
+        visualize(initial_schedule)
+        for app in initial_schedule.iter_appointments():
+            print(app)
+        initial_schedule.print_unplanned_meetings()        
+        
+        final_schedule = initial_schedule
+        # _______________________
+
+
 
         # Write schedule to output file
         output_path = Path(args.output)

@@ -14,6 +14,9 @@ from src.local_search.rules_engine import calculate_delta_score
 def identify_appointment_chains(schedule: Schedule) -> Dict:
     """
     Identify chains of appointments representing the same case.
+    
+    Returns:
+    A dictionary where keys are meeting_ids and values are lists of appointments.
     """
     appointment_chains = {}  # Key: case_id, Value: list of appointments
     
@@ -102,6 +105,140 @@ def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
                 move.new_start_timeslot = new_start_timeslot
             else:
                 print("No valid timeslots")
+    
+    return move
+
+def generate_delete_move(schedule: Schedule, meeting_id: int) -> Move:
+    """
+    Generate a delete move for a specific meeting ID.
+    """
+    if meeting_id is None:
+        raise ValueError("Meeting ID cannot be None.")
+    
+    chain_dict = identify_appointment_chains(schedule)
+    
+    if meeting_id not in chain_dict:
+        raise ValueError(f"Meeting ID {meeting_id} not found in schedule.")
+    
+    chosen_appointments = chain_dict[meeting_id]
+    
+    if not chosen_appointments:
+        raise ValueError(f"No appointments found for meeting ID {meeting_id}.")
+    
+    first_appointment = chosen_appointments[0]
+    day = first_appointment.day
+    start_timeslot = first_appointment.timeslot_in_day
+    judge = first_appointment.judge
+    print(f"Deleting meeting {meeting_id} with judge {judge.judge_id} in room {first_appointment.room.room_id}")
+    room = first_appointment.room
+    
+    move = Move(
+        meeting_id=meeting_id, 
+        appointments=chosen_appointments,
+        old_judge=judge,
+        old_room=room,
+        old_day=day,
+        old_start_timeslot=start_timeslot,
+        is_delete_move=True
+    )
+    
+    return move
+
+def generate_compound_move(schedule: Schedule, 
+                          compatible_judges_dict: Dict[int, List[Judge]], 
+                          compatible_rooms_dict: Dict[int, List[Room]],
+                          p_j: float = 0.5, p_r: float = 0.5, 
+                          p_d: float = 0.5, p_t: float = 0.5) -> Move:
+    """
+    Generate a move that changes multiple aspects of a meeting based on probabilities.
+    
+    Args:
+        schedule: The current schedule
+        compatible_judges_dict: Dict mapping meeting IDs to compatible judges
+        compatible_rooms_dict: Dict mapping meeting IDs to compatible rooms
+        p_j, p_r, p_d, p_t: Probabilities of changing judge, room, day, timeslot
+    """
+    chain_dict = identify_appointment_chains(schedule)
+    if not chain_dict:
+        print("No appointments found in schedule")
+        return None
+    if not compatible_judges_dict or not compatible_rooms_dict:
+        print("No compatible judges or rooms found")
+        return None
+    if not schedule:
+        print("No schedule provided")
+        return None
+        
+    chosen_meeting_id = random.choice(list(chain_dict.keys()))
+    chosen_appointments = chain_dict[chosen_meeting_id]
+    
+    if not chosen_appointments:
+        print(f"No appointments found for meeting ID {chosen_meeting_id}")
+        return None
+    
+    first_appointment = chosen_appointments[0]
+    
+    move = Move(
+        meeting_id=chosen_meeting_id,
+        appointments=chosen_appointments,
+        old_judge=first_appointment.judge,
+        old_room=first_appointment.room,
+        old_day=first_appointment.day,
+        old_start_timeslot=first_appointment.timeslot_in_day
+    )
+    
+    changes_made = False
+    
+    # try to change judge
+    if random.random() < p_j:
+        compatible_judges = compatible_judges_dict.get(chosen_meeting_id, [])
+        alternative_judges = [j for j in compatible_judges 
+                            if j.judge_id != first_appointment.judge.judge_id]
+        if alternative_judges:
+            move.new_judge = random.choice(alternative_judges)
+            changes_made = True
+        else:
+            print(f"No alternative compatible judges found for meeting {chosen_meeting_id}")
+    
+    # try to change room
+    if random.random() < p_r:
+        compatible_rooms = compatible_rooms_dict.get(chosen_meeting_id, [])
+        alternative_rooms = [r for r in compatible_rooms 
+                           if r.room_id != first_appointment.room.room_id]
+        if alternative_rooms:
+            move.new_room = random.choice(alternative_rooms)
+            changes_made = True
+        else:
+            print(f"No alternative compatible rooms found for meeting {chosen_meeting_id}")
+    
+    # try to change day
+    if random.random() < p_d:
+        valid_days = [d for d in range(1, schedule.work_days + 1) 
+                    if d != first_appointment.day]
+        if valid_days:
+            move.new_day = random.choice(valid_days)
+            changes_made = True
+        else:
+            print(f"No alternative days found for meeting {chosen_meeting_id}")
+    
+    # try to change timeslot
+    if random.random() < p_t:
+        meeting_length = len(chosen_appointments)
+        max_start_timeslot = schedule.timeslots_per_work_day - meeting_length + 1
+        if max_start_timeslot < 1:
+            max_start_timeslot = 1 # shouldnt happen, but just in case
+        
+        valid_timeslots = [t for t in range(1, max_start_timeslot + 1) 
+                         if t != first_appointment.timeslot_in_day]
+        if valid_timeslots:
+            move.new_start_timeslot = random.choice(valid_timeslots)
+            changes_made = True
+        else:
+            print(f"No alternative timeslots found for meeting {chosen_meeting_id}")
+    
+    if not changes_made:
+        print(f"No changes could be made to meeting {chosen_meeting_id}")
+        return None
     
     return move
 

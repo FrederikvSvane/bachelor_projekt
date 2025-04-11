@@ -15,7 +15,7 @@ class Meeting:
     case: Any  # Use Any to avoid circular import
     
     def __str__(self):
-        return f"{self.meeting_id}"
+        return f"Meeting id={self.meeting_id}, duration={self.meeting_duration}, parent_case_id={self.case}, judge={self.judge}, room={self.room}"
     
     def __eq__(self, other):
         if not isinstance(other, Meeting):

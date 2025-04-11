@@ -78,9 +78,9 @@ def nr1_overbooked_room_in_timeslot_full(schedule: Schedule):
     violations = 0
     
     for day in range(1, schedule.work_days + 1):
-        if day in schedule.appointments_by_day:
+        if day in schedule.appointments_by_day_and_timeslot:
             for timeslot in range(1, schedule.timeslots_per_work_day + 1):
-                if timeslot in schedule.appointments_by_day[day]:
+                if timeslot in schedule.appointments_by_day_and_timeslot[day]:
                     violations += count_room_overbooking_for_day_timeslot(schedule, day, timeslot)
     
     return (offset + step * violations)
@@ -119,9 +119,9 @@ def nr2_overbooked_judge_in_timeslot_full(schedule: Schedule):
     violations = 0
     
     for day in range(1, schedule.work_days + 1):
-        if day in schedule.appointments_by_day:
+        if day in schedule.appointments_by_day_and_timeslot:
             for timeslot in range(1, schedule.timeslots_per_work_day + 1):
-                if timeslot in schedule.appointments_by_day[day]:
+                if timeslot in schedule.appointments_by_day_and_timeslot[day]:
                     violations += count_judge_overbooking_for_day_timeslot(schedule, day, timeslot)
     
     return (offset + step * violations)
@@ -280,9 +280,9 @@ def nr18_unused_timegrain_full(schedule: Schedule):
     total_violations = 0
     
     judges_with_appointments_on_last_day = set()
-    if last_day in schedule.appointments_by_day:
-        for timeslot in schedule.appointments_by_day[last_day]:
-            for app in schedule.appointments_by_day[last_day][timeslot]:
+    if last_day in schedule.appointments_by_day_and_timeslot:
+        for timeslot in schedule.appointments_by_day_and_timeslot[last_day]:
+            for app in schedule.appointments_by_day_and_timeslot[last_day][timeslot]:
                 judges_with_appointments_on_last_day.add(app.judge.judge_id)
     
     for day in range(1, last_day + 1):
@@ -293,10 +293,10 @@ def nr18_unused_timegrain_full(schedule: Schedule):
                 continue
             
             used_timeslots = set()
-            if day in schedule.appointments_by_day:
+            if day in schedule.appointments_by_day_and_timeslot:
                 for timeslot in range(1, schedule.timeslots_per_work_day + 1):
-                    if timeslot in schedule.appointments_by_day[day]:
-                        for app in schedule.appointments_by_day[day][timeslot]:
+                    if timeslot in schedule.appointments_by_day_and_timeslot[day]:
+                        for app in schedule.appointments_by_day_and_timeslot[day][timeslot]:
                             if app.judge.judge_id == judge_id:
                                 used_timeslots.add(timeslot)
                                 break  # fandt et appointment i det her timeslot, ingen grund til at lede videre
