@@ -12,7 +12,7 @@ from src.local_search.rules_engine import *
 
 from src.util.data_generator import generate_test_data_parsed
 from src.base_model.compatibility_checks import initialize_compatibility_matricies, calculate_compatible_judges, calculate_compatible_rooms
-from src.local_search.move_generator import generate_random_move, generate_list_random_move
+from src.local_search.move_generator import generate_single_move, generate_list_random_move
 from src.local_search.simulated_annealing import _calculate_moves_in_parallel
 
 

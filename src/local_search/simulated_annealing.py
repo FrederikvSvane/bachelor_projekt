@@ -11,7 +11,7 @@ from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.move import do_move, undo_move, Move
-from src.local_search.move_generator import generate_random_move, generate_list_random_move
+from src.local_search.move_generator import generate_single_move, generate_list_random_move, generate_compound_move, generate_delete_move
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
 
 def _check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
@@ -122,7 +122,7 @@ def _find_move_and_delta(schedule: Schedule, compatible_judges: list[Judge], com
     """
     Generate a move and calculate its delta score.
     """
-    move = generate_random_move(schedule, compatible_judges, compatible_rooms)
+    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
     
     if move is None:
         return None, 0
@@ -161,7 +161,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, tot
     full_temp_range = start_temp - end_temp
     high_temp_threshold = full_temp_range * 0.6 # from 60% to 100% of the temperature range
     medium_temp_threshold = full_temp_range * 0.1 # from 10% to 60% of the temperature range
-    low_temp_threshold = full_temp_range * 0 # from 0% to 10% of the temperature range 
+    low_temp_threshold = full_temp_range * 0 # bottom 10% of the temperature range 
     
     plateau_count = 0
     
@@ -176,23 +176,55 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, tot
             best_score_this_iteration = current_score
 
             for i in range(iterations_per_temperature):
-
-                #best_move, best_delta = _find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
-                #best_move, best_delta = _find_best_move_sequential(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
-                best_move, best_delta = _find_move_and_delta(schedule, compatible_judges, compatible_rooms)
-                moves_explored_this_iteration += 1
                 
-                if best_move is None:
+                # HIGH TEMP
+                if current_temperature > high_temp_threshold: 
+                    p_do_compound_move = 0.2
+                    if random.random() < p_do_compound_move: 
+                        # compound move
+                        p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
+                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                    else: 
+                        # single move
+                        move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+                        
+                # MEDIUM TEMP
+                elif medium_temp_threshold < current_temperature < high_temp_threshold: 
+                    p_do_compound_move = 0.6
+                    if random.random() < p_do_compound_move: 
+                        # compound move
+                        p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
+                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                    else: 
+                        # single move
+                        move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+                        
+                # LOW TEMP
+                else: 
+                    RnR_allowed = True
+                    p_do_compound_move = 0.8
+                    if random.random() < p_do_compound_move: 
+                        # compound move
+                        p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
+                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                    else: 
+                        # single move
+                        move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+                    
+                delta = calculate_delta_score(schedule, move)
+                
+                moves_explored_this_iteration += 1
+                if move is None:
                     print("No valid moves found, skipping iteration")
                     continue
                 
-                do_move(best_move, schedule) 
+                do_move(move, schedule) 
                 
-                if best_delta < 0 or random.random() < math.exp(-best_delta / current_temperature): # accept move
+                if delta < 0 or random.random() < math.exp(-delta / current_temperature): # accept move
                     moves_accepted_this_iteration += 1
-                    current_score += best_delta
+                    current_score += delta
                     best_score_this_iteration = min(best_score_this_iteration, current_score) # just for printing. remove for performance
-                    _add_move_to_tabu_list(best_move, tabu_list)
+                    _add_move_to_tabu_list(move, tabu_list)
                     
                     if current_score < best_score:
                         best_score = current_score
@@ -201,14 +233,12 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, tot
                         best_score_improved_this_iteration = True
                         
                 else: # reject move
-                    undo_move(best_move, schedule)
+                    undo_move(move, schedule)
             
             current_temperature *= cooling_rate
+
             if not best_score_improved_this_iteration:
                 plateau_count += 1
-                if plateau_count > 5:
-                    print("Plateau detected!")
-                    
                 
             if moves_accepted_this_iteration == 0: # no progress in this iteration => consider stopping
                 print("No moves accepted for this temperature. Consider terminating.")
@@ -216,7 +246,8 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, tot
             
             print(f"Iteration {k+1}/{total_outer_iterations} - Temp: {current_temperature:.2f}, "
                 f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, "
-                f"Current: {best_score_this_iteration}, Best: {best_score}")
+                f"Current: {best_score_this_iteration}, Best: {best_score}"
+                f"{' - Plateau detected!' if plateau_count > 5 else ''}")
                     
     return best_schedule
 

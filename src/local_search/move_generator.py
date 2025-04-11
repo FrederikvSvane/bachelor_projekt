@@ -28,7 +28,7 @@ def identify_appointment_chains(schedule: Schedule) -> Dict:
     
     return appointment_chains
 
-def generate_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, List[Judge]], 
+def generate_single_move(schedule: Schedule, compatible_judges_dict: Dict[int, List[Judge]], 
                         compatible_rooms_dict: Dict[int, List[Room]]) -> list[Move]:
     """Generate a random valid move"""
     chain_dict = identify_appointment_chains(schedule)
@@ -148,36 +148,44 @@ def generate_compound_move(schedule: Schedule,
                           compatible_judges_dict: Dict[int, List[Judge]], 
                           compatible_rooms_dict: Dict[int, List[Room]],
                           p_j: float = 0.5, p_r: float = 0.5, 
-                          p_d: float = 0.5, p_t: float = 0.5) -> Move:
+                          p_t: float = 0.5, p_d: float = 0.5) -> Move:
     """
     Generate a move that changes multiple aspects of a meeting based on probabilities.
+    Always changes at least two aspects of the meeting.
     
     Args:
         schedule: The current schedule
         compatible_judges_dict: Dict mapping meeting IDs to compatible judges
         compatible_rooms_dict: Dict mapping meeting IDs to compatible rooms
         p_j, p_r, p_d, p_t: Probabilities of changing judge, room, day, timeslot
+    
+    Returns:
+        Move: A move object with AT LEAST two aspects changed
+        
+    Raises:
+        ValueError: If a valid move with at least two changes cannot be created
     """
+    # Validate inputs
+    if not schedule:
+        raise ValueError("No schedule provided")
+        
     chain_dict = identify_appointment_chains(schedule)
     if not chain_dict:
-        print("No appointments found in schedule")
-        return None
+        raise ValueError("No appointments found in schedule")
+    
     if not compatible_judges_dict or not compatible_rooms_dict:
-        print("No compatible judges or rooms found")
-        return None
-    if not schedule:
-        print("No schedule provided")
-        return None
-        
+        raise ValueError("No compatible judges or rooms dictionaries provided")
+    
+    # Select a random meeting
     chosen_meeting_id = random.choice(list(chain_dict.keys()))
     chosen_appointments = chain_dict[chosen_meeting_id]
     
     if not chosen_appointments:
-        print(f"No appointments found for meeting ID {chosen_meeting_id}")
-        return None
+        raise ValueError(f"No appointments found for meeting ID {chosen_meeting_id}")
     
     first_appointment = chosen_appointments[0]
     
+    # Create the base move
     move = Move(
         meeting_id=chosen_meeting_id,
         appointments=chosen_appointments,
@@ -187,58 +195,76 @@ def generate_compound_move(schedule: Schedule,
         old_start_timeslot=first_appointment.timeslot_in_day
     )
     
-    changes_made = False
+    # Identify changeable aspects with their alternatives and probabilities
+    changeable_aspects = []
     
-    # try to change judge
-    if random.random() < p_j:
-        compatible_judges = compatible_judges_dict.get(chosen_meeting_id, [])
-        alternative_judges = [j for j in compatible_judges 
-                            if j.judge_id != first_appointment.judge.judge_id]
-        if alternative_judges:
-            move.new_judge = random.choice(alternative_judges)
-            changes_made = True
-        else:
-            print(f"No alternative compatible judges found for meeting {chosen_meeting_id}")
+    # Check for alternative judges
+    compatible_judges = compatible_judges_dict.get(chosen_meeting_id, [])
+    alternative_judges = [j for j in compatible_judges 
+                        if j.judge_id != first_appointment.judge.judge_id]
+    if alternative_judges:
+        changeable_aspects.append(("judge", alternative_judges, p_j))
     
-    # try to change room
-    if random.random() < p_r:
-        compatible_rooms = compatible_rooms_dict.get(chosen_meeting_id, [])
-        alternative_rooms = [r for r in compatible_rooms 
-                           if r.room_id != first_appointment.room.room_id]
-        if alternative_rooms:
-            move.new_room = random.choice(alternative_rooms)
-            changes_made = True
-        else:
-            print(f"No alternative compatible rooms found for meeting {chosen_meeting_id}")
+    # Check for alternative rooms
+    compatible_rooms = compatible_rooms_dict.get(chosen_meeting_id, [])
+    alternative_rooms = [r for r in compatible_rooms 
+                        if r.room_id != first_appointment.room.room_id]
+    if alternative_rooms:
+        changeable_aspects.append(("room", alternative_rooms, p_r))
     
-    # try to change day
-    if random.random() < p_d:
-        valid_days = [d for d in range(1, schedule.work_days + 1) 
-                    if d != first_appointment.day]
-        if valid_days:
-            move.new_day = random.choice(valid_days)
-            changes_made = True
-        else:
-            print(f"No alternative days found for meeting {chosen_meeting_id}")
+    # Check for alternative days
+    valid_days = [d for d in range(1, schedule.work_days + 1) 
+                if d != first_appointment.day]
+    if valid_days:
+        changeable_aspects.append(("day", valid_days, p_d))
     
-    # try to change timeslot
-    if random.random() < p_t:
-        meeting_length = len(chosen_appointments)
-        max_start_timeslot = schedule.timeslots_per_work_day - meeting_length + 1
-        if max_start_timeslot < 1:
-            max_start_timeslot = 1 # shouldnt happen, but just in case
+    # Check for alternative timeslots
+    meeting_length = len(chosen_appointments)
+    max_start_timeslot = schedule.timeslots_per_work_day - meeting_length + 1
+    valid_timeslots = [t for t in range(1, max_start_timeslot + 1) 
+                        if t != first_appointment.timeslot_in_day]
+    if valid_timeslots:
+        changeable_aspects.append(("timeslot", valid_timeslots, p_t))
+    
+    # Ensure we have at least 2 changeable aspects
+    if len(changeable_aspects) < 2:
+        raise ValueError(f"Meeting {chosen_meeting_id} does not have at least 2 changeable aspects")
+    
+    # Apply probabilities and ensure at least 2 aspects change
+    selected_aspects = []
+    
+    # First pass: Apply probabilities
+    for aspect_name, alternatives, probability in changeable_aspects:
+        if random.random() < probability:
+            selected_aspects.append((aspect_name, alternatives))
+    
+    # Second pass: If we don't have at least 2 aspects, randomly select more
+    if len(selected_aspects) < 2:
+        # Get aspects not already selected
+        remaining_aspects = [(name, alts) for name, alts, _ in changeable_aspects 
+                           if name not in [a[0] for a in selected_aspects]]
         
-        valid_timeslots = [t for t in range(1, max_start_timeslot + 1) 
-                         if t != first_appointment.timeslot_in_day]
-        if valid_timeslots:
-            move.new_start_timeslot = random.choice(valid_timeslots)
-            changes_made = True
-        else:
-            print(f"No alternative timeslots found for meeting {chosen_meeting_id}")
+        # How many more do we need?
+        additional_needed = 2 - len(selected_aspects)
+        
+        # Randomly select additional aspects
+        random.shuffle(remaining_aspects)
+        selected_aspects.extend(remaining_aspects[:additional_needed])
     
-    if not changes_made:
-        print(f"No changes could be made to meeting {chosen_meeting_id}")
-        return None
+    # Final check
+    if len(selected_aspects) < 2:
+        raise ValueError(f"Unable to create a move with at least 2 changes for meeting {chosen_meeting_id}")
+    
+    # Apply the changes
+    for aspect_name, alternatives in selected_aspects:
+        if aspect_name == "judge":
+            move.new_judge = random.choice(alternatives)
+        elif aspect_name == "room":
+            move.new_room = random.choice(alternatives)
+        elif aspect_name == "day":
+            move.new_day = random.choice(alternatives)
+        elif aspect_name == "timeslot":
+            move.new_start_timeslot = random.choice(alternatives)
     
     return move
 
