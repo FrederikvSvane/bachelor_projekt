@@ -268,7 +268,7 @@ def pick_meeting_for_move(schedule: Schedule):
 def generate_list_random_move(schedule: Schedule,
                               compatible_judges_dict: Dict[int, List[Judge]],
                               compatible_rooms_dict: Dict[int, List[Room]],
-                              tabu_list: deque, current_score: int, best_score: int) -> List[Move]:
+                              tabu_list: deque, current_score: int, best_score: int):
     """
     Generates a list of valid, non-Tabu moves of a randomly selected type
     for a randomly selected meeting. Includes validity checks.
@@ -326,8 +326,7 @@ def generate_list_random_move(schedule: Schedule,
                 )
                 is_tabu = check_if_move_is_tabu(potential_move, tabu_list)
                 if not is_tabu:
-                    delta = calculate_delta_score(schedule, potential_move)
-                    valid_moves.append((potential_move, delta))
+                    valid_moves.append((potential_move, 0))
                 else:
                     delta = calculate_delta_score(schedule, potential_move)
                     if current_score + delta < best_score:
@@ -345,8 +344,7 @@ def generate_list_random_move(schedule: Schedule,
                 )
                 is_tabu = check_if_move_is_tabu(potential_move, tabu_list)
                 if not is_tabu:
-                    delta = calculate_delta_score(schedule, potential_move)
-                    valid_moves.append((potential_move, delta))
+                    valid_moves.append((potential_move, 0))
                 else:
                     delta = calculate_delta_score(schedule, potential_move)
                     if current_score + delta < best_score:
@@ -365,8 +363,7 @@ def generate_list_random_move(schedule: Schedule,
             )
             is_tabu = check_if_move_is_tabu(potential_move, tabu_list)
             if not is_tabu:
-                delta = calculate_delta_score(schedule, potential_move)
-                valid_moves.append((potential_move, delta))
+                valid_moves.append((potential_move, 0))
             else:
                 delta = calculate_delta_score(schedule, potential_move)
                 if current_score + delta < best_score:
@@ -384,8 +381,7 @@ def generate_list_random_move(schedule: Schedule,
             )
             is_tabu = check_if_move_is_tabu(potential_move, tabu_list)
             if not is_tabu:
-                delta = calculate_delta_score(schedule, potential_move)
-                valid_moves.append((potential_move, delta))
+                valid_moves.append((potential_move, 0))
             else:
                 delta = calculate_delta_score(schedule, potential_move)
                 if current_score + delta < best_score:
