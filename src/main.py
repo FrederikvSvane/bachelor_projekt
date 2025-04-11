@@ -67,44 +67,44 @@ def main():
 
 
         # ___ main operations ___
-        # initial_schedule.move_all_dayboundary_violations()
-        # initial_schedule.trim_schedule_length_if_possible()
-        # initial_score = calculate_full_score(initial_schedule)
+        initial_schedule.move_all_dayboundary_violations()
+        initial_schedule.trim_schedule_length_if_possible()
+        initial_score = calculate_full_score(initial_schedule)
+        visualize(initial_schedule)
+        
+        final_schedule = run_local_search(initial_schedule)
+
+        final_score = calculate_full_score(final_schedule)
+        visualize(final_schedule)
+        print(f"Initial score: {initial_score}")
+        print(f"Final score: {final_score}")        
+        
         # visualize(initial_schedule)
-        
-        # final_schedule = run_local_search(initial_schedule)
+        # for app in initial_schedule.iter_appointments():
+        #     print(app)
+        # initial_schedule.print_unplanned_meetings()        
 
-        # final_score = calculate_full_score(final_schedule)
-        # visualize(final_schedule)
-        # print(f"Initial score: {initial_score}")
-        # print(f"Final score: {final_score}")        
+        # all_meetings = initial_schedule.get_all_meetings()
         
-        visualize(initial_schedule)
-        for app in initial_schedule.iter_appointments():
-            print(app)
-        initial_schedule.print_unplanned_meetings()        
-
-        all_meetings = initial_schedule.get_all_meetings()
+        # first_meeting = all_meetings[0]
+        # first_meeting_id = first_meeting.meeting_id 
+        # move: Move = generate_delete_move(initial_schedule, first_meeting_id)
+        # print(f"Generated move: {move}")
+        # print(f"Move uses the judge {move.old_judge} and room {move.old_room}")
+        # do_move(move, initial_schedule)
         
-        first_meeting = all_meetings[0]
-        first_meeting_id = first_meeting.meeting_id 
-        move: Move = generate_delete_move(initial_schedule, first_meeting_id)
-        print(f"Generated move: {move}")
-        print(f"Move uses the judge {move.old_judge} and room {move.old_room}")
-        do_move(move, initial_schedule)
+        # visualize(initial_schedule)
+        # for app in initial_schedule.iter_appointments():
+        #     print(app)
+        # initial_schedule.print_unplanned_meetings()        
         
-        visualize(initial_schedule)
-        for app in initial_schedule.iter_appointments():
-            print(app)
-        initial_schedule.print_unplanned_meetings()        
+        # undo_move(move, initial_schedule)
+        # visualize(initial_schedule)
+        # for app in initial_schedule.iter_appointments():
+        #     print(app)
+        # initial_schedule.print_unplanned_meetings()        
         
-        undo_move(move, initial_schedule)
-        visualize(initial_schedule)
-        for app in initial_schedule.iter_appointments():
-            print(app)
-        initial_schedule.print_unplanned_meetings()        
-        
-        final_schedule = initial_schedule
+        # final_schedule = initial_schedule
         # _______________________
 
 

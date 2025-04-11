@@ -7,26 +7,14 @@ from typing import Dict, List
 from collections import deque
 
 from src.base_model.schedule import Schedule
+from src.base_model.judge import Judge
+from src.base_model.room import Room
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.move import do_move, undo_move, Move
 from src.local_search.move_generator import generate_random_move, generate_list_random_move
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
 
-def calculate_alpha(K: int, start_temperature: float, end_temperature: float) -> float:
-    """
-    Calculate the cooling rate alpha for simulated annealing.
-    
-    Args:
-        K: Number of temperature steps
-        start_temperature: Starting temperature
-        end_temperature: Ending temperature
-        
-    Returns:
-        Alpha cooling rate
-    """
-    return (end_temperature / start_temperature) ** (1 / (K - 1))
-
-def check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
+def _check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
     """
     Checks if a move is in the tabu list
     """
@@ -55,7 +43,7 @@ def check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
 
     return False
 
-def add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
+def _add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
     """
     Adds the reverse of the accepted move to the tabu list.
     """
@@ -79,7 +67,7 @@ def add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
          # print(f"DEBUG: Adding Tabu: {tabu_item}") # Optional debug print
          
 
-def calculate_moves_in_parallel(pool, schedule: Schedule, moves_with_gen_int: List[tuple[Move, int]]) -> List[tuple[Move, int]]:
+def _calculate_moves_in_parallel(pool, schedule: Schedule, moves_with_gen_int: List[tuple[Move, int]]) -> List[tuple[Move, int]]:
     """
     Calculate the delta scores for a list of moves in parallel
     """
@@ -98,18 +86,20 @@ def calculate_moves_in_parallel(pool, schedule: Schedule, moves_with_gen_int: Li
     return results_combined
     
     
-def find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
+def _find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
+    n_cores = os.cpu_count()
+    print(f"Using {n_cores} CPU cores for parallel processing")
     moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
     
     if not moves:
         return None, 0
 
-    results = calculate_moves_in_parallel(pool, schedule, moves)
+    results = _calculate_moves_in_parallel(pool, schedule, moves)
     results.sort(key=lambda x: x[1])  # Sort by delta score
     
     return results[0]
 
-def find_best_move_sequential(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
+def _find_best_move_sequential(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
     """
     Find the best move by generating random moves and calculating their delta scores.
     """
@@ -128,9 +118,9 @@ def find_best_move_sequential(schedule, compatible_judges, compatible_rooms, tab
     sequential_results.sort(key=lambda x: x[1])  # Sort by delta score
     return sequential_results[0]
         
-def find_best_move_single(schedule, compatible_judges, compatible_rooms) -> tuple[Move, int]:
+def _find_move_and_delta(schedule: Schedule, compatible_judges: list[Judge], compatible_rooms: list[Room]) -> tuple[Move, int]:
     """
-    Find the best move by generating random moves and calculating their delta scores.
+    Generate a move and calculate its delta score.
     """
     move = generate_random_move(schedule, compatible_judges, compatible_rooms)
     
@@ -141,12 +131,20 @@ def find_best_move_single(schedule, compatible_judges, compatible_rooms) -> tupl
     
     return move, delta_score
 
-def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, end_temp: float) -> Schedule:
+def _calculate_cooling_rate(K: int, start_temperature: float, end_temperature: float) -> float:
     """
-    Perform simulated annealing optimization on the given schedule.
+    Calculate the cooling rate alpha for simulated annealing.
+    
+    Args:
+        K: Number of temperature steps
+        start_temperature: Starting temperature
+        end_temperature: Ending temperature
     """
-    iterations_per_temperature = n * (n - 1) // 2
-    alpha = calculate_alpha(K, start_temp, end_temp)
+    return (end_temperature / start_temperature) ** (1 / (K - 1))
+
+
+def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, total_outer_iterations: int, start_temp: float, end_temp: float) -> Schedule:
+    cooling_rate = _calculate_cooling_rate(total_outer_iterations, start_temp, end_temp)
 
     meetings = schedule.get_all_meetings()
     judges = schedule.get_all_judges()
@@ -155,124 +153,79 @@ def simulated_annealing(schedule: Schedule, n: int, K: int, start_temp: float, e
     compatible_judges = calculate_compatible_judges(meetings, judges)
     compatible_rooms = calculate_compatible_rooms(meetings, rooms)
     
-    # Initial full score calculation
     current_score = calculate_full_score(schedule)
     best_score = current_score
+    current_temperature = start_temp
     best_schedule = deepcopy(schedule)
+    
+    full_temp_range = start_temp - end_temp
+    high_temp_threshold = full_temp_range * 0.6 # from 60% to 100% of the temperature range
+    medium_temp_threshold = full_temp_range * 0.1 # from 10% to 60% of the temperature range
+    low_temp_threshold = full_temp_range * 0 # from 0% to 10% of the temperature range 
+    
+    plateau_count = 0
     
     tabu_list = deque(maxlen=20)
     
-    temperature = start_temp
-    total_moves = 0
-    accepted_moves = 0
-    
-    n_cores = os.cpu_count()
-    print(f"Using {n_cores} CPU cores for parallel processing")
-    
-
-     
     #with multiprocessing.Pool(processes=n_cores) as pool:
     if True:
-        for k in range(K):
-            iteration_accepted = 0
-            
+        for k in range(total_outer_iterations):
+            moves_explored_this_iteration = 0
+            moves_accepted_this_iteration = 0
+            best_score_improved_this_iteration = False
+            best_score_this_iteration = current_score
+
             for i in range(iterations_per_temperature):
-                
-                #best_move, best_delta = find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
-                #best_move, best_delta = find_best_move_sequential(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
-                best_move, best_delta = find_best_move_single(schedule, compatible_judges, compatible_rooms)
+
+                #best_move, best_delta = _find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+                #best_move, best_delta = _find_best_move_sequential(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+                best_move, best_delta = _find_move_and_delta(schedule, compatible_judges, compatible_rooms)
+                moves_explored_this_iteration += 1
                 
                 if best_move is None:
+                    print("No valid moves found, skipping iteration")
                     continue
                 
-                do_move(best_move, schedule) # so this actually modifies the schedule in place
-                total_moves += 1
+                do_move(best_move, schedule) 
                 
-                # Accept or reject move
-                if best_delta < 0 or random.random() < math.exp(-best_delta / temperature):
-                    # Accept move
-                    #print(f"Accepted move: {best_move} with delta: {best_delta}")
+                if best_delta < 0 or random.random() < math.exp(-best_delta / current_temperature): # accept move
+                    moves_accepted_this_iteration += 1
                     current_score += best_delta
-                    iteration_accepted += 1
-                    accepted_moves += 1
-                    add_move_to_tabu_list(best_move, tabu_list)
+                    best_score_this_iteration = min(best_score_this_iteration, current_score) # just for printing. remove for performance
+                    _add_move_to_tabu_list(best_move, tabu_list)
                     
-                    # Update best solution if needed
                     if current_score < best_score:
                         best_score = current_score
                         best_schedule = deepcopy(schedule)
+                        plateau_count = 0
+                        best_score_improved_this_iteration = True
                         
-                else:
-                    # Reject move - undo it
+                else: # reject move
                     undo_move(best_move, schedule)
             
-            temperature *= alpha
-            print(f"Iteration {k+1}/{K} - Temp: {temperature:.2f}, "
-                f"Accepted: {iteration_accepted}/{iterations_per_temperature}, "
-                f"Current: {current_score}, Best: {best_score}")
+            current_temperature *= cooling_rate
+            if not best_score_improved_this_iteration:
+                plateau_count += 1
+                if plateau_count > 5:
+                    print("Plateau detected!")
+                    
+                
+            if moves_accepted_this_iteration == 0: # no progress in this iteration => consider stopping
+                print("No moves accepted for this temperature. Consider terminating.")
+                continue
             
-            # Early termination if no progress
-            if iteration_accepted == 0:
-                print("Early termination: No moves accepted in this iteration")
-                break
-        
-        print(f"Search completed: {total_moves} moves attempted, {accepted_moves} accepted")
+            print(f"Iteration {k+1}/{total_outer_iterations} - Temp: {current_temperature:.2f}, "
+                f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, "
+                f"Current: {best_score_this_iteration}, Best: {best_score}")
+                    
     return best_schedule
 
 def run_local_search(schedule: Schedule) -> Schedule:
-    # Parameter ranges to test
-    start_temperatures = [300]
-    end_temperatures = [10]
-    iteration_counts = [80]
+    iterations_per_temperature = 5000
+    total_outer_iterations = 100
+    start_temp = 300
+    end_temp = 1
     
-    # Track results
-    results = []
-    best_score = float('inf')
-    best_schedule = None
-    best_params = None
+    optimized_schedule = simulated_annealing(schedule, iterations_per_temperature, total_outer_iterations, start_temp, end_temp)
     
-    total_combinations = len(start_temperatures) * len(end_temperatures) * len(iteration_counts)
-    
-    print(f"Testing {total_combinations} parameter combinations...\n")
-    print(f"{'Start Temp':^10} | {'End Temp':^8} | {'K':^4} | {'Score':^6}")
-    print("-" * 35)
-    
-    # best_schedule = simulated_annealing(
-    #     initial_schedule,
-    #     iteration_counts[0],
-    #     100,  # Number of temperature steps
-    #     start_temperatures[0],
-    #     end_temperatures[0]
-    # )
-    
-    for start_temp in start_temperatures:
-        for end_temp in end_temperatures:
-            for n in iteration_counts:
-                test_schedule = deepcopy(schedule)
-                
-                optimized_schedule = simulated_annealing(test_schedule, n, 100, start_temp, end_temp)
-                
-                score = calculate_full_score(optimized_schedule)
-                
-                print(f"{start_temp:^10} | {end_temp:^8} | {n:^4} | {score:^6}")
-                result = {
-                    "start_temp": start_temp,
-                    "end_temp": end_temp,
-                    "n": n,
-                    "score": score,
-                    "schedule": optimized_schedule
-                }
-                results.append(result)
-                
-                # Update best result if better
-                if score < best_score:
-                    best_score = score
-                    best_schedule = optimized_schedule
-                    best_params = (start_temp, end_temp, n)
-    
-    # Print summary
-    print("\n==== PARAMETER TESTING SUMMARY ====")
-    print(f"Best score: {best_score}")
-    print(f"Best parameters: start_temp={best_params[0]}, end_temp={best_params[1]}, n={best_params[2]}")
-    
-    return best_schedule
+    return optimized_schedule

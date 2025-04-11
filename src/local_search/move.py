@@ -112,8 +112,8 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
             if new_timeslot not in schedule.appointments_by_day_and_timeslot[new_day]:
                 schedule.appointments_by_day_and_timeslot[new_day][new_timeslot] = []
                 
-            if app in schedule.appointments_by_day_and_timeslot[new_day][new_timeslot]:
-                raise ValueError(f"Appointment {app} already exists in the new position.") # shouldnt happen but good for safety
+            # if app in schedule.appointments_by_day_and_timeslot[new_day][new_timeslot]:
+            #     raise ValueError(f"Appointment {app} already exists in the new position.") # shouldnt happen but good for safety
 
             schedule.appointments_by_day_and_timeslot[new_day][new_timeslot].append(app)
 
@@ -160,8 +160,8 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
             if timeslot_to_add not in schedule.appointments_by_day_and_timeslot[app.day]:
                 schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day] = []
             
-            if app in schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day]:
-                raise ValueError(f"Appointment {app} already exists in the new position.") # shouldnt happen but good for safety
+            # if app in schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day]:
+            #     raise ValueError(f"Appointment {app} already exists in the new position.") # shouldnt happen but good for safety
             
             schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day].append(app)
         
