@@ -5,12 +5,12 @@ from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.meeting import Meeting
 from src.base_model.appointment import Appointment
-from src.graph_construction.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, construct_conflict_graph
+from src.construction.graph.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, construct_conflict_graph
 
-from src.graph_construction.matching import (
+from src.construction.graph.matching import (
     assign_cases_to_judges, assign_meeting_judge_pairs_to_rooms, 
 )
-from src.graph_construction.coloring import DSatur
+from src.construction.graph.coloring import DSatur
 
 
 class Schedule:
@@ -140,6 +140,16 @@ class Schedule:
     def get_all_unplanned_meetings(self) -> list[Meeting]:
         return self.unplanned_meetings    
     
+    def get_all_planned_meetings(self) -> list[Meeting]:
+        meetings = []
+        meeting_ids = set()
+        
+        for app in self.iter_appointments():
+            if app.meeting.meeting_id not in meeting_ids:
+                meeting_ids.add(app.meeting.meeting_id)
+                meetings.append(app.meeting)
+        return meetings
+    
     def print_unplanned_meetings(self) -> None:
         if not self.unplanned_meetings:
             print("No unplanned meetings.")
@@ -177,16 +187,6 @@ class Schedule:
 
     def get_all_rooms(self) -> list:
         return self.all_rooms
-
-    def get_all_meetings(self) -> list:
-        meetings = []
-        meeting_ids = set()
-        
-        for app in self.iter_appointments():
-            if app.meeting.meeting_id not in meeting_ids:
-                meeting_ids.add(app.meeting.meeting_id)
-                meetings.append(app.meeting)
-        return meetings
 
     def get_all_cases(self) -> list:
         cases = []

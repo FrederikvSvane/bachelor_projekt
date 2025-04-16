@@ -11,7 +11,7 @@ from src.local_search.simulated_annealing import run_local_search
 from src.base_model.compatibility_checks import initialize_compatibility_matricies
 from src.local_search.move import Move, do_move, undo_move
 from src.local_search.move_generator import generate_delete_move, generate_compound_move
-from src.heuristic_construction.linear_assignment import generate_schedule
+from src.construction.heuristic.linear_assignment import generate_schedule
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -58,7 +58,7 @@ def main():
         # Choose initial schedule construction method
         if args.method == 'ilp':
             print("Using ILP-based scheduling method")
-            from src.ilp_construction.ilp_solver import generate_schedule_using_ilp
+            from src.construction.ilp import generate_schedule_using_ilp
             initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data)
         elif args.method == 'graph':
             print("Using graph-based scheduling method")
@@ -100,7 +100,7 @@ def main():
         #     print(app)
         # initial_schedule.print_unplanned_meetings()        
 
-        # all_meetings = initial_schedule.get_all_meetings()
+        # all_meetings = initial_schedule.get_all_planned_meetings()
         
         # first_meeting = all_meetings[0]
         # first_meeting_id = first_meeting.meeting_id 

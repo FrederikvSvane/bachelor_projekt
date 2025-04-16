@@ -1,5 +1,5 @@
 from typing import List, Set
-from src.graph_construction.graph import UndirectedGraph, Node, MeetingJudgeRoomNode
+from src.construction.graph.graph import UndirectedGraph, Node, MeetingJudgeRoomNode
 
 def get_saturation_degree(graph: UndirectedGraph, vertex: int) -> int:
     """

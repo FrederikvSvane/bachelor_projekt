@@ -9,7 +9,7 @@ from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.attribute_enum import Attribute
 from src.base_model.compatibility_checks import case_judge_compatible, case_room_compatible, judge_room_compatible
-from src.graph_construction.graph import MeetingJudgeNode
+from src.construction.graph.graph import MeetingJudgeNode
 from src.base_model.meeting import Meeting
 
 class TruncatedNormalDistribution:

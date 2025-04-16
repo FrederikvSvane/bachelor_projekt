@@ -144,6 +144,28 @@ def generate_delete_move(schedule: Schedule, meeting_id: int) -> Move:
     
     return move
 
+def generate_insert_move(schedule: Schedule, meeting: Meeting, judge: Judge, room: Room, day: int, start_timeslot: int) -> Move:
+    if meeting not in schedule.get_all_unplanned_meetings():
+        raise ValueError("Meeting not found in unplanned meetings for schedule. Will not generate insert move.")
+    if judge is None or room is None or day is None or start_timeslot is None:
+        raise ValueError("Judge, room, day, and start_timeslot cannot be None. Will not generate insert move.")
+
+    move = Move(
+        meeting_id=meeting.meeting_id,
+        appointments=[],  # Will be populated in do_move
+        old_judge=None,   # Not needed for insert
+        new_judge=judge,
+        old_room=None,    # Not needed for insert
+        new_room=room,
+        old_day=None,     # Not needed for insert
+        new_day=day,
+        old_start_timeslot=None,  # Not needed for insert
+        new_start_timeslot=start_timeslot,
+        is_insert_move=True
+    )
+    
+    return move
+
 def generate_compound_move(schedule: Schedule, 
                           compatible_judges_dict: Dict[int, List[Judge]], 
                           compatible_rooms_dict: Dict[int, List[Room]],

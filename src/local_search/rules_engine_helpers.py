@@ -1,8 +1,7 @@
 from src.base_model.schedule import Schedule
 from src.local_search.move import Move
-from src.base_model.appointment import Appointment
+from src.base_model.appointment import Appointment, print_appointments
 from collections import defaultdict
-from sys import exit
 
 def get_affected_pairs_for_room_stability(schedule: Schedule, move: Move):
     affected_day_judge_pairs = set()
@@ -17,6 +16,9 @@ def get_affected_pairs_for_room_stability(schedule: Schedule, move: Move):
     
     if move.new_day is not None and move.new_judge is not None:
         affected_day_judge_pairs.add((move.new_day, move.new_judge.judge_id))
+    
+    if not move.appointments:
+        return affected_day_judge_pairs
     
     is_overlapping_day_boundary = move.appointments[0].day != move.appointments[-1].day
     
@@ -67,20 +69,23 @@ def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id
     
 def get_affected_judge_day_pairs(schedule: Schedule, move: Move) -> set:
     affected_pairs = set()
-    
-    affected_pairs.add((move.old_day, move.old_judge.judge_id))
-    if move.new_day is not None:
-        affected_pairs.add((move.new_day, move.old_judge.judge_id))
-    
-    if move.new_judge is not None:
-        affected_pairs.add((move.old_day, move.new_judge.judge_id))
+
+    if move.is_insert_move:
+        affected_pairs.add((move.new_day, move.new_judge.judge_id))
+    else:
+        affected_pairs.add((move.old_day, move.old_judge.judge_id))
         if move.new_day is not None:
-            affected_pairs.add((move.new_day, move.new_judge.judge_id))
-    
-    last_day = schedule.work_days
-    if move.old_day == last_day or (move.new_day is not None and move.new_day >= last_day):
-        for judge in schedule.get_all_judges():
-            affected_pairs.add((last_day, judge.judge_id))
+            affected_pairs.add((move.new_day, move.old_judge.judge_id))
+
+        if move.new_judge is not None:
+            affected_pairs.add((move.old_day, move.new_judge.judge_id))
+            if move.new_day is not None:
+                affected_pairs.add((move.new_day, move.new_judge.judge_id))
+
+        last_day = schedule.work_days
+        if move.old_day == last_day or (move.new_day is not None and move.new_day >= last_day):
+            for judge in schedule.get_all_judges():
+                affected_pairs.add((last_day, judge.judge_id))
             
     return affected_pairs
 
@@ -116,11 +121,9 @@ def get_appointments_in_timeslot_range_in_day(schedule: Schedule, day, start_tim
     Optionally exclude appointments for a specific meeting_id.
     """
     if start_timeslot < 1 or start_timeslot > schedule.timeslots_per_work_day:
-        print(f"Invalid start timeslot {start_timeslot} for day {day}.")
-        exit()
+        raise ValueError(f"Invalid start timeslot {start_timeslot} for day {day}.")
     if end_timeslot < 1 or end_timeslot > schedule.timeslots_per_work_day:
-        print(f"Invalid end timeslot {end_timeslot} for day {day}.")
-        exit()
+        raise ValueError(f"Invalid end timeslot {end_timeslot} for day {day}.")
     
     if day not in schedule.appointments_by_day_and_timeslot:
         return []
@@ -167,10 +170,10 @@ def get_appointments_in_timeslot_range(schedule: Schedule, start_day, start_slot
 
 def get_affected_day_timeslot_pairs_for_overbookings(schedule: Schedule, move: Move) -> set:
     affected_pairs = set()
-    
     for app in move.appointments:
-        affected_pairs.add((app.day, app.timeslot_in_day))
+            affected_pairs.add((app.day, app.timeslot_in_day))
     
+    # Day boundary overlap logic
     if move.new_day is not None or move.new_start_timeslot is not None:
         start_day = move.new_day if move.new_day is not None else move.old_day
         start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
@@ -226,6 +229,54 @@ def calculate_gaps_between_appointments(schedule: Schedule, judge_id: int, speci
     return total_gaps
                 
                 
+def populate_insert_move_appointments(schedule: Schedule, move: Move) -> None:
+    """
+    Populates an insert move with temporary appointments and sets necessary fields
+    WITHOUT MODIFYING the schedule.
     
+    Args:
+        schedule: The current schedule
+        move: The insert move to populate
+
+    """
+    # Find the meeting in unplanned meetings (for reference only)
+    meeting = None
+    for m in schedule.get_all_unplanned_meetings():
+        if m.meeting_id == move.meeting_id:
+            meeting = m
+            break
+            
+    if meeting is None:
+        raise ValueError(f"Meeting {move.meeting_id} not found in unplanned meetings")
+        
+    # Create temporary appointments (not added to schedule)
+    meeting_duration_minutes = meeting.meeting_duration
+    timeslots_needed = (meeting_duration_minutes // schedule.granularity) + (1 if meeting_duration_minutes % schedule.granularity > 0 else 0)
     
+    if timeslots_needed > schedule.timeslots_per_work_day or timeslots_needed <= 0:
+        raise ValueError(f"Meeting {meeting.meeting_id} requires {timeslots_needed} timeslots, which is invalid.")
+        
     
+    temp_appointments = []
+    for i in range(timeslots_needed):
+        global_timeslot = ((move.new_day - 1) * schedule.timeslots_per_work_day) + move.new_start_timeslot + i
+        day = ((global_timeslot - 1) // schedule.timeslots_per_work_day) + 1
+        timeslot_in_day = ((global_timeslot - 1) % schedule.timeslots_per_work_day) + 1
+        
+        appointment = Appointment(
+            meeting=meeting,
+            judge=move.new_judge,
+            room=move.new_room,
+            day=day,
+            timeslot_in_day=timeslot_in_day
+        )
+        
+        temp_appointments.append(appointment)
+    
+    move.appointments = temp_appointments
+    
+    # Set dummy old values to pass validation
+    move.old_judge = move.new_judge
+    move.old_room = move.new_room
+    move.old_day = move.new_day
+    move.old_start_timeslot = move.new_start_timeslot

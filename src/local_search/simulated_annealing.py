@@ -14,6 +14,7 @@ from src.base_model.compatibility_checks import calculate_compatible_judges, cal
 from src.local_search.move import do_move, undo_move, Move
 from src.local_search.move_generator import generate_single_move, generate_list_random_move, generate_compound_move, generate_delete_move
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
+from src.local_search.ruin_and_recreate import apply_ruin_and_recreate, RRStrategy
 from src.util.schedule_visualizer import visualize
 
 def _check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
@@ -148,7 +149,7 @@ def _calculate_cooling_rate(K: int, start_temperature: float, end_temperature: f
 def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1) -> Schedule:
     start_time = time.time()
     
-    meetings = schedule.get_all_meetings()
+    meetings = schedule.get_all_planned_meetings()
     judges = schedule.get_all_judges()
     rooms = schedule.get_all_rooms() 
     
@@ -258,17 +259,32 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         
         if current_iteration % 50 == 0:
             visualize(best_schedule)
-                
+
         # Print progress information
         print(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
               f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}"
-              f"{' - Plateau detected!' if plateau_count > 5 else ''}")
+              f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
+
+        
+        if plateau_count >= 5:
+            print("\n \n _______________________________________________________________ \n Large plateau detected! Applying Ruin and Recreate... \n _______________________________________________________________ \n")
+            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule, compatible_judges, compatible_rooms, RRStrategy.RANDOM_MEETINGS)
+            if r_r_success:
+                print(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
+                current_score = calculate_full_score(best_schedule)
+                tabu_list.clear()
+                plateau_count = 0
+
+                if current_score < best_score:
+                    best_score = current_score
+                    best_schedule = deepcopy(best_schedule)
+                    print(f"New best score found after R&R: {best_score}")
                     
     return best_schedule
 
 def run_local_search(schedule: Schedule) -> Schedule:
     iterations_per_temperature = 5000
-    max_time_seconds = 60 * 5  
+    max_time_seconds = 30  
     start_temp = 300
     end_temp = 10
     

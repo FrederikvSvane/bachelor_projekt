@@ -3,7 +3,7 @@ from typing import List, Optional
 from collections import deque
 from warnings import warn
 
-from src.graph_construction.graph import DirectedGraph, JudgeNode, MeetingNode, RoomNode, MeetingJudgeNode, MeetingJudgeRoomNode
+from src.construction.graph.graph import DirectedGraph, JudgeNode, MeetingNode, RoomNode, MeetingJudgeNode, MeetingJudgeRoomNode
 
 class AugmentingPath:
     """Represents an augmenting path in the Ford-Fulkerson algorithm."""
