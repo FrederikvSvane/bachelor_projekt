@@ -3,6 +3,8 @@ from sys import exit
 
 from src.base_model.schedule import Schedule
 from src.base_model.appointment import Appointment
+from src.base_model.meeting import Meeting
+from src.base_model.case import Case
 from src.base_model.compatibility_checks import check_case_judge_compatibility, check_case_room_compatibility, check_judge_room_compatibility
 from src.local_search.move import Move, do_move, undo_move
 from src.local_search.rules_engine_helpers import *
@@ -22,13 +24,15 @@ def calculate_full_score(schedule: Schedule) -> int:
     hard_violations += nr6_virtual_room_must_have_virtual_meeting_full(schedule)
     hard_violations += nr8_judge_skillmatch_full(schedule)
     hard_violations += nr14_virtual_case_has_virtual_judge_full(schedule)    
-    
     # Medium
     medm_violations = 0
     medm_violations += nr18_unused_timegrain_full(schedule)
 
     # Soft
     soft_violations = 0
+    soft_violations += nr19_case_has_specific_judge_full(schedule)
+    soft_violations += nr20_max_weekly_coverage_full(schedule)
+    soft_violations += nr21_all_meetings_planned_for_case_full(schedule)
     soft_violations += nr29_room_stability_per_day_full(schedule)
     soft_violations += nr31_distance_between_meetings_full(schedule)
 
@@ -65,6 +69,9 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
 
     # Soft rules
     soft_violations = 0    
+    soft_violations += nr19_case_has_specific_judge_delta(schedule, move)
+    soft_violations += nr20_max_weekly_coverage_delta(schedule, move)
+    soft_violations += nr21_all_meetings_planned_for_case_delta(schedule, move)
     soft_violations += nr29_room_stability_per_day_delta(schedule, move)
     soft_violations += nr31_distance_between_meetings_delta(schedule, move)
 
@@ -337,32 +344,149 @@ def nr18_unused_timegrain_delta(schedule: Schedule, move: Move):
 def nr19_case_has_specific_judge_full(schedule: Schedule):
     offset = 0
     step = 1
-    pass
+    violations = 0
+    cases: list[Case] = schedule.get_all_cases()
+
+    for case in cases:
+        case_meetings: list[Meeting] = case.meetings
+        if not case_meetings or len(case_meetings) == 1:  # Skip cases with no/single meetings
+            continue
+        
+        # Collect all unique judges for this case
+        judges_set = set()
+        for meeting in case_meetings:
+            judges_set.add(meeting.judge)
+        
+        # If more than one judge, add violations
+        if len(judges_set) > 1:
+            violations += len(judges_set) - 1  # Count each extra judge as a violation
+
+    return (offset + step * violations) 
 
 def nr19_case_has_specific_judge_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
-    pass
 
-def nr20_max_weekly_coverage_full(schedule: Schedule):
+    if move.new_judge is None:
+        return 0
+
+    affected_case: Case = move.appointments[0].meeting.case
+    case_meetings: list[Meeting] = affected_case.meetings
+
+    if not case_meetings or len(case_meetings) == 1:
+        return 0
+    
+    # Before move: collect unique judges
+    before_judges = set()
+    for meeting in case_meetings:
+        before_judges.add(meeting.judge)
+    before_violations = len(before_judges) - 1 if len(before_judges) > 1 else 0
+
+    # Apply move
+    do_move(move, schedule)
+    
+    # After move: collect unique judges
+    after_judges = set()
+    for meeting in case_meetings:
+        after_judges.add(meeting.judge)
+    after_violations = len(after_judges) - 1 if len(after_judges) > 1 else 0
+    
+    # Restore original state
+    undo_move(move, schedule)
+
+    return (offset + step * (after_violations - before_violations))
+
+import math
+
+def nr20_max_weekly_coverage_full(schedule: Schedule, max_percentage: float = 0.8):
+    """
+    Calculate violations for maximum weekly coverage rule.
+    A judge should not be scheduled for more than max_percentage of available timeslots in a week.
+    Violations are counted as the percentage points exceeding the maximum.
+    """
     offset = 0
     step = 1
-    pass
+    violations = 0
+    
+    # Get all judge-week pairs
+    week_judge_pairs = get_week_judge_pairs(schedule)
+    
+    for judge_id, week_number in week_judge_pairs:
+        occupied, total = count_weekly_coverage_for_judge_week(schedule, judge_id, week_number)
+        
+        if total > 0:
+            coverage_percentage = occupied / total
+            if coverage_percentage > max_percentage:
+                # Calculate percentage points over the limit
+                excess_percentage = coverage_percentage - max_percentage
+                # Convert to percentage points (0-100 scale) and round up
+                excess_points = math.ceil(excess_percentage * 100)
+                violations += excess_points
+    
+    return offset + step * violations
 
-def nr20_max_weekly_coverage_delta(schedule: Schedule, move: Move):
+def nr20_max_weekly_coverage_delta(schedule: Schedule, move: Move, max_percentage: float = 0.8):
+    """
+    Calculate delta for maximum weekly coverage rule when making a move.
+    Violations are counted as the percentage points exceeding the maximum.
+    """
     offset = 0
     step = 1
-    pass
+    
+    if move.new_day is None and move.new_judge is None and move.new_start_timeslot is None:
+        return 0  # No change in day or judge, so no impact on weekly coverage
+    
+    # Get affected judge-week pairs
+    affected_week_judge_pairs = get_affected_week_judge_pairs(schedule, move)
+    
+    # Calculate violations before move
+    before_violations = 0
+    for judge_id, week_number in affected_week_judge_pairs:
+        occupied, total = count_weekly_coverage_for_judge_week(schedule, judge_id, week_number)
+        if total > 0:
+            coverage_percentage = occupied / total
+            if coverage_percentage > max_percentage:
+                excess_percentage = coverage_percentage - max_percentage
+                excess_points = math.ceil(excess_percentage * 100)
+                before_violations += excess_points
+    
+    # Apply move
+    do_move(move, schedule)
+    
+    # Calculate violations after move
+    after_violations = 0
+    for judge_id, week_number in affected_week_judge_pairs:
+        occupied, total = count_weekly_coverage_for_judge_week(schedule, judge_id, week_number)
+        if total > 0:
+            coverage_percentage = occupied / total
+            if coverage_percentage > max_percentage:
+                excess_percentage = coverage_percentage - max_percentage
+                excess_points = math.ceil(excess_percentage * 100)
+                after_violations += excess_points
+    
+    # Undo move
+    undo_move(move, schedule)
+    
+    return offset + step * (after_violations - before_violations)
 
-def nr21_all_meetings_planned_for_case_full(schedule: Schedule, move: Move):
+def nr21_all_meetings_planned_for_case_full(schedule: Schedule):
     offset = 0
     step = 1
-    pass
+    unplanned_meetings = schedule.get_all_unplanned_meetings()
+    return offset + step * len(unplanned_meetings)
 
 def nr21_all_meetings_planned_for_case_delta(schedule: Schedule, move: Move):
+
+    if move.new_day is None and move.new_judge is None and move.new_start_timeslot is None:
+        return 0
     offset = 0
     step = 1
-    pass
+    if move.is_insert_move:
+        return -(offset + step)  # Negative because we're reducing violations
+    elif move.is_delete_move:
+        return offset + step
+    else:
+        return 0 
 
 def nr22_case_meetings_too_sparsely_planned_full(schedule: Schedule):
     offset = 0
@@ -374,7 +498,6 @@ def nr22_case_meetings_too_sparsely_planned_delta(schedule: Schedule, move: Move
     step = 1
     pass
 
-# ...
 
 def nr25_room_missing_video_full(schedule: Schedule):
     offset = 0

@@ -8,7 +8,7 @@ class Move:
                  old_room=None, new_room=None,
                  old_day=None, new_day=None,
                  old_start_timeslot=None, new_start_timeslot=None,
-                 is_delete_move=False):
+                 is_delete_move=False, is_insert_move=False):
         self.meeting_id = meeting_id
         self.appointments = appointments  # List of affected appointments
         self.old_judge = old_judge
@@ -20,6 +20,7 @@ class Move:
         self.old_start_timeslot = old_start_timeslot  # 1-indexed timeslot within day
         self.new_start_timeslot = new_start_timeslot  # 1-indexed timeslot within day
         self.is_delete_move = is_delete_move
+        self.is_insert_move = is_insert_move
         self.is_applied = False
 
     def __str__(self):

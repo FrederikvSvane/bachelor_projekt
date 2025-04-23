@@ -22,3 +22,6 @@ class Judge:
                 self.characteristics == other.characteristics and
                 self.case_requirements == other.case_requirements and
                 self.room_requirements == other.room_requirements)
+    
+    def __hash__(self):
+        return hash(self.judge_id)
