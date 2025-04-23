@@ -3,7 +3,7 @@ from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.meeting import Meeting
 from src.local_search.move import Move, do_move, undo_move
-from src.local_search.move_generator import generate_delete_move, generate_insert_move
+from src.local_search.move_generator import generate_specific_delete_move, generate_specific_insert_move
 from src.local_search.rules_engine import calculate_delta_score
 import random
 from enum import Enum
@@ -117,7 +117,7 @@ def _random_ruin(schedule: Schedule, percentage: int) -> int:
     meetings_to_remove = random.sample(meetings, min(num_to_remove, len(meetings)))
     
     for meeting in meetings_to_remove:
-        move = generate_delete_move(schedule, meeting.meeting_id)
+        move = generate_specific_delete_move(schedule, meeting.meeting_id)
         do_move(move, schedule)
     
     return len(meetings_to_remove)
@@ -201,7 +201,7 @@ def _related_ruin(schedule: Schedule, resource_type: str,
     to_remove = random.sample(related_meetings, min(num_to_remove, len(related_meetings)))
     
     for meeting in to_remove:
-        move = generate_delete_move(schedule, meeting.meeting_id)
+        move = generate_specific_delete_move(schedule, meeting.meeting_id)
         do_move(move, schedule)
     
     return len(to_remove)
@@ -247,7 +247,7 @@ def _greedy_insert(schedule: Schedule, compatible_judges_dict, compatible_rooms_
                     
                     for start_time in range(1, max_start + 1):
                         # Create a temporary insertion move
-                        temp_move = generate_insert_move(
+                        temp_move = generate_specific_insert_move(
                             schedule=schedule,
                             meeting=meeting,
                             judge=judge,
@@ -273,7 +273,7 @@ def _greedy_insert(schedule: Schedule, compatible_judges_dict, compatible_rooms_
         # Insert at best position if found
         if best_position:
             # Create and apply insertion move
-            insertion_move = generate_insert_move(
+            insertion_move = generate_specific_insert_move(
                 schedule=schedule,
                 meeting=meeting,
                 judge=best_judge,

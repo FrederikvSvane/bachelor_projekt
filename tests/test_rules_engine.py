@@ -3,16 +3,18 @@ import os
 import time
 import itertools
 import multiprocessing
+from typing import Callable, List, Tuple, Optional
 from src.base_model.appointment import Appointment
 from src.base_model.schedule import Schedule, generate_schedule_using_double_flow
 from src.local_search.move import Move, do_move, undo_move
 from src.util.schedule_visualizer import visualize
 from copy import deepcopy
 from src.local_search.rules_engine import *
+import random
 
 from src.util.data_generator import generate_test_data_parsed
 from src.base_model.compatibility_checks import initialize_compatibility_matricies, calculate_compatible_judges, calculate_compatible_rooms
-from src.local_search.move_generator import generate_single_move, generate_list_random_move
+from src.local_search.move_generator import generate_single_random_move, generate_list_of_random_moves, generate_specific_delete_move, generate_specific_insert_move, generate_compound_move, generate_random_insert_move, generate_random_delete_move
 from src.local_search.simulated_annealing import _calculate_moves_in_parallel
 
 
@@ -40,6 +42,18 @@ class TestRulesEngine(unittest.TestCase):
         self.rooms = self.schedule.get_all_rooms() 
         self.compatible_judges = calculate_compatible_judges(self.meetings, self.judges)
         self.compatible_rooms = calculate_compatible_rooms(self.meetings, self.rooms)
+        
+        self.rule_functions = [
+            (nr1_overbooked_room_in_timeslot_delta, nr1_overbooked_room_in_timeslot_full),
+            (nr2_overbooked_judge_in_timeslot_delta, nr2_overbooked_judge_in_timeslot_full),
+            (nr6_virtual_room_must_have_virtual_meeting_delta, nr6_virtual_room_must_have_virtual_meeting_full),
+            (nr8_judge_skillmatch_delta, nr8_judge_skillmatch_full),
+            (nr14_virtual_case_has_virtual_judge_delta, nr14_virtual_case_has_virtual_judge_full),
+            (nr18_unused_timegrain_delta, nr18_unused_timegrain_full),
+            (nr27_overdue_case_not_planned_delta, nr27_overdue_case_not_planned_full),
+            (nr29_room_stability_per_day_delta, nr29_room_stability_per_day_full),
+            (nr31_distance_between_meetings_delta, nr31_distance_between_meetings_full),
+        ]
 
     # def test_full_score_vs_delta_score_and_move_reversibility(self):
     #     """
@@ -144,111 +158,103 @@ class TestRulesEngine(unittest.TestCase):
     #     parallel_move_ids = [m.meeting_id for m, _ in parallel_results]
     #     original_move_ids = [m.meeting_id for m, _ in moves_with_gen_int]
     #     self.assertListEqual(parallel_move_ids, original_move_ids,
-    #                          "Move order/association mismatch (based on meeting_id).")
+    #                          "Move order/association mismatch (based on meeting_id).")     
         
-            
-    def test_gap_in_schedule(self):
-        move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+    def test_delta_function_correctness(self, 
+                                       delta_function: Callable, 
+                                       full_function: Callable,
+                                       schedule: Optional[Schedule] = None,
+                                       compatible_judges: Optional[List] = None,
+                                       compatible_rooms: Optional[List] = None):
+
+        # Use provided parameters or fall back to instance variables
+        schedule = schedule or self.schedule
+        compatible_judges = compatible_judges or self.compatible_judges
+        compatible_rooms = compatible_rooms or self.compatible_rooms
         
-        delta = distance_between_meetings_delta(self.schedule, move)
+        # move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
+        meeting = random.choice(schedule.get_all_planned_meetings())
         
-        violations_before = distance_between_meetings_full(self.schedule)
+        # move = generate_specific_delete_move(schedule, meeting.meeting_id)
         
-        visualize(self.schedule)
-        do_move(move, self.schedule)
-        visualize(self.schedule)
+        delete_move = generate_specific_delete_move(schedule, meeting.meeting_id)
+        do_move(delete_move, schedule) # we must delete before we can insert
+        move = generate_random_insert_move(schedule)
+                
+        violations_before = full_function(schedule)
+        delta = delta_function(schedule, move)
         
-        violations_after = distance_between_meetings_full(self.schedule)
+        do_move(move, schedule)
         
-        print(f"move: {move}")
-        print(f"violations before: {violations_before}")
-        print(f"violations after: {violations_after}")
-        print(f"delta: {delta}")
+        violations_after = full_function(schedule)
         
-        self.assertEqual(violations_after - violations_before ,delta)        
+        undo_move(move, schedule)
         
-        
-    # def test_nr1_overbooked_room_in_timeslot(self):
-    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-    #     delta = nr1_overbooked_room_in_timeslot_delta(self.schedule, move)
-        
-    #     violations_before = nr1_overbooked_room_in_timeslot_full(self.schedule)
-        
-    #     do_move(move, self.schedule)
-        
-    #     violations_after = nr1_overbooked_room_in_timeslot_full(self.schedule)
-        
-        
-    #     self.assertEqual(violations_after - violations_before ,delta)
-        
+        self.assertEqual(violations_after - violations_before, delta, 
+                         f"Delta function {delta_function.__name__} failed: expected {violations_after - violations_before}, got {delta}")
+
     
-    # def test_nr2_overbooked_judge_in_timeslot(self):
-    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-    #     delta = nr2_overbooked_judge_in_timeslot_delta(self.schedule, move)
-        
-    #     violations_before = nr2_overbooked_judge_in_timeslot_full(self.schedule)
-        
-    #     do_move(move, self.schedule)
-        
-    #     violations_after = nr2_overbooked_judge_in_timeslot_full(self.schedule)
-        
-    #     self.assertEqual(violations_after - violations_before ,delta)
-        
-    # def test_nr6_virtual_room_must_have_virtual_meeting(self):
-    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-    #     delta = nr6_virtual_room_must_have_virtual_meeting_delta(self.schedule, move)
-        
-    #     violations_before = nr6_virtual_room_must_have_virtual_meeting_full(self.schedule)
-        
-    #     do_move(move, self.schedule)
-        
-    #     violations_after = nr6_virtual_room_must_have_virtual_meeting_full(self.schedule)
-        
-    #     self.assertEqual(violations_after - violations_before ,delta)
-        
-    # def test_nr_14_virtual_judge_must_have_virtual_meeting(self):
-    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-    #     delta = nr14_virtual_case_has_virtual_judge_delta(self.schedule, move)
-        
-    #     violations_before = nr14_virtual_case_has_virtual_judge_full(self.schedule)
-        
-    #     do_move(move, self.schedule)
-        
-    #     violations_after = nr14_virtual_case_has_virtual_judge_full(self.schedule)
-        
-    #     self.assertEqual(violations_after - violations_before ,delta)
+    def test_all_delta_functions(self):
+        """Test all delta functions against their corresponding full functions."""
+        for delta_function, full_function in self.rule_functions:
+            with self.subTest(delta_function=delta_function.__name__):
+                self.test_delta_function_correctness(delta_function, full_function)
     
-    # def test_nr18_unused_timegrain(self):
-    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-    #     delta = nr18_unused_timegrain_delta(self.schedule, move)
-        
-    #     violations_before = nr18_unused_timegrain_full(self.schedule)
-    #     do_move(move, self.schedule)
-        
-    #     violations_after = nr18_unused_timegrain_full(self.schedule)
-        
-    #     self.assertEqual(violations_after - violations_before ,delta)
-
-    # def test_nr29_room_stability_per_day(self):
-    #     move: Move = generate_random_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-    #     delta = nr29_room_stability_per_day_delta(self.schedule, move)
-
-    #     visualize(self.schedule)
-
-    #     violations_before = nr29_room_stability_per_day_full(self.schedule)
-    #     do_move(move, self.schedule)
-
-    #     visualize(self.schedule)
-
-
-    #     violations_after = nr29_room_stability_per_day_full(self.schedule)
-        
-    #     print(move)
-    #     print(f"violations before: {violations_before}")
-    #     print(f"violations after: {violations_after}")
-    #     print(f"delta: {delta}")
-
-    #     self.assertEqual(violations_after - violations_before ,delta)
+    # Individual test methods for better test isolation
+    def test_nr1_overbooked_room_in_timeslot(self):
+        self.test_delta_function_correctness(
+            nr1_overbooked_room_in_timeslot_delta,
+            nr1_overbooked_room_in_timeslot_full
+        )
+    
+    def test_nr2_overbooked_judge_in_timeslot(self):
+        self.test_delta_function_correctness(
+            nr2_overbooked_judge_in_timeslot_delta,
+            nr2_overbooked_judge_in_timeslot_full
+        )
+    
+    # Additional individual test methods for each rule
+    def test_nr6_virtual_room_must_have_virtual_meeting(self):
+        self.test_delta_function_correctness(
+            nr6_virtual_room_must_have_virtual_meeting_delta,
+            nr6_virtual_room_must_have_virtual_meeting_full
+        )
+    
+    def test_nr8_judge_skillmatch(self):
+        self.test_delta_function_correctness(
+            nr8_judge_skillmatch_delta,
+            nr8_judge_skillmatch_full
+        )
+    
+    def test_nr14_virtual_case_has_virtual_judge(self):
+        self.test_delta_function_correctness(
+            nr14_virtual_case_has_virtual_judge_delta,
+            nr14_virtual_case_has_virtual_judge_full
+        )
+    
+    def test_nr18_unused_timegrain(self):
+        self.test_delta_function_correctness(
+            nr18_unused_timegrain_delta,
+            nr18_unused_timegrain_full
+        )
+    
+    def test_nr27_overdue_case_not_planned(self):
+        self.test_delta_function_correctness(
+            nr27_overdue_case_not_planned_delta,
+            nr27_overdue_case_not_planned_full
+        )
+    
+    def test_nr29_room_stability_per_day(self):
+        self.test_delta_function_correctness(
+            nr29_room_stability_per_day_delta,
+            nr29_room_stability_per_day_full
+        )
+    
+    def test_nr31_distance_between_meetings(self):
+        self.test_delta_function_correctness(
+            nr31_distance_between_meetings_delta,
+            nr31_distance_between_meetings_full
+        )
         
 if __name__ == '__main__':
     unittest.main()

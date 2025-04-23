@@ -10,7 +10,7 @@ from src.local_search.rules_engine import calculate_full_score
 from src.local_search.simulated_annealing import run_local_search
 from src.base_model.compatibility_checks import initialize_compatibility_matricies
 from src.local_search.move import Move, do_move, undo_move
-from src.local_search.move_generator import generate_delete_move, generate_compound_move
+from src.local_search.move_generator import generate_specific_delete_move, generate_compound_move
 from src.construction.heuristic.linear_assignment import generate_schedule
 
 def parse_arguments():

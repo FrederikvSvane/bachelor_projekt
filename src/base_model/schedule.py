@@ -150,6 +150,15 @@ class Schedule:
                 meetings.append(app.meeting)
         return meetings
     
+    def get_all_meetings(self) -> list[Meeting]:
+        """
+        Returns:
+            A list of all meetings in the schedule, planned and unplanned
+        """
+        meetings = self.get_all_planned_meetings()
+        meetings.extend(self.unplanned_meetings)
+        return meetings
+    
     def print_unplanned_meetings(self) -> None:
         if not self.unplanned_meetings:
             print("No unplanned meetings.")

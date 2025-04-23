@@ -8,6 +8,8 @@ from src.base_model.schedule import Schedule
 from src.local_search.move import Move
 from collections import deque
 from src.local_search.rules_engine import calculate_delta_score
+from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
+
 
 
 
@@ -28,7 +30,7 @@ def identify_appointment_chains(schedule: Schedule) -> Dict:
     
     return appointment_chains
 
-def generate_single_move(schedule: Schedule, compatible_judges_dict: Dict[int, List[Judge]], 
+def generate_single_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, List[Judge]], 
                         compatible_rooms_dict: Dict[int, List[Room]]) -> list[Move]:
     """Generate a random valid move"""
     chain_dict = identify_appointment_chains(schedule)
@@ -108,7 +110,7 @@ def generate_single_move(schedule: Schedule, compatible_judges_dict: Dict[int, L
     
     return move
 
-def generate_delete_move(schedule: Schedule, meeting_id: int) -> Move:
+def generate_specific_delete_move(schedule: Schedule, meeting_id: int) -> Move:
     """
     Generate a delete move for a specific meeting ID.
     """
@@ -129,8 +131,9 @@ def generate_delete_move(schedule: Schedule, meeting_id: int) -> Move:
     day = first_appointment.day
     start_timeslot = first_appointment.timeslot_in_day
     judge = first_appointment.judge
-    print(f"Deleting meeting {meeting_id} with judge {judge.judge_id} in room {first_appointment.room.room_id}")
     room = first_appointment.room
+    
+    print(f"Deleting meeting {meeting_id} with judge {judge.judge_id} in room {room.room_id}")
     
     move = Move(
         meeting_id=meeting_id, 
@@ -144,7 +147,47 @@ def generate_delete_move(schedule: Schedule, meeting_id: int) -> Move:
     
     return move
 
-def generate_insert_move(schedule: Schedule, meeting: Meeting, judge: Judge, room: Room, day: int, start_timeslot: int) -> Move:
+def generate_random_delete_move(schedule: Schedule) -> Move:
+    """
+    Generate a delete move for a random meeting.
+    """
+    meetings = schedule.get_all_meetings()
+    
+    if not meetings:
+        raise ValueError("No meetings found in schedule.")
+    
+    meeting = random.choice(meetings)
+    meeting_id = meeting.meeting_id
+    chain_dict = identify_appointment_chains(schedule)
+    
+    if meeting_id not in chain_dict:
+        raise ValueError(f"Meeting ID {meeting_id} not found in schedule.")
+    
+    chosen_appointments = chain_dict[meeting_id]
+    
+    if not chosen_appointments:
+        raise ValueError(f"No appointments found for meeting ID {meeting_id}.")
+    
+    first_appointment = chosen_appointments[0]
+    day = first_appointment.day
+    start_timeslot = first_appointment.timeslot_in_day
+    judge = first_appointment.judge
+    room = first_appointment.room
+    
+    print(f"Deleting meeting {meeting_id} with judge {judge.judge_id} in room {room.room_id}")
+    
+    move = Move(
+        meeting_id=meeting_id, 
+        appointments=chosen_appointments,
+        old_judge=judge,
+        old_room=room,
+        old_day=day,
+        old_start_timeslot=start_timeslot,
+        is_delete_move=True
+    )
+    return move
+
+def generate_specific_insert_move(schedule: Schedule, meeting: Meeting, judge: Judge, room: Room, day: int, start_timeslot: int) -> Move:
     if meeting not in schedule.get_all_unplanned_meetings():
         raise ValueError("Meeting not found in unplanned meetings for schedule. Will not generate insert move.")
     if judge is None or room is None or day is None or start_timeslot is None:
@@ -164,6 +207,57 @@ def generate_insert_move(schedule: Schedule, meeting: Meeting, judge: Judge, roo
         is_insert_move=True
     )
     
+    return move
+
+def generate_random_insert_move(schedule: Schedule) -> Move:
+    """ 
+    Generate an insert move for a random unplanned meeting.
+    """
+    
+    unplanned_meetings = schedule.get_all_unplanned_meetings()
+    
+    if not unplanned_meetings:
+        raise ValueError("No unplanned meetings found in schedule.")
+    
+    meeting = random.choice(unplanned_meetings)
+    meeting_id = meeting.meeting_id
+    
+    compatible_judges_dict = calculate_compatible_judges(schedule.get_all_meetings(), schedule.get_all_judges())
+    compatible_rooms_dict = calculate_compatible_rooms(schedule.get_all_meetings(), schedule.get_all_rooms())
+    
+    if meeting_id not in compatible_judges_dict or not compatible_judges_dict[meeting_id]:
+        raise ValueError(f"No compatible judges found for meeting ID {meeting_id}.")
+    if meeting_id not in compatible_rooms_dict or not compatible_rooms_dict[meeting_id]:
+        raise ValueError(f"No compatible rooms found for meeting ID {meeting_id}.")
+    
+    judge = random.choice(compatible_judges_dict[meeting_id])
+    room = random.choice(compatible_rooms_dict[meeting_id])
+    
+    # Randomly select a day and timeslot
+    day = random.randint(1, schedule.work_days)
+    required_timeslots = meeting.meeting_duration // schedule.granularity
+    max_start_timeslot = schedule.timeslots_per_work_day - required_timeslots + 1
+    
+    if max_start_timeslot < 1:
+        raise ValueError(f"Meeting {meeting_id} which requires {required_timeslots} timeslots is too long for a single day ({schedule.timeslots_per_work_day} slots).")
+    
+    start_timeslot = random.randint(1, max_start_timeslot)
+    
+    print(f"Inserting meeting {meeting_id} with judge {judge.judge_id} in room {room.room_id}")
+    
+    move = Move(
+        meeting_id=meeting_id,
+        appointments=[],
+        old_judge=None,  # Not needed for insert
+        new_judge=judge,
+        old_room=None,   # Not needed for insert
+        new_room=room,
+        old_day=None,    # Not needed for insert
+        new_day=day,
+        old_start_timeslot=None,  # Not needed for insert
+        new_start_timeslot=start_timeslot,
+        is_insert_move=True
+    )
     return move
 
 def generate_compound_move(schedule: Schedule, 
@@ -313,7 +407,7 @@ def pick_meeting_for_move(schedule: Schedule):
     
     return (chosen_meeting_id, chosen_appointments) 
 
-def generate_list_random_move(schedule: Schedule,
+def generate_list_of_random_moves(schedule: Schedule,
                               compatible_judges_dict: Dict[int, List[Judge]],
                               compatible_rooms_dict: Dict[int, List[Room]],
                               tabu_list: deque, current_score: int, best_score: int):

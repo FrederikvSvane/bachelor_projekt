@@ -69,8 +69,9 @@ def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id
     
 def get_affected_judge_day_pairs(schedule: Schedule, move: Move) -> set:
     affected_pairs = set()
-
-    if move.is_insert_move:
+    if move.is_delete_move:
+        affected_pairs.add((move.old_day, move.old_judge.judge_id))
+    elif move.is_insert_move:
         affected_pairs.add((move.new_day, move.new_judge.judge_id))
     else:
         affected_pairs.add((move.old_day, move.old_judge.judge_id))
@@ -170,10 +171,10 @@ def get_appointments_in_timeslot_range(schedule: Schedule, start_day, start_slot
 
 def get_affected_day_timeslot_pairs_for_overbookings(schedule: Schedule, move: Move) -> set:
     affected_pairs = set()
-    for app in move.appointments:
-            affected_pairs.add((app.day, app.timeslot_in_day))
     
-    # Day boundary overlap logic
+    for app in move.appointments:
+        affected_pairs.add((app.day, app.timeslot_in_day))
+    
     if move.new_day is not None or move.new_start_timeslot is not None:
         start_day = move.new_day if move.new_day is not None else move.old_day
         start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
@@ -274,9 +275,9 @@ def populate_insert_move_appointments(schedule: Schedule, move: Move) -> None:
         temp_appointments.append(appointment)
     
     move.appointments = temp_appointments
-    
-    # Set dummy old values to pass validation
-    move.old_judge = move.new_judge
-    move.old_room = move.new_room
-    move.old_day = move.new_day
-    move.old_start_timeslot = move.new_start_timeslot
+
+    # Ensure the old values are set to None    
+    move.old_judge = None
+    move.old_room = None
+    move.old_day = None
+    move.old_start_timeslot = None

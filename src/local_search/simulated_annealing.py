@@ -12,7 +12,7 @@ from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.move import do_move, undo_move, Move
-from src.local_search.move_generator import generate_single_move, generate_list_random_move, generate_compound_move, generate_delete_move
+from src.local_search.move_generator import generate_single_random_move, generate_list_of_random_moves, generate_compound_move, generate_specific_delete_move
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
 from src.local_search.ruin_and_recreate import apply_ruin_and_recreate, RRStrategy
 from src.util.schedule_visualizer import visualize
@@ -92,7 +92,7 @@ def _calculate_moves_in_parallel(pool, schedule: Schedule, moves_with_gen_int: L
 def _find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
     n_cores = os.cpu_count()
     print(f"Using {n_cores} CPU cores for parallel processing")
-    moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+    moves: list[(Move, int)] = generate_list_of_random_moves(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
     
     if not moves:
         return None, 0
@@ -106,7 +106,7 @@ def _find_best_move_sequential(schedule, compatible_judges, compatible_rooms, ta
     """
     Find the best move by generating random moves and calculating their delta scores.
     """
-    moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+    moves: list[(Move, int)] = generate_list_of_random_moves(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
     
     if not moves:
         return None, 0
@@ -125,7 +125,7 @@ def _find_move_and_delta(schedule: Schedule, compatible_judges: list[Judge], com
     """
     Generate a move and calculate its delta score.
     """
-    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+    move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
     
     if move is None:
         return None, 0
@@ -192,7 +192,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
                 else: 
                     # single move
-                    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+                    move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
                     
             # MEDIUM TEMP
             elif medium_temp_threshold < current_temperature < high_temp_threshold: 
@@ -203,7 +203,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
                 else: 
                     # single move
-                    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+                    move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
                     
             # LOW TEMP
             else: 
@@ -215,7 +215,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
                 else: 
                     # single move
-                    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+                    move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
                 
             delta = calculate_delta_score(schedule, move)
             
