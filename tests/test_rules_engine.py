@@ -32,6 +32,7 @@ class TestRulesEngine(unittest.TestCase):
 
         self.schedule = generate_schedule_using_double_flow(json)
         self.schedule.move_all_dayboundary_violations()
+        self.schedule.initialize_appointment_chains()
         self.schedule.trim_schedule_length_if_possible()
 
         self.cases = self.schedule.get_all_cases()
@@ -147,25 +148,25 @@ class TestRulesEngine(unittest.TestCase):
     #                          "Move order/association mismatch (based on meeting_id).")
         
             
-    def test_gap_in_schedule(self):
-        move: Move = generate_single_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+    # def test_gap_in_schedule(self):
+    #     move: Move = generate_single_move(self.schedule, self.compatible_judges, self.compatible_rooms)
         
-        delta = nr31_distance_between_meetings_delta(self.schedule, move)
+    #     delta = nr31_distance_between_meetings_delta(self.schedule, move)
         
-        violations_before = nr31_distance_between_meetings_full(self.schedule)
+    #     violations_before = nr31_distance_between_meetings_full(self.schedule)
         
-        visualize(self.schedule)
-        do_move(move, self.schedule)
-        visualize(self.schedule)
+    #     visualize(self.schedule)
+    #     do_move(move, self.schedule)
+    #     visualize(self.schedule)
         
-        violations_after = nr31_distance_between_meetings_full(self.schedule)
+    #     violations_after = nr31_distance_between_meetings_full(self.schedule)
         
-        print(f"move: {move}")
-        print(f"violations before: {violations_before}")
-        print(f"violations after: {violations_after}")
-        print(f"delta: {delta}")
+    #     print(f"move: {move}")
+    #     print(f"violations before: {violations_before}")
+    #     print(f"violations after: {violations_after}")
+    #     print(f"delta: {delta}")
         
-        self.assertEqual(violations_after - violations_before ,delta)        
+    #     self.assertEqual(violations_after - violations_before ,delta)        
         
         
     # def test_nr1_overbooked_room_in_timeslot(self):
@@ -241,24 +242,24 @@ class TestRulesEngine(unittest.TestCase):
 
     #     self.assertEqual(violations_after - violations_before ,delta)
 
-    # def test_nr20_max_weekly_coverage(self):
-    #     move: Move = generate_single_move(self.schedule, self.compatible_judges, self.compatible_rooms)
-    #     delta = nr20_max_weekly_coverage_delta(self.schedule, move)
+    def test_nr20_max_weekly_coverage(self):
+        move: Move = generate_single_move(self.schedule, self.compatible_judges, self.compatible_rooms)
+        delta = nr20_max_weekly_coverage_delta(self.schedule, move)
 
-    #     violations_before = nr20_max_weekly_coverage_full(self.schedule)
+        violations_before = nr20_max_weekly_coverage_full(self.schedule)
         
-    #     visualize(self.schedule)
-    #     do_move(move, self.schedule)
-    #     visualize(self.schedule)
+        visualize(self.schedule)
+        do_move(move, self.schedule)
+        visualize(self.schedule)
 
-    #     violations_after = nr20_max_weekly_coverage_full(self.schedule)
+        violations_after = nr20_max_weekly_coverage_full(self.schedule)
         
-    #     print(move)
-    #     print(f"violations before: {violations_before}")
-    #     print(f"violations after: {violations_after}")
-    #     print(f"delta: {delta}")
+        print(move)
+        print(f"violations before: {violations_before}")
+        print(f"violations after: {violations_after}")
+        print(f"delta: {delta}")
         
-    #     self.assertEqual(violations_after - violations_before ,delta)
+        self.assertEqual(violations_after - violations_before ,delta)
 
     # def test_nr21_all_meetings_planned_for_case(self):
     #     move: Move = generate_compound_move(self.schedule, self.compatible_judges, self.compatible_rooms)
