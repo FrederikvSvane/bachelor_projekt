@@ -146,6 +146,7 @@ def _calculate_cooling_rate(K: int, start_temperature: float, end_temperature: f
 
 
 def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1) -> Schedule:
+    from copy import deepcopy
     start_time = time.time()
     
     meetings = schedule.get_all_meetings()
@@ -256,7 +257,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             print("No moves accepted for this temperature. Consider terminating.")
             continue
         
-        if current_iteration % 50 == 0:
+        if current_iteration % 10 == 0:
             visualize(best_schedule)
                 
         # Print progress information
