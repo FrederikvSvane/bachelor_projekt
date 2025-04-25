@@ -3,37 +3,6 @@ from src.local_search.move import Move
 from src.base_model.appointment import Appointment, print_appointments
 from collections import defaultdict
 
-def get_affected_pairs_for_room_stability(schedule: Schedule, move: Move):
-    affected_day_judge_pairs = set()
-    
-    affected_day_judge_pairs.add((move.old_day, move.old_judge.judge_id)) # original day and judge
-
-    if move.new_day is not None:
-        affected_day_judge_pairs.add((move.new_day, move.old_judge.judge_id))
-    
-    if move.new_judge is not None:
-        affected_day_judge_pairs.add((move.old_day, move.new_judge.judge_id))
-    
-    if move.new_day is not None and move.new_judge is not None:
-        affected_day_judge_pairs.add((move.new_day, move.new_judge.judge_id))
-    
-    if not move.appointments:
-        return affected_day_judge_pairs
-    
-    is_overlapping_day_boundary = move.appointments[0].day != move.appointments[-1].day
-    
-    if is_overlapping_day_boundary:
-        start_day = move.new_day if move.new_day is not None else move.old_day
-        start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
-        judge_id = move.new_judge.judge_id if move.new_judge is not None else move.old_judge.judge_id
-
-        for i in range(len(move.appointments)):
-            global_timeslot = ((start_day - 1) * schedule.timeslots_per_work_day) + start_timeslot + i
-            new_day = ((global_timeslot - 1) // schedule.timeslots_per_work_day) + 1
-            affected_day_judge_pairs.add((new_day, judge_id))
-        
-    return affected_day_judge_pairs
-
 def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id: int):
     # Get all appointments for this judge on this day
     appointments_in_day_for_judge = get_appointments_in_timeslot_range_in_day(
@@ -171,6 +140,8 @@ def get_appointments_in_timeslot_range(schedule: Schedule, start_day, start_slot
 
 def get_affected_day_timeslot_pairs_for_overbookings(schedule: Schedule, move: Move) -> set:
     affected_pairs = set()
+    if move.appointments is None or len(move.appointments) == 0:
+        raise ValueError("Move has no appointments.")
     
     for app in move.appointments:
         affected_pairs.add((app.day, app.timeslot_in_day))

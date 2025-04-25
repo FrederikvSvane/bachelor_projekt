@@ -284,7 +284,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
 def run_local_search(schedule: Schedule) -> Schedule:
     iterations_per_temperature = 5000
-    max_time_seconds = 30  
+    max_time_seconds = 300
     start_temp = 300
     end_temp = 10
     

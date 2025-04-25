@@ -10,9 +10,6 @@ from collections import deque
 from src.local_search.rules_engine import calculate_delta_score
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 
-
-
-
 def identify_appointment_chains(schedule: Schedule) -> Dict:
     """
     Identify chains of appointments representing the same case.
@@ -133,7 +130,7 @@ def generate_specific_delete_move(schedule: Schedule, meeting_id: int) -> Move:
     judge = first_appointment.judge
     room = first_appointment.room
     
-    print(f"Deleting meeting {meeting_id} with judge {judge.judge_id} in room {room.room_id}")
+    # print(f"Deleting meeting {meeting_id} with judge {judge.judge_id} in room {room.room_id}")
     
     move = Move(
         meeting_id=meeting_id, 
@@ -174,7 +171,7 @@ def generate_random_delete_move(schedule: Schedule) -> Move:
     judge = first_appointment.judge
     room = first_appointment.room
     
-    print(f"Deleting meeting {meeting_id} with judge {judge.judge_id} in room {room.room_id}")
+    # print(f"Deleting meeting {meeting_id} with judge {judge.judge_id} in room {room.room_id}")
     
     move = Move(
         meeting_id=meeting_id, 
@@ -204,6 +201,7 @@ def generate_specific_insert_move(schedule: Schedule, meeting: Meeting, judge: J
         new_day=day,
         old_start_timeslot=None,  # Not needed for insert
         new_start_timeslot=start_timeslot,
+        is_delete_move=False,
         is_insert_move=True
     )
     
@@ -243,18 +241,18 @@ def generate_random_insert_move(schedule: Schedule) -> Move:
     
     start_timeslot = random.randint(1, max_start_timeslot)
     
-    print(f"Inserting meeting {meeting_id} with judge {judge.judge_id} in room {room.room_id}")
+    # print(f"Inserting meeting {meeting_id} with judge {judge.judge_id} in room {room.room_id}")
     
     move = Move(
         meeting_id=meeting_id,
         appointments=[],
-        old_judge=None,  # Not needed for insert
+        old_judge=None,  # Previously unplanned, so no old judge
         new_judge=judge,
-        old_room=None,   # Not needed for insert
+        old_room=None,   # Likewise, no old room
         new_room=room,
-        old_day=None,    # Not needed for insert
+        old_day=None,    # Likewise
         new_day=day,
-        old_start_timeslot=None,  # Not needed for insert
+        old_start_timeslot=None,  # Likewise
         new_start_timeslot=start_timeslot,
         is_insert_move=True
     )
@@ -531,3 +529,31 @@ def generate_list_of_random_moves(schedule: Schedule,
                 
     # 4. Return the list
     return valid_moves
+
+def generate_random_move_of_random_type(
+    schedule: Schedule, 
+    compatible_judges_dict: Dict[int, List[Judge]], 
+    compatible_rooms_dict: Dict[int, List[Room]]
+) -> Move:
+    move_type = random.choice(["single", "delete", "insert", "compound"])
+    
+    if move_type == "single":
+        return generate_single_random_move(schedule, compatible_judges_dict, compatible_rooms_dict)
+    elif move_type == "delete":
+        try:
+            return generate_random_delete_move(schedule)
+        except ValueError:
+            # Fallback to single move if no meetings to delete
+            return generate_single_random_move(schedule, compatible_judges_dict, compatible_rooms_dict)
+    elif move_type == "insert":
+        try:
+            return generate_random_insert_move(schedule)
+        except ValueError:
+            # Fallback to single move if no unplanned meetings
+            return generate_single_random_move(schedule, compatible_judges_dict, compatible_rooms_dict)
+    else:  # compound
+        try:
+            return generate_compound_move(schedule, compatible_judges_dict, compatible_rooms_dict)
+        except ValueError:
+            # Fallback to single move if compound not possible
+            return generate_single_random_move(schedule, compatible_judges_dict, compatible_rooms_dict)

@@ -255,11 +255,13 @@ def _greedy_insert(schedule: Schedule, compatible_judges_dict, compatible_rooms_
                             day=day,
                             start_timeslot=start_time
                         )
-
                         
                         # Assign to meeting for scoring
                         meeting.judge = judge
                         meeting.room = room
+                        
+                        if not temp_move.is_insert_move:
+                            raise ValueError("Temporary move is not an insert move")
                         
                         # Calculate score if inserted here
                         delta = calculate_delta_score(schedule, temp_move)

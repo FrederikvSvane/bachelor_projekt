@@ -36,7 +36,7 @@ def calculate_full_score(schedule: Schedule) -> int:
 
     full_score = hard_violations * hard_containt_weight + medm_violations * medm_containt_weight + soft_violations * soft_containt_weight
     
-    print(f"FULL: Hard Violations: {hard_violations} unplanned meetings), Medium Violations: {medm_violations}, Soft Violations: {soft_violations}")  
+    # print(f"FULL: Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations} (including {unplanned_meetings} unplanned meetings)")  
     
     return full_score
 
@@ -48,11 +48,9 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
     if move is None or move.is_applied:
         raise ValueError("Move is None or already applied.")
     
-    # Special handling for insertion moves - set dummy "old" values
     # This allows insertion moves to pass the validation check but doesn't affect calculation
     if move.is_insert_move:
         populate_insert_move_appointments(schedule, move)
-
         if move.appointments is None or len(move.appointments) == 0:
             raise ValueError("Move has no appointments.")
         
@@ -76,7 +74,7 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
 
     delta_score = hard_containt_weight * hard_violations + medm_containt_weight * medm_violations + soft_containt_weight * soft_violations
 
-    print(f"DELTA: Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations}")
+    # print(f"DELTA: Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations} (including {unplanned_meetings} unplanned meetings)")  
 
     return delta_score
 
@@ -187,7 +185,12 @@ def nr6_virtual_room_must_have_virtual_meeting_delta(schedule: Schedule, move: M
         # delete moves will always give no violations
         return 0 if check_case_room_compatibility(case_id, move.old_room.room_id) else -len(move.appointments)
     
-    if not move.is_delete_move and move.new_room is None:
+    if move.is_insert_move:
+        # only possible violation is if the room and meeting are incompatible after inserting
+        # the meeting was unplanned before, so we don't care about the old room
+        return 0 if check_case_room_compatibility(case_id, move.new_room.room_id) else len(move.appointments)
+    
+    if not move.is_delete_move and not move.is_insert_move and move.new_room is None:
         return 0
     
     do_move(move, schedule) 
@@ -232,7 +235,12 @@ def nr8_judge_skillmatch_delta(schedule: Schedule, move: Move):
         # delete moves will always give no violations
         return 0 if check_case_judge_compatibility(case_id, move.old_judge.judge_id) else -len(move.appointments)
     
-    if not move.is_delete_move and move.new_judge is None:
+    if move.is_insert_move:
+        # only possible violation is if the judge and meeting are incompatible after inserting
+        # the meeting was unplanned before, so we don't care about the old judge
+        return 0 if check_case_judge_compatibility(case_id, move.new_judge.judge_id) else len(move.appointments)
+    
+    if not move.is_delete_move and not move.is_insert_move and move.new_judge is None:
         return 0
     
     do_move(move, schedule)
@@ -275,7 +283,12 @@ def nr14_virtual_case_has_virtual_judge_delta(schedule: Schedule, move: Move):
         # delete moves will always give no violations
         return 0 if check_case_judge_compatibility(case_id, move.old_judge.judge_id) else -len(move.appointments)
     
-    if not move.is_delete_move and move.new_judge is None:
+    if move.is_insert_move:
+        # only possible violation is if the judge and meeting are incompatible after inserting
+        # the meeting was unplanned before, so we don't care about the old judge
+        return 0 if check_case_judge_compatibility(case_id, move.new_judge.judge_id) else len(move.appointments)
+    
+    if not move.is_delete_move and not move.is_insert_move and move.new_judge is None:
         return 0
     # NOTE this is actually slower, but more correct. We leave it out.
     # if move.appointments[0].case.characteristics.contains("virtual"):
@@ -345,8 +358,9 @@ def nr18_unused_timegrain_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
     
-    if not move.is_delete_move and move.new_day is None and move.new_judge is None and move.new_start_timeslot is None:
-        return 0 
+    only_changing_room = move.new_room is not None and move.new_judge is None and move.new_day is None and move.new_start_timeslot is None
+    if not move.is_delete_move and not move.is_insert_move and only_changing_room:
+        return 0 # A room change doesn't affect the number of unused timeslots
     
     affected_pairs = get_affected_judge_day_pairs(schedule, move)
     before_violations = calculate_unused_timeslots_for_all_judge_day_pairs(schedule, affected_pairs, schedule.work_days)
@@ -474,7 +488,7 @@ def nr29_room_stability_per_day_delta(schedule: Schedule, move: Move):
     if not move.is_delete_move and (move.new_day is None and move.new_judge is None and move.new_start_timeslot is None and move.new_room is None):
         return 0 # probably wont ever happen, but fine to have for future delete moves i guess
 
-    affected_day_judge_pairs = get_affected_pairs_for_room_stability(schedule, move)
+    affected_day_judge_pairs = get_affected_judge_day_pairs(schedule, move)
     
     violations_before = 0
     for day, judge_id in affected_day_judge_pairs:

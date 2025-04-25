@@ -205,7 +205,7 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
             # Add back to unplanned meetings
             schedule.add_to_unplanned_meetings(meeting)
         
-        move.appointments.clear()  # Clear the appointments list
+        # move.appointments.clear()  # Clear the appointments list
         move.is_applied = False
         
         # Adjust schedule if needed
