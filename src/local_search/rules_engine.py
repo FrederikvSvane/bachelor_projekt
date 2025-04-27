@@ -546,6 +546,7 @@ def nr29_room_stability_per_day_full(schedule: Schedule):
     
     day_judge_pairs = set()
     for appointment in schedule.iter_appointments():
+        #check_app_and_meeting_same_judge_and_room(schedule, appointment.meeting)
         day_judge_pairs.add((appointment.day, appointment.judge.judge_id))
     
     for day, judge_id in day_judge_pairs:
