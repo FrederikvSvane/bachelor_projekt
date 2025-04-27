@@ -310,6 +310,7 @@ class Schedule:
                         break 
 
             if is_empty:
+                print(f"Trimming empty day {last_day} from schedule.")
                 self.work_days -= 1
             else:
                 break

@@ -9,6 +9,7 @@ from src.local_search.move import Move
 from collections import deque
 from src.local_search.rules_engine import calculate_delta_score
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
+from src.local_search.rules_engine_helpers import populate_insert_move_appointments
 
 def identify_appointment_chains(schedule: Schedule) -> Dict:
     """
@@ -148,7 +149,7 @@ def generate_random_delete_move(schedule: Schedule) -> Move:
     """
     Generate a delete move for a random meeting.
     """
-    meetings = schedule.get_all_meetings()
+    meetings = schedule.get_all_planned_meetings()
     
     if not meetings:
         raise ValueError("No meetings found in schedule.")
@@ -256,6 +257,9 @@ def generate_random_insert_move(schedule: Schedule) -> Move:
         new_start_timeslot=start_timeslot,
         is_insert_move=True
     )
+    
+    populate_insert_move_appointments(schedule, move)
+    
     return move
 
 def generate_compound_move(schedule: Schedule, 

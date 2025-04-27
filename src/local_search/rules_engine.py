@@ -357,25 +357,39 @@ def nr18_unused_timegrain_full(schedule: Schedule):
 def nr18_unused_timegrain_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
-    
-    only_changing_room = move.new_room is not None and move.new_judge is None and move.new_day is None and move.new_start_timeslot is None
-    if not move.is_delete_move and not move.is_insert_move and only_changing_room:
-        return 0 # A room change doesn't affect the number of unused timeslots
-    
+
+    is_relevant_change = (move.is_delete_move or move.is_insert_move or
+                          move.new_judge is not None or
+                          move.new_day is not None or
+                          move.new_start_timeslot is not None)
+    if not is_relevant_change:
+         only_changing_room = (move.new_room is not None and move.new_judge is None and
+                              move.new_day is None and move.new_start_timeslot is None)
+         if only_changing_room: return 0
+         elif move.new_room is None and move.new_judge is None and move.new_day is None and move.new_start_timeslot is None: return 0
+
+    original_work_days = schedule.work_days
     affected_pairs = get_affected_judge_day_pairs(schedule, move)
-    before_violations = calculate_unused_timeslots_for_all_judge_day_pairs(schedule, affected_pairs, schedule.work_days)
-    
+
+    if not affected_pairs:
+         return 0
+
+    before_violations = calculate_unused_timeslots_for_all_judge_day_pairs(
+        schedule, affected_pairs, original_work_days
+    )
+
     do_move(move, schedule)
-    
-    new_last_day = schedule.work_days
-    if new_last_day > schedule.work_days:
-        for judge in schedule.get_all_judges():
-            affected_pairs.add((new_last_day, judge.judge_id))
-    
-    after_violations = calculate_unused_timeslots_for_all_judge_day_pairs(schedule, affected_pairs, new_last_day)
-    
+    current_work_days = schedule.work_days
+
+    after_violations = calculate_unused_timeslots_for_all_judge_day_pairs(
+        schedule, affected_pairs, current_work_days
+    )
+
     undo_move(move, schedule)
-    
+
+    if schedule.work_days != original_work_days:
+        schedule.work_days = original_work_days
+
     return (offset + step * (after_violations - before_violations))
 
 def nr19_case_has_specific_judge_full(schedule: Schedule):

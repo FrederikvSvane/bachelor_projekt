@@ -16,6 +16,7 @@ from src.util.data_generator import generate_test_data_parsed
 from src.base_model.compatibility_checks import initialize_compatibility_matricies, calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.move_generator import generate_single_random_move, generate_list_of_random_moves, generate_specific_delete_move, generate_specific_insert_move, generate_compound_move, generate_random_insert_move, generate_random_delete_move, generate_random_move_of_random_type
 from src.local_search.simulated_annealing import _calculate_moves_in_parallel
+from src.construction.heuristic.linear_assignment import generate_schedule
 
 
 
@@ -23,7 +24,7 @@ class TestRulesEngine(unittest.TestCase):
     
     def setUp(self):
         #generate a random schedule for every test
-        n_cases = 10
+        n_cases = 50
         n_judges = 5
         n_rooms = 5
         n_work_days = 2
@@ -32,7 +33,7 @@ class TestRulesEngine(unittest.TestCase):
         json = generate_test_data_parsed(n_cases=n_cases, n_judges=n_judges, n_rooms=n_rooms, work_days=n_work_days, granularity=granularity, min_per_work_day=min_per_work_day)
         initialize_compatibility_matricies(json)
 
-        self.schedule = generate_schedule_using_double_flow(json)
+        self.schedule = generate_schedule(json)
         self.schedule.move_all_dayboundary_violations()
         self.schedule.trim_schedule_length_if_possible()
 
@@ -69,17 +70,13 @@ class TestRulesEngine(unittest.TestCase):
             move: Move = generate_random_move_of_random_type(self.schedule, self.compatible_judges, self.compatible_rooms)
             delta_score = calculate_delta_score(self.schedule, move)
             
-            visualize(self.schedule)
             do_move(move, self.schedule)
-            visualize(self.schedule)
-            print(move)
             
             full_score_after_do = calculate_full_score(self.schedule)
             score_diff = full_score_after_do - full_score_initial
             self.assertEqual(score_diff, delta_score, f"Iteration {i}: Delta score ({delta_score}) != Full score difference ({score_diff}). Move: {move}")
 
             undo_move(move, self.schedule)
-            visualize(self.schedule)
             
             full_score_after_do_undo = calculate_full_score(self.schedule)
             schedule_after_do_undo = deepcopy(self.schedule)
@@ -99,14 +96,12 @@ class TestRulesEngine(unittest.TestCase):
         compatible_rooms = compatible_rooms or self.compatible_rooms
         
         # move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
-        meeting = random.choice(schedule.get_all_planned_meetings())
         
-        # move = generate_specific_delete_move(schedule, meeting.meeting_id)
+        delete_move = generate_random_delete_move(schedule)
+        do_move(delete_move, schedule) # we delete a meeting to facilitate a potential insert move
         
-        delete_move = generate_specific_delete_move(schedule, meeting.meeting_id)
-        do_move(delete_move, schedule) # we must delete before we can insert
-        move = generate_random_insert_move(schedule)
-        populate_insert_move_appointments(schedule, move)
+        
+        move = generate_random_move_of_random_type(schedule, compatible_judges, compatible_rooms)
                 
         violations_before = full_function(schedule)
         delta = delta_function(schedule, move)

@@ -221,9 +221,6 @@ def _greedy_insert(schedule: Schedule, compatible_judges_dict, compatible_rooms_
     unplanned = unplanned.copy()
     num_inserted = 0
     
-    # Sort by duration_of_stay (priority to older meetings)
-    unplanned.sort(key=lambda m: m.duration_of_stay, reverse=True)
-    
     for meeting in unplanned:
         best_delta = float('inf')
         best_position = None
@@ -259,9 +256,6 @@ def _greedy_insert(schedule: Schedule, compatible_judges_dict, compatible_rooms_
                         # Assign to meeting for scoring
                         meeting.judge = judge
                         meeting.room = room
-                        
-                        if not temp_move.is_insert_move:
-                            raise ValueError("Temporary move is not an insert move")
                         
                         # Calculate score if inserted here
                         delta = calculate_delta_score(schedule, temp_move)

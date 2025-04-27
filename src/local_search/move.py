@@ -117,8 +117,10 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
             move.appointments[0].meeting.judge = None
             move.appointments[0].meeting.room = None
             schedule.add_to_unplanned_meetings(move.appointments[0].meeting)
-        
+            
         move.is_applied = True
+        if schedule is not None:
+            schedule.trim_schedule_length_if_possible()
         return
 
     # Handle regular move
@@ -173,7 +175,7 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
 
                 schedule.appointments_by_day_and_timeslot[new_day][new_timeslot].append(app)
 
-        move.is_applied = True
+        move.is_applied = True        
         
         if schedule is not None:
             schedule.trim_schedule_length_if_possible()        
@@ -205,15 +207,11 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
             # Add back to unplanned meetings
             schedule.add_to_unplanned_meetings(meeting)
         
-        # move.appointments.clear()  # Clear the appointments list
         move.is_applied = False
-        
-        # Adjust schedule if needed
         if schedule is not None:
             schedule.trim_schedule_length_if_possible()
-            
         return
-
+        
 
     # Handle deletion move
     elif move.is_delete_move:
@@ -254,8 +252,8 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
             schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day].append(app)
         
         move.is_applied = False
-        return
-    
+        return # trimming is not needed because adding meetings into the schedule will never make it shorter
+        
     # Handle regular move
     else:
         changing_position = (move.old_day is not None or move.old_start_timeslot is not None)
@@ -309,7 +307,6 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
                 schedule.appointments_by_day_and_timeslot[original_day][original_timeslot].append(app)
 
         move.is_applied = False
-        
-        # Shrink schedule if the last day is empty
+            
         if schedule is not None:
             schedule.trim_schedule_length_if_possible()        

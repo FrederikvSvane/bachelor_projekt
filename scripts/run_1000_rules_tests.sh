@@ -12,7 +12,7 @@ all_delta_rules="tests.test_rules_engine.TestRulesEngine.test_all_delta_function
 
 # ____
 
-to_test=$time_grain
+to_test=$all
 
 # ____
 

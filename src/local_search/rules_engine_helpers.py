@@ -35,29 +35,71 @@ def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id
         prev_rooms = current_rooms
     
     return violations
-    
+
 def get_affected_judge_day_pairs(schedule: Schedule, move: Move) -> set:
     affected_pairs = set()
+    original_work_days = schedule.work_days
+
+    if not move.appointments and move.is_insert_move:
+        populate_insert_move_appointments(schedule, move)
+
+    old_judge = move.old_judge
+    new_judge = move.new_judge if move.new_judge is not None else old_judge
+    old_day = move.old_day
+    new_day = move.new_day if move.new_day is not None else old_day
+
+    # Add directly affected pairs
     if move.is_delete_move:
-        affected_pairs.add((move.old_day, move.old_judge.judge_id))
+        affected_pairs.add((old_day, old_judge.judge_id))
     elif move.is_insert_move:
-        affected_pairs.add((move.new_day, move.new_judge.judge_id))
+        affected_pairs.add((new_day, new_judge.judge_id))
     else:
-        affected_pairs.add((move.old_day, move.old_judge.judge_id))
-        if move.new_day is not None:
-            affected_pairs.add((move.new_day, move.old_judge.judge_id))
+        affected_pairs.add((old_day, old_judge.judge_id))
+        if new_day != old_day or new_judge != old_judge:
+             affected_pairs.add((new_day, new_judge.judge_id))
+        if new_judge != old_judge:
+             affected_pairs.add((old_day, new_judge.judge_id))
+             affected_pairs.add((new_day, old_judge.judge_id))
 
-        if move.new_judge is not None:
-            affected_pairs.add((move.old_day, move.new_judge.judge_id))
-            if move.new_day is not None:
-                affected_pairs.add((move.new_day, move.new_judge.judge_id))
-
-        last_day = schedule.work_days
-        if move.old_day == last_day or (move.new_day is not None and move.new_day >= last_day):
-            for judge in schedule.get_all_judges():
-                affected_pairs.add((last_day, judge.judge_id))
+    # Calculate the new_last_day if we're deleting from the end
+    new_last_day = original_work_days
+    
+    if move.is_delete_move and old_day == original_work_days:
+        # Check if we're removing the only meeting on the last day
+        other_meetings_on_last_day = False
+        if original_work_days in schedule.appointments_by_day_and_timeslot:
+            for ts_apps in schedule.appointments_by_day_and_timeslot[original_work_days].values():
+                if any(app not in move.appointments for app in ts_apps):
+                    other_meetings_on_last_day = True
+                    break
+        
+        if not other_meetings_on_last_day:
+            # Find the new last day by working backwards
+            new_last_day = original_work_days - 1
+            while new_last_day > 0:
+                has_meetings = False
+                if new_last_day in schedule.appointments_by_day_and_timeslot:
+                    for ts, apps in schedule.appointments_by_day_and_timeslot[new_last_day].items():
+                        if apps:
+                            has_meetings = True
+                            break
+                if has_meetings:
+                    break
+                new_last_day -= 1
             
+            # All judges are affected for all trimmed days
+            all_judges = schedule.get_all_judges()
+            for day in range(new_last_day + 1, original_work_days + 1):
+                for judge in all_judges:
+                    affected_pairs.add((day, judge.judge_id))
+            
+            # Also add the new last day for all judges (it's now the boundary)
+            if new_last_day > 0:
+                for judge in all_judges:
+                    affected_pairs.add((new_last_day, judge.judge_id))
+
     return affected_pairs
+
 
 
 def count_unused_timeslots_in_day_for_judge_day_pair(schedule: Schedule, day: int, judge_id: int, is_last_day: bool) -> int:
@@ -78,11 +120,19 @@ def count_unused_timeslots_in_day_for_judge_day_pair(schedule: Schedule, day: in
     return schedule.timeslots_per_work_day - len(used_timeslots)
 
 
-def calculate_unused_timeslots_for_all_judge_day_pairs(schedule: Schedule, affected_pairs: set, last_day: int) -> int:
+def calculate_unused_timeslots_for_all_judge_day_pairs(schedule: Schedule, affected_pairs: set, current_last_day: int) -> int:
     total_violations = 0
+    processed_pairs = set()
+
     for day, judge_id in affected_pairs:
-        is_last_day = (day == last_day)
-        total_violations += count_unused_timeslots_in_day_for_judge_day_pair(schedule, day, judge_id, is_last_day)
+        if (day, judge_id) in processed_pairs:
+            continue
+        if day > current_last_day:
+             continue
+
+        is_last = (day == current_last_day)
+        total_violations += count_unused_timeslots_in_day_for_judge_day_pair(schedule, day, judge_id, is_last)
+        processed_pairs.add((day, judge_id))
     return total_violations
 
 def get_appointments_in_timeslot_range_in_day(schedule: Schedule, day, start_timeslot, end_timeslot, judge_id: int = None, meeting_id: int = None) -> list[Appointment]:
@@ -109,9 +159,6 @@ def get_appointments_in_timeslot_range_in_day(schedule: Schedule, day, start_tim
         if (judge_id is None or app.judge.judge_id == judge_id) and 
            (meeting_id is None or app.meeting.meeting_id != meeting_id)
     ]
-            
-        
-        
 
 def get_appointments_in_timeslot_range(schedule: Schedule, start_day, start_slot, end_slot, judge_id: int = None, meeting_id: int = None) -> list[Appointment]:
     """
@@ -211,6 +258,7 @@ def populate_insert_move_appointments(schedule: Schedule, move: Move) -> None:
         move: The insert move to populate
 
     """
+    move.appointments.clear()
     # Find the meeting in unplanned meetings (for reference only)
     meeting = None
     for m in schedule.get_all_unplanned_meetings():
