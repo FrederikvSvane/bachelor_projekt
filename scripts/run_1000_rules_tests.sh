@@ -2,7 +2,7 @@
 
 n_tests=1000
 
-all="tests.test_rules_engine"
+all="tests.test_rules_engine.TestRulesEngine"
 
 room_overbookings="tests.test_rules_engine.TestRulesEngine.test_nr1_overbooked_room_in_timeslot"
 judge_overbookings="tests.test_rules_engine.TestRulesEngine.test_nr2_overbooked_judge_in_timeslot"
@@ -12,7 +12,7 @@ all_delta_rules="tests.test_rules_engine.TestRulesEngine.test_all_delta_function
 
 # ____
 
-to_test=$all
+to_test=$all_delta_rules
 
 # ____
 

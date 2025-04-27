@@ -1,6 +1,8 @@
 from src.base_model.schedule import Schedule
 from src.local_search.move import Move
 from src.base_model.appointment import Appointment, print_appointments
+from src.base_model.meeting import Meeting
+from src.base_model.case import Case
 from collections import defaultdict
 
 def count_room_changes_for_day_judge_pair(schedule: Schedule, day: int, judge_id: int):
@@ -231,6 +233,22 @@ def count_judge_overbooking_for_day_timeslot(schedule: Schedule, day: int, times
 
 
 def calculate_gaps_between_appointments(schedule: Schedule, judge_id: int, specific_day: int = None):
+    """
+    Count the number of gaps between appointments for a judge.
+    A gap is defined as:
+    1. From start of day to first meeting (if first meeting isn't at timeslot 1)
+    2. Any discontinuities between meetings
+    
+    Note: Gap from last meeting to end of day is NOT counted
+    
+    Args:
+        schedule: The schedule
+        judge_id: The judge's ID
+        specific_day: Optional specific day to check, otherwise checks all days
+        
+    Returns:
+        The total number of gaps across all specified days
+    """
     total_gaps = 0
     
     days_to_process = [specific_day] if specific_day is not None else range(1, schedule.work_days + 1)
@@ -241,12 +259,24 @@ def calculate_gaps_between_appointments(schedule: Schedule, judge_id: int, speci
         )
         
         if day_appointments:
-            occupied_timeslots = {app.timeslot_in_day for app in day_appointments}
-            last_timeslot = max(occupied_timeslots)
-            total_gaps += last_timeslot - len(occupied_timeslots)
+            # Get sorted list of occupied timeslots
+            occupied_timeslots = sorted({app.timeslot_in_day for app in day_appointments})
+            
+            # Count gaps
+            gaps = 0
+            
+            # Check if there's a gap from start of day to first meeting
+            if occupied_timeslots[0] > 1:
+                gaps += 1
+                
+            # Count gaps between meetings
+            for i in range(1, len(occupied_timeslots)):
+                if occupied_timeslots[i] > occupied_timeslots[i-1] + 1:
+                    gaps += 1
+            
+            total_gaps += gaps
     
     return total_gaps
-                
                 
 def populate_insert_move_appointments(schedule: Schedule, move: Move) -> None:
     """
@@ -275,7 +305,6 @@ def populate_insert_move_appointments(schedule: Schedule, move: Move) -> None:
     
     if timeslots_needed > schedule.timeslots_per_work_day or timeslots_needed <= 0:
         raise ValueError(f"Meeting {meeting.meeting_id} requires {timeslots_needed} timeslots, which is invalid.")
-        
     
     temp_appointments = []
     for i in range(timeslots_needed):
@@ -300,3 +329,83 @@ def populate_insert_move_appointments(schedule: Schedule, move: Move) -> None:
     move.old_room = None
     move.old_day = None
     move.old_start_timeslot = None
+
+    
+def check_app_and_meeting_same_judge_and_room(schedule: Schedule, meeting: Meeting) -> bool:
+    for app in schedule.iter_appointments():
+        if app.meeting is not None:
+            if app.judge is not None and app.room is not None:
+                if app.meeting.judge is not None and app.meeting.room is not None:
+                    if app.judge != app.meeting.judge or app.room != app.meeting.room:
+                        raise ValueError(f"Appointment {app} does not match meeting's judge or room.")
+    return True
+                    
+
+def get_week_judge_pairs(schedule: Schedule) -> set:
+    """
+    Get all pairs of judge and week in the schedule.
+    A week is defined as 5 consecutive work days.
+    
+    Returns:
+        A set of tuples (judge_id, week_number)
+    """
+    week_judge_pairs = set()
+    
+    for appointment in schedule.iter_appointments():
+        judge_id = appointment.judge.judge_id
+        day = appointment.day
+        
+        # Calculate week number (1-indexed)
+        # Days 1-5 are week 1, days 6-10 are week 2, etc.
+        week_number = (day - 1) // 5 + 1
+        
+        week_judge_pairs.add((judge_id, week_number))
+    
+    return week_judge_pairs
+
+def get_affected_week_judge_pairs(schedule: Schedule, move: Move) -> set:
+    """
+    Get all judge-week pairs affected by a move.
+    """
+    # First get affected day-judge pairs
+    affected_day_judge_pairs = get_affected_judge_day_pairs(schedule, move)
+    
+    # Convert to week-judge pairs
+    week_judge_pairs = set()
+    for day, judge_id in affected_day_judge_pairs:
+        week_number = (day - 1) // 5 + 1
+        week_judge_pairs.add((judge_id, week_number))
+    
+    return week_judge_pairs
+
+def count_weekly_coverage_for_judge_week(schedule: Schedule, judge_id: int, week_number: int) -> tuple:
+    """
+    Count the timeslots used by a judge in a specific week.
+    
+    Returns:
+        Tuple of (occupied_timeslots, total_timeslots)
+    """
+    # Calculate day range for the week
+    start_day = (week_number - 1) * 5 + 1
+    end_day = min(start_day + 4, schedule.work_days)  # Handle partial weeks
+    
+    # Count the total number of timeslots in this week
+    days_in_week = end_day - start_day + 1
+    total_timeslots = days_in_week * schedule.timeslots_per_work_day
+    
+    if total_timeslots == 0:
+        return (0, 0)  # Avoid division by zero
+    
+    # Count unique timeslots where the judge has appointments
+    occupied_timeslots = set()
+    
+    for day in range(start_day, end_day + 1):
+        if day in schedule.appointments_by_day_and_timeslot:
+            for timeslot in schedule.appointments_by_day_and_timeslot[day]:
+                for app in schedule.appointments_by_day_and_timeslot[day][timeslot]:
+                    if app.judge.judge_id == judge_id:
+                        occupied_timeslots.add((day, timeslot))
+                        break  # Only count each timeslot once
+    
+    return (len(occupied_timeslots), total_timeslots)
+

@@ -77,10 +77,12 @@ def main():
         #print("Initial score: ", initial_score)
         
         # _______________________
+        initial_schedule.initialize_appointment_chains()
         initial_schedule.move_all_dayboundary_violations()
         initial_schedule.trim_schedule_length_if_possible()
         initial_score = calculate_full_score(initial_schedule)
         visualize(initial_schedule)
+        #visualize(initial_schedule, view_by="room")
         
         final_schedule = run_local_search(initial_schedule)
         

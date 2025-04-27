@@ -1,8 +1,10 @@
 from typing import Dict
+from copy import deepcopy
 
 from src.util.data_generator import ensure_jm_pair_room_compatibility
 from src.base_model.judge import Judge
 from src.base_model.room import Room
+from src.base_model.case import Case
 from src.base_model.meeting import Meeting
 from src.base_model.appointment import Appointment
 from src.construction.graph.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, construct_conflict_graph
@@ -16,8 +18,9 @@ from src.construction.graph.coloring import DSatur
 class Schedule:
     """Class that manages the court schedule."""
     
-    def __init__(self, work_days: int, minutes_in_a_work_day: int = 390, granularity: int = 5, judges: list[Judge] = None, rooms: list[Room] = None):
+    def __init__(self, work_days: int, minutes_in_a_work_day: int = 390, granularity: int = 5, judges: list[Judge] = None, rooms: list[Room] = None, meetings: list[Meeting] = None, cases: list[Case] = None):
         self.appointments_by_day_and_timeslot: dict[int, Dict[int, list[Appointment]]] = {} # the main schedule dictionary. Stores appointments by day and timeslot
+        self.appointment_chains: dict[int, list[Appointment]] = {} # dictionary of appointment chains. Key is the meeting ID, value is a list of appointments
         self.unplanned_meetings: list[Meeting] = [] # list of unplanned meetings. Ie meetings that are supposed to be scheduled, but are not yet in the schedule
         self.work_days: int = work_days # Amount of workdays in the schedule / the total length of the schedule. (1-indexed)
         self.minutes_in_a_work_day: int = minutes_in_a_work_day # minutes in a work day (default: 390 min = 6.5 hours)
@@ -25,6 +28,8 @@ class Schedule:
         self.timeslots_per_work_day: int = minutes_in_a_work_day // granularity
         self.all_judges: list[Judge] = judges
         self.all_rooms: list[Room] = rooms
+        self.all_meetings: list[Meeting] = meetings
+        self.all_cases: list[Case] = cases
 
         # initializing the appointments_by_day_and_timeslot dictionary
         for day in range(1, self.work_days + 1):
@@ -33,6 +38,8 @@ class Schedule:
                 self.appointments_by_day_and_timeslot[day][timeslot] = []
     
     def __eq__(self, other):
+
+
         """Compare two Schedule objects for equality."""
         if not isinstance(other, Schedule):
             raise TypeError(f"Cannot compare Schedule with {type(other).__name__}")
@@ -153,6 +160,14 @@ class Schedule:
         if appointment.timeslot_in_day not in self.appointments_by_day_and_timeslot[appointment.day]:
             self.appointments_by_day_and_timeslot[appointment.day][appointment.timeslot_in_day] = []
         self.appointments_by_day_and_timeslot[appointment.day][appointment.timeslot_in_day].append(appointment)
+
+
+    def initialize_appointment_chains(self) -> None:
+        for app in self.iter_appointments():
+            if app.meeting.meeting_id not in self.appointment_chains:
+                self.appointment_chains[app.meeting.meeting_id] = []
+            self.appointment_chains[app.meeting.meeting_id].append(app)
+            
         
     
     def add_to_unplanned_meetings(self, meeting: Meeting) -> None:
@@ -236,15 +251,20 @@ class Schedule:
     def get_all_rooms(self) -> list:
         return self.all_rooms
 
-    def get_all_cases(self) -> list:
-        cases = []
-        case_ids = set()
-        for app in self.iter_appointments():
-            if app.meeting.case.case_id not in case_ids:
-                case_ids.add(app.meeting.case.case_id)
-                cases.append(app.meeting.case)
-        return cases
+    def get_all_meetings(self) -> list:
+        return self.all_meetings
 
+    def get_all_cases(self) -> list:
+        return self.all_cases
+
+    def get_appointment_chain(self, meeting_id: int) -> list[Appointment]:
+        """
+        Get the appointment chain for a given meeting.
+        """
+
+        if meeting_id not in self.appointment_chains:
+            raise ValueError(f"Meeting {meeting_id} not found in appointment chains")
+        return self.appointment_chains[meeting_id]
     
     def get_time_from_timeslot(self, timeslot: int) -> str:
         day_timeslot = timeslot % self.timeslots_per_work_day
@@ -260,9 +280,8 @@ class Schedule:
         This function doesn't care about conflicts - it simply moves the appointments to ensure
         that all appointments for a given meeting occur within the same day.
         """
-        from src.local_search.move_generator import identify_appointment_chains
         
-        chain_dict = identify_appointment_chains(self)
+        chain_dict = self.appointment_chains
         
         for meeting_id, appointments in chain_dict.items():
             if len(appointments) > 1:
@@ -464,7 +483,7 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     DSatur(conflict_graph)
     
     # Generate schedule
-    schedule = Schedule(work_days, minutes_per_work_day, granularity, judges, rooms)
+    schedule = Schedule(work_days, minutes_per_work_day, granularity, judges, rooms, meetings, cases)
     schedule.generate_schedule_from_colored_graph(conflict_graph)
     
     return schedule

@@ -11,30 +11,18 @@ from src.local_search.rules_engine import calculate_delta_score
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.rules_engine_helpers import populate_insert_move_appointments
 
-def identify_appointment_chains(schedule: Schedule) -> Dict:
-    """
-    Identify chains of appointments representing the same case.
-    
-    Returns:
-    A dictionary where keys are meeting_ids and values are lists of appointments.
-    """
-    appointment_chains = {}  # Key: case_id, Value: list of appointments
-    
-    for appointment in schedule.iter_appointments():
-        key = appointment.meeting.meeting_id
-        if key not in appointment_chains:
-            appointment_chains[key] = []
-        appointment_chains[key].append(appointment)
-    
-    return appointment_chains
-
 def generate_single_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, List[Judge]], 
                         compatible_rooms_dict: Dict[int, List[Room]]) -> list[Move]:
     """Generate a random valid move"""
-    chain_dict = identify_appointment_chains(schedule)
-    chosen_meeting_id = random.choice(list(chain_dict.keys()))
+
+    meetings: list[Meeting] = schedule.get_all_meetings()
+
+    if not meetings:
+        raise ValueError("No meetings found in the schedule.")
     
-    chosen_appointments = sorted(chain_dict[chosen_meeting_id], key=lambda app: (app.day, app.timeslot_in_day))
+    chosen_meeting_id: int = random.choice(meetings).meeting_id
+    
+    chosen_appointments = sorted(schedule.get_appointment_chain(chosen_meeting_id), key=lambda app: (app.day, app.timeslot_in_day))
     first_appointment = chosen_appointments[0]
     current_day = first_appointment.day
     current_start_timeslot = first_appointment.timeslot_in_day
@@ -115,12 +103,7 @@ def generate_specific_delete_move(schedule: Schedule, meeting_id: int) -> Move:
     if meeting_id is None:
         raise ValueError("Meeting ID cannot be None.")
     
-    chain_dict = identify_appointment_chains(schedule)
-    
-    if meeting_id not in chain_dict:
-        raise ValueError(f"Meeting ID {meeting_id} not found in schedule.")
-    
-    chosen_appointments = chain_dict[meeting_id]
+    chosen_appointments = schedule.get_appointment_chain(meeting_id)
     
     if not chosen_appointments:
         raise ValueError(f"No appointments found for meeting ID {meeting_id}.")
@@ -156,12 +139,7 @@ def generate_random_delete_move(schedule: Schedule) -> Move:
     
     meeting = random.choice(meetings)
     meeting_id = meeting.meeting_id
-    chain_dict = identify_appointment_chains(schedule)
-    
-    if meeting_id not in chain_dict:
-        raise ValueError(f"Meeting ID {meeting_id} not found in schedule.")
-    
-    chosen_appointments = chain_dict[meeting_id]
+    chosen_appointments = schedule.get_appointment_chain(meeting_id)
     
     if not chosen_appointments:
         raise ValueError(f"No appointments found for meeting ID {meeting_id}.")
@@ -287,7 +265,7 @@ def generate_compound_move(schedule: Schedule,
     if not schedule:
         raise ValueError("No schedule provided")
         
-    chain_dict = identify_appointment_chains(schedule)
+    chain_dict = schedule.appointment_chains
     if not chain_dict:
         raise ValueError("No appointments found in schedule")
     
@@ -402,7 +380,7 @@ def check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
 
 
 def pick_meeting_for_move(schedule: Schedule):
-    chain_dict = identify_appointment_chains(schedule)
+    chain_dict = schedule.appointment_chains
     chosen_meeting_id = random.choice(list(chain_dict.keys()))
     
     chosen_appointments = sorted(chain_dict[chosen_meeting_id], key=lambda app: (app.day, app.timeslot_in_day))

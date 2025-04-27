@@ -72,7 +72,7 @@ def generate_schedule(parsed_data: dict) -> Schedule:
     compatible_judges_dict = calculate_compatible_judges(meetings, judges)
     compatible_rooms_dict = calculate_compatible_rooms(meetings, rooms)
 
-    schedule = Schedule(work_days, min_per_work_day, granularity, judges, rooms)
+    schedule = Schedule(work_days, min_per_work_day, granularity, judges, rooms, meetings, cases)
 
     meetings_to_schedule = list(meetings)
     meetings_to_schedule.sort(key=lambda x: x.meeting_duration, reverse=True)

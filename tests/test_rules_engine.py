@@ -14,7 +14,7 @@ import random
 
 from src.util.data_generator import generate_test_data_parsed
 from src.base_model.compatibility_checks import initialize_compatibility_matricies, calculate_compatible_judges, calculate_compatible_rooms
-from src.local_search.move_generator import generate_single_random_move, generate_list_of_random_moves, generate_specific_delete_move, generate_specific_insert_move, generate_compound_move, generate_random_insert_move, generate_random_delete_move, generate_random_move_of_random_type
+from src.local_search.move_generator import generate_compound_move, generate_random_delete_move, generate_random_move_of_random_type
 from src.local_search.simulated_annealing import _calculate_moves_in_parallel
 from src.construction.heuristic.linear_assignment import generate_schedule
 
@@ -35,6 +35,7 @@ class TestRulesEngine(unittest.TestCase):
 
         self.schedule = generate_schedule(json)
         self.schedule.move_all_dayboundary_violations()
+        self.schedule.initialize_appointment_chains()
         self.schedule.trim_schedule_length_if_possible()
 
         self.cases = self.schedule.get_all_cases()
@@ -51,7 +52,9 @@ class TestRulesEngine(unittest.TestCase):
             (nr8_judge_skillmatch_delta, nr8_judge_skillmatch_full),
             (nr14_virtual_case_has_virtual_judge_delta, nr14_virtual_case_has_virtual_judge_full),
             (nr18_unused_timegrain_delta, nr18_unused_timegrain_full),
-            (nr27_overdue_case_not_planned_delta, nr27_overdue_case_not_planned_full),
+            (nr19_case_has_specific_judge_delta, nr19_case_has_specific_judge_full),
+            (nr20_max_weekly_coverage_delta, nr20_max_weekly_coverage_full),
+            (nr21_all_meetings_planned_for_case_delta, nr21_all_meetings_planned_for_case_full),
             (nr29_room_stability_per_day_delta, nr29_room_stability_per_day_full),
             (nr31_distance_between_meetings_delta, nr31_distance_between_meetings_full),
         ]
@@ -69,7 +72,6 @@ class TestRulesEngine(unittest.TestCase):
             
             move: Move = generate_random_move_of_random_type(self.schedule, self.compatible_judges, self.compatible_rooms)
             delta_score = calculate_delta_score(self.schedule, move)
-            
             do_move(move, self.schedule)
             
             full_score_after_do = calculate_full_score(self.schedule)
@@ -100,8 +102,10 @@ class TestRulesEngine(unittest.TestCase):
         delete_move = generate_random_delete_move(schedule)
         do_move(delete_move, schedule) # we delete a meeting to facilitate a potential insert move
         
+        print(f"DELETING MOVE: {delete_move}")
         
         move = generate_random_move_of_random_type(schedule, compatible_judges, compatible_rooms)
+        print(move)
                 
         violations_before = full_function(schedule)
         delta = delta_function(schedule, move)
@@ -159,7 +163,7 @@ class TestRulesEngine(unittest.TestCase):
             nr18_unused_timegrain_delta,
             nr18_unused_timegrain_full
         )
-    
+        
     def test_nr27_overdue_case_not_planned(self):
         self._check_delta_function_correctness(
             nr27_overdue_case_not_planned_delta,

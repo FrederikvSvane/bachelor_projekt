@@ -82,6 +82,9 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
                 timeslot_in_day=timeslot_in_day
             )
             
+            appointment.meeting.judge = appointment.judge
+            appointment.meeting.room = appointment.room
+            
             move.appointments.append(appointment)
             
             if day not in schedule.appointments_by_day_and_timeslot:
@@ -103,11 +106,10 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
         if schedule is None:
             raise ValueError("Schedule must be provided for delete move.")
         for app in move.appointments:
-            if (app.day in schedule.appointments_by_day_and_timeslot and
-                app.timeslot_in_day in schedule.appointments_by_day_and_timeslot[app.day] and
-                app in schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day]):
-                
-                schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day].remove(app)
+            appointments = schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day]
+            index = next((i for i, appointment in enumerate(appointments) if appointment is app), None)
+            if index is not None:
+                appointments.pop(index)
             else:
                 raise ValueError(f"Appointment {app} not found in schedule.")
             
@@ -132,10 +134,14 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
             if schedule is not None and changing_position:
                 old_day = app.day
                 old_timeslot = app.timeslot_in_day
-                if (old_day in schedule.appointments_by_day_and_timeslot and
-                    old_timeslot in schedule.appointments_by_day_and_timeslot[old_day]):
-                    schedule.appointments_by_day_and_timeslot[old_day][old_timeslot].remove(app)
 
+                appointments = schedule.appointments_by_day_and_timeslot[old_day][old_timeslot]
+                index = next((i for i, appointment in enumerate(appointments) if appointment is app), None)
+                if index is not None:
+                    appointments.pop(index)
+                else:
+                    raise ValueError(f"Appointment {app} not found in schedule.")
+                        
             if move.new_judge is not None:
                 app.judge = move.new_judge
                 app.meeting.judge = move.new_judge #sync
@@ -257,15 +263,19 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
     # Handle regular move
     else:
         changing_position = (move.old_day is not None or move.old_start_timeslot is not None)
-
+        
         for i, app in enumerate(move.appointments):
             # update the dict - remove the appointments from the new position
             if schedule is not None and changing_position:
                 current_day = app.day
                 current_timeslot = app.timeslot_in_day
-                if (current_day in schedule.appointments_by_day_and_timeslot and
-                    current_timeslot in schedule.appointments_by_day_and_timeslot[current_day]):
-                    schedule.appointments_by_day_and_timeslot[current_day][current_timeslot].remove(app)
+
+                appointments = schedule.appointments_by_day_and_timeslot[current_day][current_timeslot]
+                index = next((i for i, appointment in enumerate(appointments) if appointment is app), None)
+                if index is not None:
+                    appointments.pop(index)
+                else:
+                    raise ValueError(f"Appointment {app} not found in schedule.")
 
             if move.old_judge is not None:
                 app.judge = move.old_judge

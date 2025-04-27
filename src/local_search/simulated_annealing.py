@@ -6,6 +6,7 @@ import multiprocessing
 from copy import deepcopy
 from typing import Dict, List
 from collections import deque
+from src.local_search.ScheduleSnapshot import ScheduleSnapshot
 
 from src.base_model.schedule import Schedule
 from src.base_model.judge import Judge
@@ -16,35 +17,6 @@ from src.local_search.move_generator import generate_single_random_move, generat
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
 from src.local_search.ruin_and_recreate import apply_ruin_and_recreate, RRStrategy
 from src.util.schedule_visualizer import visualize
-
-def _check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
-    """
-    Checks if a move is in the tabu list
-    """
-    meeting_id = move.meeting_id
-
-    if move.new_judge is not None:
-        potential_tabu_item = (meeting_id, 'judge', move.new_judge.judge_id)
-        if potential_tabu_item in tabu_list:
-            # print(f"DEBUG: Move blocked by Tabu (Judge): {potential_tabu_item}") # Optional debug
-            return True
-
-    if move.new_room is not None:
-        potential_tabu_item = (meeting_id, 'room', move.new_room.room_id)
-        if potential_tabu_item in tabu_list:
-            # print(f"DEBUG: Move blocked by Tabu (Room): {potential_tabu_item}") # Optional debug
-            return True
-
-    if move.new_day is not None or move.new_start_timeslot is not None:
-        target_day = move.new_day if move.new_day is not None else move.old_day
-        target_start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
-
-        potential_tabu_item = (meeting_id, 'position', target_day, target_start_timeslot)
-        if potential_tabu_item in tabu_list:
-            # print(f"DEBUG: Move blocked by Tabu (Position): {potential_tabu_item}") # Optional debug
-            return True
-
-    return False
 
 def _add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
     """
@@ -147,6 +119,7 @@ def _calculate_cooling_rate(K: int, start_temperature: float, end_temperature: f
 
 
 def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1) -> Schedule:
+    from copy import deepcopy
     start_time = time.time()
     
     meetings = schedule.get_all_planned_meetings()
@@ -159,7 +132,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     current_score = calculate_full_score(schedule)
     best_score = current_score
     current_temperature = start_temp
-    best_schedule = deepcopy(schedule)
+    best_schedule_snapshot = ScheduleSnapshot(schedule)
     
     full_temp_range = start_temp - end_temp
     high_temp_threshold = full_temp_range * 0.6 # from 60% to 100% of the temperature range
@@ -234,7 +207,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 
                 if current_score < best_score:
                     best_score = current_score
-                    best_schedule = deepcopy(schedule)
+                    best_schedule_snapshot = ScheduleSnapshot(schedule)
                     plateau_count = 0
                     best_score_improved_this_iteration = True
                     
@@ -257,9 +230,10 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             print("No moves accepted for this temperature. Consider terminating.")
             continue
         
-        if current_iteration % 50 == 0:
-            visualize(best_schedule)
-
+        if current_iteration % 10 == 0:
+            visualize(best_schedule_snapshot.restore_schedule(schedule))
+            #visualize(best_schedule_snapshot.restore_schedule(schedule), view_by="room")
+                
         # Print progress information
         print(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
               f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}"
@@ -280,7 +254,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     best_schedule = deepcopy(best_schedule)
                     print(f"New best score found after R&R: {best_score}")
                     
-    return best_schedule
+    return best_schedule_snapshot.restore_schedule(schedule)
 
 def run_local_search(schedule: Schedule) -> Schedule:
     iterations_per_temperature = 5000
