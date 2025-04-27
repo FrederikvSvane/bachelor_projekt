@@ -433,7 +433,7 @@ def nr20_max_weekly_coverage_delta(schedule: Schedule, move: Move, max_percentag
     step = 1
     
     if move.new_day is None and move.new_judge is None and move.new_start_timeslot is None:
-        return 0  # No change in day or judge, so no impact on weekly coverage
+        return 0  # No change in day or judge, x no impact on weekly coverage
     
     # Get affected judge-week pairs
     affected_week_judge_pairs = get_affected_week_judge_pairs(schedule, move)

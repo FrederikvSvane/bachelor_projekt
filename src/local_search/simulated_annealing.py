@@ -231,6 +231,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         
         if current_iteration % 10 == 0:
             visualize(best_schedule_snapshot.restore_schedule(schedule))
+            #visualize(best_schedule_snapshot.restore_schedule(schedule), view_by="room")
                 
         # Print progress information
         print(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
