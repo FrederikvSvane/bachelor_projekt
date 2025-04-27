@@ -82,6 +82,7 @@ def main():
         initial_schedule.trim_schedule_length_if_possible()
         initial_score = calculate_full_score(initial_schedule)
         visualize(initial_schedule)
+        #visualize(initial_schedule, view_by="room")
         
         final_schedule = run_local_search(initial_schedule)
         

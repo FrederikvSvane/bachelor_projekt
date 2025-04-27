@@ -61,9 +61,6 @@ class ScheduleSnapshot:
             judge = judges_map[judge_id]
             room = rooms_map[room_id]
             
-            # Set meeting's room
-            meeting.room = room
-            
             # Create and add appointment
             app = Appointment(meeting, judge, room, day, timeslot)
             new_schedule.add_meeting_to_schedule(app)
