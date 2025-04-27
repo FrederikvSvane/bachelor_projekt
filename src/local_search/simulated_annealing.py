@@ -16,35 +16,6 @@ from src.local_search.move_generator import generate_single_move, generate_list_
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
 from src.util.schedule_visualizer import visualize
 
-def _check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
-    """
-    Checks if a move is in the tabu list
-    """
-    meeting_id = move.meeting_id
-
-    if move.new_judge is not None:
-        potential_tabu_item = (meeting_id, 'judge', move.new_judge.judge_id)
-        if potential_tabu_item in tabu_list:
-            # print(f"DEBUG: Move blocked by Tabu (Judge): {potential_tabu_item}") # Optional debug
-            return True
-
-    if move.new_room is not None:
-        potential_tabu_item = (meeting_id, 'room', move.new_room.room_id)
-        if potential_tabu_item in tabu_list:
-            # print(f"DEBUG: Move blocked by Tabu (Room): {potential_tabu_item}") # Optional debug
-            return True
-
-    if move.new_day is not None or move.new_start_timeslot is not None:
-        target_day = move.new_day if move.new_day is not None else move.old_day
-        target_start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
-
-        potential_tabu_item = (meeting_id, 'position', target_day, target_start_timeslot)
-        if potential_tabu_item in tabu_list:
-            # print(f"DEBUG: Move blocked by Tabu (Position): {potential_tabu_item}") # Optional debug
-            return True
-
-    return False
-
 def _add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
     """
     Adds the reverse of the accepted move to the tabu list.
@@ -269,10 +240,15 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
 def run_local_search(schedule: Schedule) -> Schedule:
     iterations_per_temperature = 5000
-    max_time_seconds = 60 * 5  
+    max_time_seconds = 60
     start_temp = 300
     end_temp = 10
     
     optimized_schedule = simulated_annealing(schedule, iterations_per_temperature, max_time_seconds, start_temp, end_temp)
     
     return optimized_schedule
+
+
+32922250
+
+32922250

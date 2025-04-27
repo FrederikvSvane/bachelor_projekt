@@ -258,13 +258,14 @@ def calculate_gaps_between_appointments(schedule: Schedule, judge_id: int, speci
                 
 
     
-def check_app_and_meeting_same_judge_and_room(schedule: Schedule, meeting: Meeting) -> None:
+def check_app_and_meeting_same_judge_and_room(schedule: Schedule, meeting: Meeting) -> bool:
     for app in schedule.iter_appointments():
         if app.meeting is not None:
             if app.judge is not None and app.room is not None:
                 if app.meeting.judge is not None and app.meeting.room is not None:
                     if app.judge != app.meeting.judge or app.room != app.meeting.room:
-                        raise Warning(f"Appointment {app} does not match meeting's judge or room.")
+                        raise ValueError(f"Appointment {app} does not match meeting's judge or room.")
+    return True
                     
 
 def get_week_judge_pairs(schedule: Schedule) -> set:

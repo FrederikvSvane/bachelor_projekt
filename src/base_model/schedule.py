@@ -1,4 +1,5 @@
 from typing import Dict
+from copy import deepcopy
 
 from src.util.data_generator import ensure_jm_pair_room_compatibility
 from src.base_model.judge import Judge
@@ -124,12 +125,13 @@ class Schedule:
             judges=self.all_judges,  # References are fine for these
             rooms=self.all_rooms,
             meetings=self.all_meetings,
-            cases=self.all_cases
+            cases=deepcopy(self.all_cases, memo)  # Deep copy cases
         )
         
         # Add the new instance to the memo dictionary to avoid circular references
         memo[id(self)] = new_instance
         
+
         # Deep copy the appointments by day and timeslot
         for day, timeslots in self.appointments_by_day_and_timeslot.items():
             new_instance.appointments_by_day_and_timeslot[day] = {}
@@ -138,13 +140,19 @@ class Schedule:
                 for appointment in appointments:
                     # Create a new appointment with the same attributes
                     new_appointment = Appointment(
-                        meeting=appointment.meeting,  # Use references for these objects
-                        judge=appointment.judge,
-                        room=appointment.room,
+                        meeting=deepcopy(appointment.meeting, memo),
+                        judge=deepcopy(appointment.judge, memo),
+                        room=deepcopy(appointment.room, memo),
                         day=appointment.day,
                         timeslot_in_day=appointment.timeslot_in_day
                     )
                     new_instance.appointments_by_day_and_timeslot[day][timeslot].append(new_appointment)
+        
+        # Copy unplanned meetings
+        new_instance.unplanned_meetings = self.unplanned_meetings
+        
+                # Initialize appointment chains for the copy
+        new_instance.initialize_appointment_chains()
         
         return new_instance
     
