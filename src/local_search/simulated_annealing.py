@@ -230,8 +230,8 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             print("No moves accepted for this temperature. Consider terminating.")
             continue
         
-        if current_iteration % 10 == 0:
-            visualize(best_schedule_snapshot.restore_schedule(schedule))
+        #if current_iteration % 10 == 0:
+        #    visualize(best_schedule_snapshot.restore_schedule(schedule))
             #visualize(best_schedule_snapshot.restore_schedule(schedule), view_by="room")
                 
         # Print progress information
@@ -242,23 +242,23 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         
         if plateau_count >= 5:
             print("\n \n _______________________________________________________________ \n Large plateau detected! Applying Ruin and Recreate... \n _______________________________________________________________ \n")
-            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule, compatible_judges, compatible_rooms, RRStrategy.RANDOM_MEETINGS)
+            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, RRStrategy.RANDOM_MEETINGS)
             if r_r_success:
                 print(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
-                current_score = calculate_full_score(best_schedule)
+                current_score = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
                 tabu_list.clear()
                 plateau_count = 0
 
                 if current_score < best_score:
                     best_score = current_score
-                    best_schedule = deepcopy(best_schedule)
+                    best_schedule_snapshot = ScheduleSnapshot(schedule)
                     print(f"New best score found after R&R: {best_score}")
                     
     return best_schedule_snapshot.restore_schedule(schedule)
 
 def run_local_search(schedule: Schedule) -> Schedule:
     iterations_per_temperature = 5000
-    max_time_seconds = 300
+    max_time_seconds = 60 * 60  # 1 hour
     start_temp = 300
     end_temp = 10
     

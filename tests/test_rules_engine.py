@@ -34,8 +34,8 @@ class TestRulesEngine(unittest.TestCase):
         initialize_compatibility_matricies(json)
 
         self.schedule = generate_schedule(json)
-        self.schedule.move_all_dayboundary_violations()
         self.schedule.initialize_appointment_chains()
+        self.schedule.move_all_dayboundary_violations()
         self.schedule.trim_schedule_length_if_possible()
 
         self.cases = self.schedule.get_all_cases()
@@ -92,7 +92,7 @@ class TestRulesEngine(unittest.TestCase):
                                        compatible_judges: Optional[List] = None,
                                        compatible_rooms: Optional[List] = None):
 
-        # Use provided parameters or fall back to instance variables
+            # Use provided parameters or fall back to instance variables
         schedule = schedule or self.schedule
         compatible_judges = compatible_judges or self.compatible_judges
         compatible_rooms = compatible_rooms or self.compatible_rooms
@@ -102,10 +102,8 @@ class TestRulesEngine(unittest.TestCase):
         delete_move = generate_random_delete_move(schedule)
         do_move(delete_move, schedule) # we delete a meeting to facilitate a potential insert move
         
-        print(f"DELETING MOVE: {delete_move}")
         
         move = generate_random_move_of_random_type(schedule, compatible_judges, compatible_rooms)
-        print(move)
                 
         violations_before = full_function(schedule)
         delta = delta_function(schedule, move)
@@ -123,8 +121,8 @@ class TestRulesEngine(unittest.TestCase):
     def test_all_delta_functions(self):
         """Test all delta functions against their corresponding full functions."""
         for delta_function, full_function in self.rule_functions:
-            with self.subTest(delta_function=delta_function.__name__):
-                self._check_delta_function_correctness(delta_function, full_function)
+            #with self.subTest(delta_function=delta_function.__name__):
+            self._check_delta_function_correctness(delta_function, full_function)
     
     # Individual test methods for better test isolation
     def test_nr1_overbooked_room_in_timeslot(self):

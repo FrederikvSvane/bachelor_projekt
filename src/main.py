@@ -88,6 +88,7 @@ def main():
         
         final_score = calculate_full_score(final_schedule)
         visualize(final_schedule)
+        visualize(final_schedule, view_by="room")
         print(f"Initial score: {initial_score}")
         print(f"Final score: {final_score}")
 
