@@ -1,5 +1,6 @@
 from collections import defaultdict
 from sys import exit
+import math
 
 from src.base_model.schedule import Schedule
 from src.base_model.appointment import Appointment
@@ -395,8 +396,6 @@ def nr19_case_has_specific_judge_delta(schedule: Schedule, move: Move):
     undo_move(move, schedule)
 
     return (offset + step * (after_violations - before_violations))
-
-import math
 
 def nr20_max_weekly_coverage_full(schedule: Schedule, max_percentage: float = 0.8):
     """
