@@ -6,6 +6,7 @@ import multiprocessing
 from copy import deepcopy
 from typing import Dict, List
 from collections import deque
+from src.local_search.ScheduleSnapshot import ScheduleSnapshot
 
 from src.base_model.schedule import Schedule
 from src.base_model.judge import Judge
@@ -130,7 +131,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     current_score = calculate_full_score(schedule)
     best_score = current_score
     current_temperature = start_temp
-    best_schedule = deepcopy(schedule)
+    best_schedule_snapshot = ScheduleSnapshot(schedule)
     
     full_temp_range = start_temp - end_temp
     high_temp_threshold = full_temp_range * 0.6 # from 60% to 100% of the temperature range
@@ -205,7 +206,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 
                 if current_score < best_score:
                     best_score = current_score
-                    best_schedule = deepcopy(schedule)
+                    best_schedule_snapshot = ScheduleSnapshot(schedule)
                     plateau_count = 0
                     best_score_improved_this_iteration = True
                     
@@ -229,26 +230,21 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             continue
         
         if current_iteration % 10 == 0:
-            visualize(best_schedule)
+            visualize(best_schedule_snapshot.restore_schedule(schedule))
                 
         # Print progress information
         print(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
               f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}"
               f"{' - Plateau detected!' if plateau_count > 5 else ''}")
                     
-    return best_schedule
+    return best_schedule_snapshot.restore_schedule(schedule)
 
 def run_local_search(schedule: Schedule) -> Schedule:
     iterations_per_temperature = 5000
-    max_time_seconds = 60
+    max_time_seconds = 60 * 5
     start_temp = 300
     end_temp = 10
     
     optimized_schedule = simulated_annealing(schedule, iterations_per_temperature, max_time_seconds, start_temp, end_temp)
     
     return optimized_schedule
-
-
-32922250
-
-32922250

@@ -115,47 +115,6 @@ class Schedule:
         
         return True
     
-    def __deepcopy__(self, memo):
-        """Implement deep copy behavior"""
-        # Create a new instance with the same parameters
-        new_instance = Schedule(
-            work_days=self.work_days,
-            minutes_in_a_work_day=self.minutes_in_a_work_day,
-            granularity=self.granularity,
-            judges=self.all_judges,  # References are fine for these
-            rooms=self.all_rooms,
-            meetings=self.all_meetings,
-            cases=deepcopy(self.all_cases, memo)  # Deep copy cases
-        )
-        
-        # Add the new instance to the memo dictionary to avoid circular references
-        memo[id(self)] = new_instance
-        
-
-        # Deep copy the appointments by day and timeslot
-        for day, timeslots in self.appointments_by_day_and_timeslot.items():
-            new_instance.appointments_by_day_and_timeslot[day] = {}
-            for timeslot, appointments in timeslots.items():
-                new_instance.appointments_by_day_and_timeslot[day][timeslot] = []
-                for appointment in appointments:
-                    # Create a new appointment with the same attributes
-                    new_appointment = Appointment(
-                        meeting=deepcopy(appointment.meeting, memo),
-                        judge=deepcopy(appointment.judge, memo),
-                        room=deepcopy(appointment.room, memo),
-                        day=appointment.day,
-                        timeslot_in_day=appointment.timeslot_in_day
-                    )
-                    new_instance.appointments_by_day_and_timeslot[day][timeslot].append(new_appointment)
-        
-        # Copy unplanned meetings
-        new_instance.unplanned_meetings = self.unplanned_meetings
-        
-                # Initialize appointment chains for the copy
-        new_instance.initialize_appointment_chains()
-        
-        return new_instance
-    
     def add_meeting_to_schedule(self, appointment: Appointment):
         if appointment.day not in self.appointments_by_day_and_timeslot:
             self.appointments_by_day_and_timeslot[appointment.day] = {}
