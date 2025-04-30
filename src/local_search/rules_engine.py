@@ -5,19 +5,61 @@ from src.base_model.case import Case
 from src.base_model.meeting import Meeting
 from src.base_model.schedule import Schedule
 from src.base_model.appointment import Appointment, print_appointments
-from src.base_model.compatibility_checks import check_case_judge_compatibility, check_case_room_compatibility, check_judge_room_compatibility
+from src.base_model.compatibility_checks import check_case_judge_compatibility, check_case_room_compatibility, check_judge_room_compatibility, case_room_matrix
 from src.local_search.rules_engine_helpers import *
 from src.local_search.move import Move, do_move, undo_move
 
+hard_constraint_weight = None
+medium_constraint_weight = None 
+soft_constraint_weight = None
 
-# TODO These should be updated based on the size of the problem.
-# Even if every single appointment breaks a soft constraint, the penalty from that should be less than a single medium constraint.
-# 10 judges * 78 timeslots * 10 days = 7800 potential soft and medium violations => 1, e4, e8 works.
-hard_containt_weight = 100_000_000
-medm_containt_weight = 10_000
-soft_containt_weight = 1
+def _initialize_constraint_weights(schedule: Schedule) -> None:
+    """Initialize constraint weights based on schedule dimensions"""
+    global hard_constraint_weight, medium_constraint_weight, soft_constraint_weight
+    hard_constraint_weight, medium_constraint_weight, soft_constraint_weight = _calculate_constraint_weights(schedule)
+
+def _calculate_constraint_weights(schedule: Schedule) -> tuple[int, int, int]:
+    """
+    Calculate appropriate constraint weights based on schedule dimensions.
+    Weights are rounded to the nearest power of 10 for readability.
+    
+    Ensures the constraint hierarchy is maintained:
+    - All soft constraint violations combined < one medium constraint violation
+    - All medium constraint violations combined < one hard constraint violation
+    
+    Returns:
+        Tuple of (hard_weight, medium_weight, soft_weight)
+    """
+    n_judges = len(schedule.get_all_judges())
+    n_timeslots = schedule.timeslots_per_work_day
+    n_days = schedule.work_days
+    
+    max_possible_violations = n_judges * n_timeslots * n_days
+    
+    # Set base weight for soft constraints
+    soft_weight = 1
+    
+    # Calculate medium weight - ensure it's larger than all possible soft violations
+    # Add safety factor and round to nearest power of 10
+    exact_medium_weight = max_possible_violations * soft_weight * 10
+    medium_log = round(math.log10(exact_medium_weight))
+    medium_weight = 10 ** medium_log
+    
+    exact_hard_weight = max_possible_violations * medium_weight * 10
+    hard_log = round(math.log10(exact_hard_weight))
+    hard_weight = 10 ** hard_log
+    
+    # print(f"Calculated constraint weights based on {n_judges} judges, {n_timeslots} timeslots, {n_days} days:")
+    # print(f"  - Soft constraint weight: {soft_weight}")
+    # print(f"  - Medium constraint weight: {medium_weight} (10^{medium_log})")
+    # print(f"  - Hard constraint weight: {hard_weight} (10^{hard_log})")
+    
+    return hard_weight, medium_weight, soft_weight
+
 
 def calculate_full_score(schedule: Schedule) -> int:
+    if hard_constraint_weight is None:
+        _initialize_constraint_weights(schedule)
     # Hard
     hard_violations = 0
     hard_violations += nr1_overbooked_room_in_timeslot_full(schedule)
@@ -38,7 +80,7 @@ def calculate_full_score(schedule: Schedule) -> int:
     soft_violations += nr29_room_stability_per_day_full(schedule)
     soft_violations += nr31_distance_between_meetings_full(schedule)
 
-    full_score = hard_violations * hard_containt_weight + medm_violations * medm_containt_weight + soft_violations * soft_containt_weight
+    full_score = hard_violations * hard_constraint_weight + medm_violations * medium_constraint_weight + soft_violations * soft_constraint_weight
     
     # print(f"FULL: Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations} (including {unplanned_meetings} unplanned meetings)")  
     
@@ -78,7 +120,7 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
     soft_violations += nr29_room_stability_per_day_delta(schedule, move)
     soft_violations += nr31_distance_between_meetings_delta(schedule, move)
 
-    delta_score = hard_containt_weight * hard_violations + medm_containt_weight * medm_violations + soft_containt_weight * soft_violations
+    delta_score = hard_constraint_weight * hard_violations + medium_constraint_weight * medm_violations + soft_constraint_weight * soft_violations
 
     # print(f"DELTA: Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations} (including {unplanned_meetings} unplanned meetings)")  
 

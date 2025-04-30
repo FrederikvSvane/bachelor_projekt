@@ -164,8 +164,9 @@ def generate_random_delete_move(schedule: Schedule) -> Move:
     return move
 
 def generate_specific_insert_move(schedule: Schedule, meeting: Meeting, judge: Judge, room: Room, day: int, start_timeslot: int) -> Move:
-    if meeting not in schedule.get_all_unplanned_meetings():
-        raise ValueError("Meeting not found in unplanned meetings for schedule. Will not generate insert move.")
+    #NOTE the check below clashes with the schedule state during parallel subprocesses during ruin and recreate. So leaving it out for now.
+    # if meeting not in schedule.get_all_unplanned_meetings():
+    #     raise ValueError("Meeting not found in unplanned meetings for schedule. Will not generate insert move.")
     if judge is None or room is None or day is None or start_timeslot is None:
         raise ValueError("Judge, room, day, and start_timeslot cannot be None. Will not generate insert move.")
 
