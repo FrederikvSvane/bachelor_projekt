@@ -105,6 +105,7 @@ def initialize_compatibility_matricies(parsed_data):
     judges = parsed_data["judges"]
     rooms = parsed_data["rooms"]
 
+
     for case in cases:
         case_id = case.case_id
         case_judge_matrix[case_id] = {}

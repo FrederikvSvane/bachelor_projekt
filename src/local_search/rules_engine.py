@@ -17,7 +17,7 @@ hard_containt_weight = 100_000_000
 medm_containt_weight = 10_000
 soft_containt_weight = 1
 
-def calculate_full_score(schedule: Schedule) -> int:
+def calculate_full_score(schedule: Schedule) -> list[int, int, int, int]:
     # Hard
     hard_violations = 0
     hard_violations += nr1_overbooked_room_in_timeslot_full(schedule)
@@ -42,9 +42,9 @@ def calculate_full_score(schedule: Schedule) -> int:
     
     # print(f"FULL: Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations} (including {unplanned_meetings} unplanned meetings)")  
     
-    return full_score
+    return [full_score, hard_violations, medm_violations, soft_violations]
 
-def calculate_delta_score(schedule: Schedule, move: Move) -> int:
+def calculate_delta_score(schedule: Schedule, move: Move) -> list[int, int, int, int]:
     """
     do the move AFTER calling this function.
     NOT BEFORE!!!
@@ -80,9 +80,8 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
 
     delta_score = hard_containt_weight * hard_violations + medm_containt_weight * medm_violations + soft_containt_weight * soft_violations
 
-    # print(f"DELTA: Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations} (including {unplanned_meetings} unplanned meetings)")  
-
-    return delta_score
+    #print(f"DELTA: Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations}")  
+    return [delta_score, hard_violations, medm_violations, soft_violations]
 
  
         

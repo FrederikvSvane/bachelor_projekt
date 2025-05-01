@@ -25,7 +25,7 @@ def apply_ruin_and_recreate(schedule: Schedule,
                            compatible_rooms_dict: dict[int, list[Room]], 
                            strategy: RRStrategy,
                            specific_resource: Optional[Union[Judge, Room, int]] = None, 
-                           percentage: int = 50) -> Tuple[bool, int]:
+                           percentage: int = 10) -> Tuple[bool, int]:
     """Apply ruin and recreate with a given strategy.
     
     Args:

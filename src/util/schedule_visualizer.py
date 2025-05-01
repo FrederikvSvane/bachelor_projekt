@@ -99,7 +99,7 @@ def visualize(schedule: Schedule, view_by="judge"):
                     other_entity_str = f"R{app.room.room_id}:{print_room_info(rooms, app.room.room_id)}"
                 else:  # view_by == "room"
                     entity_id = app.room.room_id
-                    other_entity_str = f"J{app.judge.judge_id}"
+                    other_entity_str = f"J{app.judge.judge_id}:{print_judge_info(judges, app.judge.judge_id)}"
                 
                 # Check if this is a continuation of previous appointment
                 is_continuation = False
@@ -196,4 +196,27 @@ def print_room_info(rooms: list[Room], room_id):
             abbr.append("Sc")
         elif attr == Attribute.ACCESSIBILITY:
             abbr.append("A")
+    return "".join(abbr) if abbr else ""
+
+def print_judge_info(judges: list[Judge], judge_id):
+    """Returns a string with abbreviated characteristics of the judge"""
+    # Find the judge with matching ID
+    judge = None
+    for j in judges:
+        if j.judge_id == judge_id:
+            judge = j
+            break
+    
+    if not judge.characteristics:
+        return ""
+
+    abbr = []
+    for attr in judge.characteristics:
+        if attr == Attribute.VIRTUAL:
+            abbr.append("V")
+        elif attr == Attribute.SHORTDURATION:
+            abbr.append("Sh")
+        elif attr == Attribute.ACCESSIBILITY:
+            abbr.append("A")
+    
     return "".join(abbr) if abbr else ""

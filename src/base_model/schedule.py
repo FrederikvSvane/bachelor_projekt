@@ -1,7 +1,6 @@
 from typing import Dict
 from copy import deepcopy
 
-from src.util.data_generator import ensure_jm_pair_room_compatibility
 from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.case import Case
@@ -329,7 +328,7 @@ class Schedule:
                         break 
 
             if is_empty:
-                print(f"Trimming empty day {last_day} from schedule.")
+                #print(f"Trimming empty day {last_day} from schedule.")
                 self.work_days -= 1
             else:
                 break
@@ -468,7 +467,7 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     meeting_judge_pairs = assign_cases_to_judges(judge_meeting_graph)
     #judge_meeting_graph.visualize()
     
-    rooms = ensure_jm_pair_room_compatibility(meeting_judge_pairs, rooms)
+    #rooms = ensure_jm_pair_room_compatibility(meeting_judge_pairs, rooms)
     # Flow 2: Assign rooms to case-judge pairs
     jm_room_graph = DirectedGraph()
     jm_room_graph.initialize_case_judge_pair_to_room_graph(meeting_judge_pairs, rooms)

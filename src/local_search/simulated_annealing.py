@@ -129,7 +129,8 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     compatible_judges = calculate_compatible_judges(meetings, judges)
     compatible_rooms = calculate_compatible_rooms(meetings, rooms)
     
-    current_score = calculate_full_score(schedule)
+
+    current_score, hard_violations, medium_violations, soft_violations = calculate_full_score(schedule)
     best_score = current_score
     current_temperature = start_temp
     best_schedule_snapshot = ScheduleSnapshot(schedule)
@@ -189,9 +190,12 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 else: 
                     # single move
                     move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
+
+            result = calculate_delta_score(schedule, move)
+            result_full = calculate_full_score(schedule)
+
+            delta = result[0]
                 
-            delta = calculate_delta_score(schedule, move)
-            
             moves_explored_this_iteration += 1
             if move is None:
                 print("No valid moves found, skipping iteration")
@@ -206,7 +210,11 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 _add_move_to_tabu_list(move, tabu_list)
                 
                 if current_score < best_score:
+                    hard_violations += result[1]
+                    medium_violations += result[2]
+                    soft_violations += result[3]
                     best_score = current_score
+                    print(f"Score: {best_score}")
                     best_schedule_snapshot = ScheduleSnapshot(schedule)
                     plateau_count = 0
                     best_score_improved_this_iteration = True
@@ -236,7 +244,8 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 
         # Print progress information
         print(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
-              f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}"
+              f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
+              f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
               f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
 
         
