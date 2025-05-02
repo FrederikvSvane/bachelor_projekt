@@ -139,7 +139,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     high_temp_threshold = full_temp_range * 0.6 # from 60% to 100% of the temperature range
     medium_temp_threshold = full_temp_range * 0.1 # from 10% to 60% of the temperature range
     low_temp_threshold = full_temp_range * 0 # bottom 10% of the temperature range 
-    
+     
     plateau_count = 0
     cooling_rate = _calculate_cooling_rate(100, start_temp, end_temp)  # Initial cooling rate
     
@@ -191,10 +191,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     # single move
                     move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
 
-            result = calculate_delta_score(schedule, move)
-            result_full = calculate_full_score(schedule)
-
-            delta = result[0]
+            delta = calculate_delta_score(schedule, move)
                 
             moves_explored_this_iteration += 1
             if move is None:
@@ -210,17 +207,22 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 _add_move_to_tabu_list(move, tabu_list)
                 
                 if current_score < best_score:
-                    hard_violations += result[1]
-                    medium_violations += result[2]
-                    soft_violations += result[3]
                     best_score = current_score
-                    print(f"Score: {best_score}")
-                    best_schedule_snapshot = ScheduleSnapshot(schedule)
                     plateau_count = 0
+                    best_schedule_snapshot = ScheduleSnapshot(schedule)
                     best_score_improved_this_iteration = True
+
                     
             else: # reject move
                 undo_move(move, schedule)
+
+            if i == iterations_per_temperature - 1:
+                result = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
+                best_score = result[0]
+                hard_violations = result[1]
+                medium_violations = result[2]
+                soft_violations = result[3]
+        
 
         current_iteration += 1
         current_temperature *= cooling_rate
