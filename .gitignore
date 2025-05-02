@@ -14,3 +14,4 @@ CourtCaseScheduler
 *.prof
 src/*/__pycache__/*
 *.pyc
+*.log

@@ -29,6 +29,8 @@ def parse_arguments():
     parser.add_argument('--output', type=str, default='output.json',
                       help='Path to output JSON file (default: output.json)')
     
+    parser.add_argument('--log', type=str, help='Path to log file for simulated annealing output')
+    
     return parser.parse_args()
 
 def main():
@@ -93,7 +95,7 @@ def main():
         print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
         print(f"Initial score: {initial_score}")
         
-        final_schedule = run_local_search(initial_schedule)
+        final_schedule = run_local_search(initial_schedule, args.log)
         
         final_score = calculate_full_score(final_schedule)
         visualize(final_schedule)

@@ -17,6 +17,7 @@ from src.local_search.move_generator import generate_single_random_move, generat
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
 from src.local_search.ruin_and_recreate import apply_ruin_and_recreate
 from src.util.schedule_visualizer import visualize
+from src.local_search.rules_engine import _calculate_constraint_weights
 
 def _add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
     """
@@ -116,11 +117,38 @@ def _calculate_cooling_rate(K: int, start_temperature: float, end_temperature: f
         end_temperature: Ending temperature
     """
     return (end_temperature / start_temperature) ** (1 / (K - 1))
+def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, medium_weight, soft_weight) -> tuple[int, int, int]:
+    """
+    Extract hard, medium and soft violations from a total score based on the weights.
+    """
+    # Get the weights calculated from the schedule dimensions
+    
+    # Extract violations by integer division and modulo
+    hard_count = score // hard_weight
+    medium_count = (score % hard_weight) // medium_weight
+    soft_count = (score % medium_weight) // soft_weight
+    
+    return hard_count, medium_count, soft_count
 
 
-def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1) -> Schedule:
+def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, log_file_path: str = None) -> Schedule:
     from copy import deepcopy
     start_time = time.time()
+    
+    # Open log file if path is provided
+    log_file = None
+    if log_file_path:
+        try:
+            log_file = open(log_file_path, 'w')
+        except Exception as e:
+            print(f"Error opening log file: {e}")
+    
+    # Custom log function to write to both console and file
+    def log_output(message):
+        print(message)
+        if log_file:
+            log_file.write(message + "\n")
+            log_file.flush()  # Ensure data is written immediately
     
     meetings = schedule.get_all_planned_meetings()
     judges = schedule.get_all_judges()
@@ -134,6 +162,8 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     best_score = current_score
     current_temperature = start_temp
     best_schedule_snapshot = ScheduleSnapshot(schedule)
+
+    hard_weight, medium_weight, soft_weight = _calculate_constraint_weights(schedule)
     
     full_temp_range = start_temp - end_temp
     high_temp_threshold = full_temp_range * 0.6 # from 60% to 100% of the temperature range
@@ -148,8 +178,15 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     current_iteration = 0
     p_attempt_insert = 0.1
     plateau_count_min, plateau_count_max = 3, 10
-    ruin_percentage_min, ruin_percentage_max = 0.05, 0.10
+    ruin_percentage_min, ruin_percentage_max = 0.01, 0.05
     
+    log_output(f"Starting simulated annealing with parameters:")
+    log_output(f"Iterations per temperature: {iterations_per_temperature}")
+    log_output(f"Max time: {max_time_seconds} seconds")
+    log_output(f"Start temperature: {start_temp}")
+    log_output(f"End temperature: {end_temp}")
+    log_output(f"Initial score: {current_score}")
+    log_output(f"Initial violations - Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}")
 
     while time_used < max_time_seconds:
         time_used = time.time() - start_time
@@ -162,9 +199,6 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         normalized_temp = current_temperature / start_temp
         current_plateau_limit = int(plateau_count_min + (plateau_count_max - plateau_count_min) * (1 - normalized_temp)) # starts low, goes high
         current_ruin_percentage = ruin_percentage_min + (ruin_percentage_max - ruin_percentage_min) * (1 - normalized_temp) # start low, goes high
-        
-        #print(f"Current plateau limit: {current_plateau_limit}, Current ruin percentage: {current_ruin_percentage}")
-        #print(f"Current temperature: {current_temperature}, Normalized temperature: {normalized_temp}")
         
         for i in range(iterations_per_temperature):
             move = None
@@ -212,7 +246,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 
             moves_explored_this_iteration += 1
             if move is None:
-                print("No valid moves found, skipping iteration")
+                log_output("No valid moves found, skipping iteration")
                 continue
             
             do_move(move, schedule) 
@@ -232,13 +266,12 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     
             else: # reject move
                 undo_move(move, schedule)
-
-            if i == iterations_per_temperature - 1:
-                result = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
-                best_score = result[0]
-                hard_violations = result[1]
-                medium_violations = result[2]
-                soft_violations = result[3]
+        
+        #Extract the bset_score violations based on score:
+        best_hard, best_medium, best_soft = extract_violations_from_score(best_score, schedule, hard_weight, medium_weight, soft_weight)
+        hard_violations = best_hard
+        medium_violations = best_medium
+        soft_violations = best_soft
         
 
         current_iteration += 1
@@ -249,47 +282,54 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         
         # Reheat if temperature gets too low but we still have time
         if current_temperature < end_temp:
-            print("Reheating")
+            log_output("Reheating")
             current_temperature = start_temp
         
         # Exit if no progress is being made
         if moves_accepted_this_iteration == 0:
-            print("No moves accepted for this temperature. Consider terminating.")
+            log_output("No moves accepted for this temperature. Consider terminating.")
             continue
         
-        #if current_iteration % 10 == 0:
-        #    visualize(best_schedule_snapshot.restore_schedule(schedule))
-            #visualize(best_schedule_snapshot.restore_schedule(schedule), view_by="room")
-                
-        # Print progress information
-        print(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
+        log_output(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
               f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
               f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
               f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
 
         
         if plateau_count >= current_plateau_limit:
-            print("\n \n _______________________________________________________________ \n Large plateau detected! Applying Ruin and Recreate... \n _______________________________________________________________ \n")
+            log_output("\n \n _______________________________________________________________ \n Large plateau detected! Applying Ruin and Recreate... \n _______________________________________________________________ \n")
             r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
             plateau_count = 0
             if r_r_success:
-                print(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
-                current_score = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
+                log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
+                result = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
+                current_score = result[0]
                 tabu_list.clear()
 
                 if current_score < best_score:
                     best_score = current_score
                     best_schedule_snapshot = ScheduleSnapshot(schedule)
-                    print(f"New best score found after R&R: {best_score}")
+                    log_output(f"New best score found after R&R: {best_score}")
+    
+    # Close log file if it was opened
+    if log_file:
+        log_file.close()
                     
     return best_schedule_snapshot.restore_schedule(schedule)
 
-def run_local_search(schedule: Schedule) -> Schedule:
+def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
     iterations_per_temperature = 5000
-    max_time_seconds = 60 * 5
+    max_time_seconds = 60 * 40
     start_temp = 300
     end_temp = 10
     
-    optimized_schedule = simulated_annealing(schedule, iterations_per_temperature, max_time_seconds, start_temp, end_temp)
+    optimized_schedule = simulated_annealing(
+        schedule, 
+        iterations_per_temperature, 
+        max_time_seconds, 
+        start_temp, 
+        end_temp,
+        log_file_path=log_file_path
+    )
     
     return optimized_schedule

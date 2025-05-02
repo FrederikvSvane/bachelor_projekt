@@ -2,7 +2,7 @@
 
 n_tests=1000
 
-all="tests.test_rules_engine.TestRulesEngine"
+all="tests.test_rules_engine.TestRulesEngine.test_full_score_vs_delta_score_and_move_reversibility"
 
 room_overbookings="tests.test_rules_engine.TestRulesEngine.test_nr1_overbooked_room_in_timeslot"
 judge_overbookings="tests.test_rules_engine.TestRulesEngine.test_nr2_overbooked_judge_in_timeslot"
@@ -12,7 +12,7 @@ all_delta_rules="tests.test_rules_engine.TestRulesEngine.test_all_delta_function
 
 # ____
 
-to_test=$all_delta_rules
+to_test=$all
 
 # ____
 

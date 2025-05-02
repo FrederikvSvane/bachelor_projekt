@@ -140,6 +140,7 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
                 if index is not None:
                     appointments.pop(index)
                 else:
+                    print(f"Appointment {app} not found in schedule.") 
                     raise ValueError(f"Appointment {app} not found in schedule.")
                         
             if move.new_judge is not None:

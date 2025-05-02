@@ -633,18 +633,11 @@ def nr26_room_missing_optional_entry_delta(schedule: Schedule, move: Move):
 def nr27_overdue_case_not_planned_full(schedule: Schedule):
     offset = 0
     step = 1
-    unplanned_meetings = schedule.get_all_unplanned_meetings()
-    return offset + step * len(unplanned_meetings)
 
 def nr27_overdue_case_not_planned_delta(schedule: Schedule, move: Move):
     offset = 0
     step = 1
-    if move.is_insert_move:
-        return -(offset + step)  # Negative because we're reducing violations
-    elif move.is_delete_move:
-        return offset + step
-    else:
-        return 0  # Regular moves don't change the number of unplanned meetings
+    
 
 def nr28_overdue_case_full(schedule: Schedule):
     offset = 0

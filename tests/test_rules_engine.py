@@ -25,12 +25,10 @@ class TestRulesEngine(unittest.TestCase):
     def setUp(self):
         #generate a random schedule for every test
         n_cases = 50
-        n_judges = 5
-        n_rooms = 5
         n_work_days = 2
         granularity = 5
         min_per_work_day = 390
-        json = generate_test_data_parsed(n_cases=n_cases, n_judges=n_judges, n_rooms=n_rooms, work_days=n_work_days, granularity=granularity, min_per_work_day=min_per_work_day)
+        json = generate_test_data_parsed(n_cases=n_cases, work_days=n_work_days, granularity=granularity, min_per_work_day=min_per_work_day)
         initialize_compatibility_matricies(json)
 
         self.schedule = generate_schedule(json)
@@ -68,19 +66,22 @@ class TestRulesEngine(unittest.TestCase):
 
         for i in range(iterations):
             schedule_initial = deepcopy(self.schedule)
-            full_score_initial = calculate_full_score(self.schedule)
+            result = calculate_full_score(self.schedule)
+            full_score_initial = result[0]
             
             move: Move = generate_random_move_of_random_type(self.schedule, self.compatible_judges, self.compatible_rooms)
             delta_score = calculate_delta_score(self.schedule, move)
             do_move(move, self.schedule)
             
-            full_score_after_do = calculate_full_score(self.schedule)
+            result3 = calculate_full_score(self.schedule)
+            full_score_after_do = result3[0]
             score_diff = full_score_after_do - full_score_initial
             self.assertEqual(score_diff, delta_score, f"Iteration {i}: Delta score ({delta_score}) != Full score difference ({score_diff}). Move: {move}")
 
             undo_move(move, self.schedule)
             
-            full_score_after_do_undo = calculate_full_score(self.schedule)
+            result2 = calculate_full_score(self.schedule)
+            full_score_after_do_undo = result2[0]
             schedule_after_do_undo = deepcopy(self.schedule)
             self.assertEqual(full_score_initial, full_score_after_do_undo, f"Iteration {i+1}: Full score not restored after undo ({full_score_initial} -> {full_score_after_do} -> {full_score_after_do_undo}). Move: {move}")
             self.assertEqual(schedule_initial, schedule_after_do_undo, f"Iteration {i+1}: Schedules differs after undo. Move: {move}")
@@ -162,10 +163,10 @@ class TestRulesEngine(unittest.TestCase):
             nr18_unused_timegrain_full
         )
         
-    def test_nr27_overdue_case_not_planned(self):
+    def test_nr21_all_meetings_planned_for_case(self):
         self._check_delta_function_correctness(
-            nr27_overdue_case_not_planned_delta,
-            nr27_overdue_case_not_planned_full
+            nr21_all_meetings_planned_for_case_delta,
+            nr21_all_meetings_planned_for_case_full
         )
     
     def test_nr29_room_stability_per_day(self):
