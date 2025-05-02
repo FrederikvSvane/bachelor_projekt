@@ -13,8 +13,9 @@ from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.move import do_move, undo_move, Move
-from src.local_search.move_generator import generate_single_move, generate_list_random_move, generate_compound_move, generate_delete_move
+from src.local_search.move_generator import generate_single_random_move, generate_list_of_random_moves, generate_compound_move, generate_specific_delete_move, generate_random_insert_move
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
+from src.local_search.ruin_and_recreate import apply_ruin_and_recreate
 from src.util.schedule_visualizer import visualize
 
 def _add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
@@ -63,7 +64,7 @@ def _calculate_moves_in_parallel(pool, schedule: Schedule, moves_with_gen_int: L
 def _find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
     n_cores = os.cpu_count()
     print(f"Using {n_cores} CPU cores for parallel processing")
-    moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+    moves: list[(Move, int)] = generate_list_of_random_moves(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
     
     if not moves:
         return None, 0
@@ -77,7 +78,7 @@ def _find_best_move_sequential(schedule, compatible_judges, compatible_rooms, ta
     """
     Find the best move by generating random moves and calculating their delta scores.
     """
-    moves: list[(Move, int)] = generate_list_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+    moves: list[(Move, int)] = generate_list_of_random_moves(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
     
     if not moves:
         return None, 0
@@ -96,7 +97,7 @@ def _find_move_and_delta(schedule: Schedule, compatible_judges: list[Judge], com
     """
     Generate a move and calculate its delta score.
     """
-    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+    move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
     
     if move is None:
         return None, 0
@@ -121,14 +122,15 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     from copy import deepcopy
     start_time = time.time()
     
-    meetings = schedule.get_all_meetings()
+    meetings = schedule.get_all_planned_meetings()
     judges = schedule.get_all_judges()
     rooms = schedule.get_all_rooms() 
     
     compatible_judges = calculate_compatible_judges(meetings, judges)
     compatible_rooms = calculate_compatible_rooms(meetings, rooms)
     
-    current_score = calculate_full_score(schedule)
+
+    current_score, hard_violations, medium_violations, soft_violations = calculate_full_score(schedule)
     best_score = current_score
     current_temperature = start_temp
     best_schedule_snapshot = ScheduleSnapshot(schedule)
@@ -137,13 +139,16 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     high_temp_threshold = full_temp_range * 0.6 # from 60% to 100% of the temperature range
     medium_temp_threshold = full_temp_range * 0.1 # from 10% to 60% of the temperature range
     low_temp_threshold = full_temp_range * 0 # bottom 10% of the temperature range 
-    
+     
     plateau_count = 0
     cooling_rate = _calculate_cooling_rate(100, start_temp, end_temp)  # Initial cooling rate
     
     tabu_list = deque(maxlen=20)
     time_used = 0
     current_iteration = 0
+    p_attempt_insert = 0.1
+    plateau_count_min, plateau_count_max = 3, 10
+    ruin_percentage_min, ruin_percentage_max = 0.05, 0.10
     
 
     while time_used < max_time_seconds:
@@ -154,43 +159,57 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         best_score_improved_this_iteration = False
         best_score_this_iteration = current_score
         
+        normalized_temp = current_temperature / start_temp
+        current_plateau_limit = int(plateau_count_min + (plateau_count_max - plateau_count_min) * (1 - normalized_temp)) # starts low, goes high
+        current_ruin_percentage = ruin_percentage_min + (ruin_percentage_max - ruin_percentage_min) * (1 - normalized_temp) # start low, goes high
+        
+        #print(f"Current plateau limit: {current_plateau_limit}, Current ruin percentage: {current_ruin_percentage}")
+        #print(f"Current temperature: {current_temperature}, Normalized temperature: {normalized_temp}")
+        
         for i in range(iterations_per_temperature):
-            # HIGH TEMP
-            if current_temperature > high_temp_threshold: 
-                p_do_compound_move = 0.2
-                if random.random() < p_do_compound_move: 
-                    # compound move
-                    p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
-                    move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+            move = None
+            if schedule.unplanned_meetings and random.random() < p_attempt_insert: # After RnR, we risk having unplanned meetings due to the regret based insertion strategy. Therefore we look at the unplanned meetings, and try to generate insert moves if its not empty.
+                try:
+                    move = generate_random_insert_move(schedule)
+                except ValueError: # Handle case where insert move generation fails
+                    move = None
+
+            if move is None: # No insert move was generated, so we generate a random single or compound move
+                # HIGH TEMP
+                if current_temperature > high_temp_threshold: 
+                    p_do_compound_move = 0.2
+                    if random.random() < p_do_compound_move: 
+                        # compound move
+                        p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
+                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                    else: 
+                        # single move
+                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
+                        
+                # MEDIUM TEMP
+                elif medium_temp_threshold < current_temperature < high_temp_threshold: 
+                    p_do_compound_move = 0.6
+                    if random.random() < p_do_compound_move: 
+                        # compound move
+                        p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
+                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                    else: 
+                        # single move
+                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
+                        
+                # LOW TEMP
                 else: 
-                    # single move
-                    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
-                    
-            # MEDIUM TEMP
-            elif medium_temp_threshold < current_temperature < high_temp_threshold: 
-                p_do_compound_move = 0.6
-                if random.random() < p_do_compound_move: 
-                    # compound move
-                    p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
-                    move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
-                else: 
-                    # single move
-                    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
-                    
-            # LOW TEMP
-            else: 
-                RnR_allowed = True
-                p_do_compound_move = 0.8
-                if random.random() < p_do_compound_move: 
-                    # compound move
-                    p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
-                    move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
-                else: 
-                    # single move
-                    move = generate_single_move(schedule, compatible_judges, compatible_rooms)
+                    p_do_compound_move = 0.8
+                    if random.random() < p_do_compound_move: 
+                        # compound move
+                        p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
+                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                    else: 
+                        # single move
+                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
                 
             delta = calculate_delta_score(schedule, move)
-            
+                
             moves_explored_this_iteration += 1
             if move is None:
                 print("No valid moves found, skipping iteration")
@@ -206,12 +225,21 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 
                 if current_score < best_score:
                     best_score = current_score
-                    best_schedule_snapshot = ScheduleSnapshot(schedule)
                     plateau_count = 0
+                    best_schedule_snapshot = ScheduleSnapshot(schedule)
                     best_score_improved_this_iteration = True
+
                     
             else: # reject move
                 undo_move(move, schedule)
+
+            if i == iterations_per_temperature - 1:
+                result = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
+                best_score = result[0]
+                hard_violations = result[1]
+                medium_violations = result[2]
+                soft_violations = result[3]
+        
 
         current_iteration += 1
         current_temperature *= cooling_rate
@@ -229,14 +257,30 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             print("No moves accepted for this temperature. Consider terminating.")
             continue
         
-        if current_iteration % 10 == 0:
-            visualize(best_schedule_snapshot.restore_schedule(schedule))
+        #if current_iteration % 10 == 0:
+        #    visualize(best_schedule_snapshot.restore_schedule(schedule))
             #visualize(best_schedule_snapshot.restore_schedule(schedule), view_by="room")
                 
         # Print progress information
         print(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
-              f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}"
-              f"{' - Plateau detected!' if plateau_count > 5 else ''}")
+              f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
+              f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
+              f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
+
+        
+        if plateau_count >= current_plateau_limit:
+            print("\n \n _______________________________________________________________ \n Large plateau detected! Applying Ruin and Recreate... \n _______________________________________________________________ \n")
+            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
+            plateau_count = 0
+            if r_r_success:
+                print(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
+                current_score = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
+                tabu_list.clear()
+
+                if current_score < best_score:
+                    best_score = current_score
+                    best_schedule_snapshot = ScheduleSnapshot(schedule)
+                    print(f"New best score found after R&R: {best_score}")
                     
     return best_schedule_snapshot.restore_schedule(schedule)
 

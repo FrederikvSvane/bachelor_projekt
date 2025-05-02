@@ -33,6 +33,7 @@ class Attribute(Enum):
     # Judge-Room Attributes:
     # judge requires accessibility or room facilitates accessibility
     ACCESSIBILITY = auto() # one-directional
+
     
     def __str__(self):
         return self.name.capitalize()

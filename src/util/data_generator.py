@@ -1,175 +1,252 @@
-
 import random
-import math
 import json
-from typing import Dict, Any, List
+import math
+from typing import Dict, Any, List, Tuple
 
 from src.base_model.case import Case
 from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.attribute_enum import Attribute
 from src.base_model.compatibility_checks import case_judge_compatible, case_room_compatible, judge_room_compatible
-from src.graph_construction.graph import MeetingJudgeNode
+from src.construction.graph.graph import MeetingJudgeNode
 from src.base_model.meeting import Meeting
 
-class TruncatedNormalDistribution:
-    """Generates a truncated normal distribution for case durations."""
-    def __init__(self, mean: float, stddev: float, min_val: float, max_val: float):
-        self.mu = mean
-        self.sigma = stddev
-        self.a = min_val
-        self.b = max_val
-        
-    def erfinv(self, x: float) -> float:
-        """Inverse error function implementation."""
-        sgn = -1.0 if x < 0 else 1.0
-        
-        x = (1 - x) * (1 + x)  # x = 1 - x*x
-        lnx = math.log(x)
-        
-        tt1 = 2 / (math.pi * 0.147) + 0.5 * lnx
-        tt2 = 1 / 0.147 * lnx
-        
-        return sgn * math.sqrt(-tt1 + math.sqrt(tt1 * tt1 - tt2))
-    
-    def standard_normal_cdf(self, x: float) -> float:
-        """Standard normal cumulative distribution function."""
-        return 0.5 * (1 + math.erf(x / math.sqrt(2.0)))
-    
-    def sample(self, gen: random.Random) -> float:
-        """Sample from the truncated normal distribution."""
-        alpha = self.standard_normal_cdf((self.a - self.mu) / self.sigma)
-        beta = self.standard_normal_cdf((self.b - self.mu) / self.sigma)
-        
-        # Uniform random number between alpha and beta
-        u = gen.random() * (beta - alpha) + alpha
-        
-        # Return the inverse CDF
-        return self.mu + self.sigma * math.sqrt(2.0) * self.erfinv(2.0 * u - 1.0)
-    
-    def __call__(self, gen: random.Random) -> float:
-        """Allow the distribution to be called directly."""
-        return self.sample(gen)
+def return_all_sagstyper() -> list:
+    """Return all case types as a list of Attributes"""
+    return [
+        Attribute.CIVIL,
+        Attribute.STRAFFE,
+        Attribute.TVANG,
+        Attribute.DOEDSBO,
+        Attribute.GRUNDLOV
+    ]
 
-
-def generate_test_data(n_cases: int, n_judges: int, n_rooms: int, 
+def generate_test_data(n_cases: int, 
                        work_days: int, granularity: int, 
                        min_per_work_day: int) -> Dict[str, Any]:
     """Generate test data for court scheduling."""
     # Initialize random generator
     gen = random.Random()
     
-    # Create duration distribution
-    duration_dist = TruncatedNormalDistribution(30.0, 80.0, 10.0, 360.0)
+    # Define area probabilities
+    area_probabilities = {
+        "CIVIL_OMRAADE": 0.043,
+        "STRAFFE_OMRAADE": 0.753,
+        "TVANG_OMRAADE": 0.023,
+        "GRUNDLOV_OMRAADE": 0.166,
+        "SKIFTE_OMRAADE": 0.018  # DOEDSBO
+    }
     
-    # Get all possible case types (excluding VIRTUAL/PHYSICAL/SHORTDURATION which are handled separately)
-    case_types = [attr for attr in list(Attribute) 
-                  if attr not in [Attribute.VIRTUAL, 
-                                  Attribute.SHORTDURATION, Attribute.SECURITY, 
-                                  Attribute.ACCESSIBILITY]]
+    # Map areas to case types (from paste-2.txt)
+    area_to_case_types = {
+        "CIVIL_OMRAADE": [
+            "ALMINDELIGE_SMAASAGER_UNDER_50_000_KR", "BOLIGRETSSAG", "CIVILE_SAGER", 
+            "FADERSKABSSAG", "SMAA_SMAASAGER_UNDER_5_000_KR", "BERAMMELSESFRI", 
+            "BLOKERING", "FORBEREDELSE", "AEGTESKABSSAG", "BOERNEBORTFOERELSE", 
+            "BOPAELSSAG", "FADERSKABSSAG_FAMILLIE", "FAMILIERETLIGE_SAGER", 
+            "FORAELDREANSVARSSAGER", "NAVNESAG", "PROEVELSESSAG", "SAMVAERSSSAG", 
+            "TELEFONMOEDER_I_FAMILIERETLIGE_SAGER", "TVANGSFULDBYRDELSESSAG"
+        ],
+        "STRAFFE_OMRAADE": [
+            "BESKIKKELSESSAGER_BESKIKKELSE", "BESKIKKELSESSAGER_RAADIGHEDSVAGT", 
+            "BESKIKKELSESSAGER_SALAER", "DIVERSE_ANDET", "DIVERSE_SUBSIDIAER_ANTICIPERET", 
+            "DIVERSE_UDLAENDINGE", "OEVRIGE_STRAFFESAGER_AENDRING_AF_BETINGET_DOM_FORANSTALTNING", 
+            "OEVRIGE_STRAFFESAGER_ERSTATNING_M_DOMSMAEND", "OEVRIGE_STRAFFESAGER_ERSTATNING_U_DOMSMAEND", 
+            "OEVRIGE_STRAFFESAGER_FORVANDLINGSSTRAF", "SAGER_MED_LAEGDOMMERE_ALMINDELIGE", 
+            "SAGER_MED_LAEGDOMMERE_FAERDSEL", "SAGER_MED_LAEGDOMMERE_NAEVNINGESAGER", 
+            "SAGER_UDEN_LAEGDOMMERE_BOEDE", "SAGER_UDEN_LAEGDOMMERE_FAERDSEL", 
+            "SAGER_UDEN_LAEGDOMMERE_FORUDBERAMMEDE", "SAGER_UDEN_LAEGDOMMERE_SAERLOV_PGF_898", 
+            "SAGER_UDEN_LAEGDOMMERE_SPECIELLE_NARKO", "SAGER_UDEN_LAEGDOMMERE_SPIRITUS_NARKO", 
+            "SAGER_UDEN_LAEGGDOMMERE_OEVRIGE", "TILSTAAELSESSAGER_ALMINDELIGE", 
+            "TILSTAAELSESSAGER_TILTALEFRAFALD_UNGDOMSKONTRAKT", "TILSTAAELSESSAGER_UBETINGET_SPIRITUS_NARKO"
+        ],
+        "TVANG_OMRAADE": [
+            "FOGEDSAGER_JURIST", "FOGEDSAGER_SAGSBEHANDLER", "TVANGSAUKTIONER", 
+            "INSOLVENS_DIVERSE", "INSOLVENS_FORBYGGENDE_REKONSTRUKTION", 
+            "INSOLVENS_GAELDSSANERING", "INSOLVENS_GRANSKNING", "INSOLVENS_KONKURS", 
+            "INSOLVENS_REKONSTRUKTION", "INSOLVENS_SUBSIDIAER_AFHOERING", "INSOLVENS_TVANG"
+        ],
+        "GRUNDLOV_OMRAADE": [
+            "GRUNDLOVSSAGER_MV_ALMINDELIGE", "GRUNDLOVSSAGER_MV_FORANSTALTNING_UNDER_EFTERFORSKNING", 
+            "GRUNDLOVSSAGER_MV_UDLAENDINGE"
+        ],
+        "SKIFTE_OMRAADE": [
+            "AEGTEFAELLE_SKIFTE", "DOEDSBO_DOEDSANMELDELSE", "DOEDSBO_SKIFTE_AF_USKIFTET_BO"
+        ]
+    }
+    
+    # Case type probabilities and durations (from paste-3.txt)
+    case_type_data = {
+        "AEGTEFAELLE_SKIFTE": {"prob": 0.013470, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "AEGTESKABSSAG": {"prob": 0.002010, "durations": [(60, 1.0)]},
+        "ALMINDELIGE_SMAASAGER_UNDER_50_000_KR": {"prob": 0.100523, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "BERAMMELSESFRI": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "BESKIKKELSESSAGER_BESKIKKELSE": {"prob": 0.010052, "durations": [(10, 0.4), (15, 0.4), (30, 0.2)]},
+        "BESKIKKELSESSAGER_RAADIGHEDSVAGT": {"prob": 0.000201, "durations": [(15, 1.0)]},
+        "BESKIKKELSESSAGER_SALAER": {"prob": 0.004021, "durations": [(10, 1.0)]},
+        "BLOKERING": {"prob": 0.000000, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "BOERNEBORTFOERELSE": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "BOLIGRETSSAG": {"prob": 0.030157, "durations": [(240, 0.9), (300, 0.1)]},
+        "BOPAELSSAG": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "CIVILE_SAGER": {"prob": 0.002010, "durations": [(240, 0.9), (300, 0.1)]},
+        "DIVERSE_ANDET": {"prob": 0.002010, "durations": [(60, 0.75), (90, 0.2), (120, 0.05)]},
+        "DIVERSE_SUBSIDIAER_ANTICIPERET": {"prob": 0.002010, "durations": [(60, 0.75), (90, 0.2), (120, 0.05)]},
+        "DIVERSE_UDLAENDINGE": {"prob": 0.020105, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "DOEDSBO_DOEDSANMELDELSE": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "DOEDSBO_SKIFTE_AF_USKIFTET_BO": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "FADERSKABSSAG": {"prob": 0.006594, "durations": [(30, 0.1), (60, 0.8), (90, 0.1)]},
+        "FADERSKABSSAG_FAMILLIE": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "FAMILIERETLIGE_SAGER": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "FOGEDSAGER_JURIST": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "FOGEDSAGER_SAGSBEHANDLER": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "FORAELDREANSVARSSAGER": {"prob": 0.002010, "durations": [(120, 0.1), (180, 0.8), (240, 0.1)]},
+        "FORBEREDELSE": {"prob": 0.000000, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "GRUNDLOVSSAGER_MV_ALMINDELIGE": {"prob": 0.020105, "durations": [(60, 0.05), (90, 0.15), (120, 0.35), (180, 0.25), (240, 0.1), (300, 0.05), (360, 0.05)]},
+        "GRUNDLOVSSAGER_MV_FORANSTALTNING_UNDER_EFTERFORSKNING": {"prob": 0.020105, "durations": [(30, 0.6), (60, 0.25), (90, 0.1), (120, 0.05)]},
+        "GRUNDLOVSSAGER_MV_UDLAENDINGE": {"prob": 0.002010, "durations": [(30, 0.7), (60, 0.2), (90, 0.1)]},
+        "INSOLVENS_DIVERSE": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "INSOLVENS_FORBYGGENDE_REKONSTRUKTION": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "INSOLVENS_GAELDSSANERING": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "INSOLVENS_GRANSKNING": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "INSOLVENS_KONKURS": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "INSOLVENS_REKONSTRUKTION": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "INSOLVENS_SUBSIDIAER_AFHOERING": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "INSOLVENS_TVANG": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "NAVNESAG": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "OEVRIGE_STRAFFESAGER_AENDRING_AF_BETINGET_DOM_FORANSTALTNING": {"prob": 0.002010, "durations": [(30, 0.05), (60, 0.5), (90, 0.4), (120, 0.05)]},
+        "OEVRIGE_STRAFFESAGER_ERSTATNING_M_DOMSMAEND": {"prob": 0.020105, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "OEVRIGE_STRAFFESAGER_ERSTATNING_U_DOMSMAEND": {"prob": 0.002010, "durations": [(90, 0.1), (120, 0.65), (150, 0.2), (180, 0.05)]},
+        "OEVRIGE_STRAFFESAGER_FORVANDLINGSSTRAF": {"prob": 0.002010, "durations": [(60, 0.4), (90, 0.4), (120, 0.2)]},
+        "PROEVELSESSAG": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "SAGER_MED_LAEGDOMMERE_ALMINDELIGE": {"prob": 0.201045, "durations": [(90, 0.445), (268, 0.342), (534, 0.14), (877, 0.04), (1391, 0.022), (2261, 0.007), (3140, 0.001)]},
+        "SAGER_MED_LAEGDOMMERE_FAERDSEL": {"prob": 0.020105, "durations": [(90, 0.15), (120, 0.6), (150, 0.15), (180, 0.1)]},
+        "SAGER_MED_LAEGDOMMERE_NAEVNINGESAGER": {"prob": 0.005428, "durations": [(102, 0.056), (648, 0.056), (928, 0.101), (1418, 0.279), (2360, 0.223), (3038, 0.057)]},
+        "SAGER_UDEN_LAEGDOMMERE_BOEDE": {"prob": 0.211098, "durations": [(30, 0.6), (45, 0.3), (60, 0.1)]},
+        "SAGER_UDEN_LAEGDOMMERE_FAERDSEL": {"prob": 0.020105, "durations": [(30, 0.7), (60, 0.1), (90, 0.05), (120, 0.05), (150, 0.05), (180, 0.05)]},
+        "SAGER_UDEN_LAEGDOMMERE_FORUDBERAMMEDE": {"prob": 0.001709, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "SAGER_UDEN_LAEGDOMMERE_SAERLOV_PGF_898": {"prob": 0.100523, "durations": [(150, 0.4), (180, 0.4), (300, 0.18), (600, 0.02)]},
+        "SAGER_UDEN_LAEGDOMMERE_SPECIELLE_NARKO": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "SAGER_UDEN_LAEGDOMMERE_SPIRITUS_NARKO": {"prob": 0.002010, "durations": [(30, 0.5), (60, 0.35), (90, 0.05), (120, 0.05), (150, 0.03), (180, 0.02)]},
+        "SAGER_UDEN_LAEGGDOMMERE_OEVRIGE": {"prob": 0.002010, "durations": [(30, 0.5), (60, 0.35), (90, 0.05), (120, 0.05), (150, 0.03), (180, 0.02)]},
+        "SAMVAERSSSAG": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "SMAA_SMAASAGER_UNDER_5_000_KR": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "TELEFONMOEDER_I_FAMILIERETLIGE_SAGER": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "TILSTAAELSESSAGER_ALMINDELIGE": {"prob": 0.120627, "durations": [(30, 0.8), (60, 0.1), (90, 0.05), (120, 0.03), (150, 0.02)]},
+        "TILSTAAELSESSAGER_TILTALEFRAFALD_UNGDOMSKONTRAKT": {"prob": 0.000040, "durations": [(30, 1.0)]},
+        "TILSTAAELSESSAGER_UBETINGET_SPIRITUS_NARKO": {"prob": 0.001508, "durations": [(30, 0.8), (60, 0.13), (90, 0.07)]},
+        "TVANGSAUKTIONER": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]},
+        "TVANGSFULDBYRDELSESSAG": {"prob": 0.002010, "durations": [(30, 0.2), (60, 0.5), (90, 0.2), (120, 0.1)]}
+    }
+    
+    # Map from area to the corresponding attribute
+    area_to_attribute = {
+        "CIVIL_OMRAADE": Attribute.CIVIL,
+        "STRAFFE_OMRAADE": Attribute.STRAFFE,
+        "TVANG_OMRAADE": Attribute.TVANG,
+        "GRUNDLOV_OMRAADE": Attribute.GRUNDLOV,
+        "SKIFTE_OMRAADE": Attribute.DOEDSBO
+    }
     
     # Generate cases
     cases = []
+    meeting_counter = 1
+    timeslots_per_day = min_per_work_day // granularity
+    max_minutes_per_day = timeslots_per_day * granularity
+    
     for i in range(1, n_cases + 1):
-        # Generate duration and round to nearest 5
-        raw_duration = duration_dist(gen)
-        duration = round(raw_duration / 5.0) * 5
+        # Step 1: Select case area based on probabilities
+        area = random.choices(
+            list(area_probabilities.keys()),
+            weights=list(area_probabilities.values()),
+            k=1
+        )[0]
         
-        num_meetings = random.randint(1, 3)
+        # Step 2: Select a specific case type from that area
+        # Calculate normalized probabilities within area
+        area_case_types = area_to_case_types[area]
+        type_probs = []
         
-        # Generate random case type from the filtered list
-        case_type = random.choice(case_types)
+        for case_type in area_case_types:
+            if case_type in case_type_data:
+                type_probs.append(case_type_data[case_type]["prob"])
+            else:
+                type_probs.append(0.001)  # Default small probability
         
-        # Determine if case is virtual (25% chance)
-        is_virtual = bool(gen.randint(0, 3) == 0)
+        # Normalize probabilities 
+        total_prob = sum(type_probs)
+        if total_prob > 0:
+            type_probs = [p/total_prob for p in type_probs]
         
-        # Determine if case needs security (10% chance)
-        needs_security = bool(gen.randint(0, 9) == 0)
+        case_type = random.choices(area_case_types, weights=type_probs, k=1)[0]
+        
+        if case_type in case_type_data:
+            duration_distribution = case_type_data[case_type]["durations"]
+            durations, probs = zip(*duration_distribution)
+            raw_duration = random.choices(durations, weights=probs, k=1)[0]
+        else:
+            # Default duration if not found
+            raw_duration = random.choice([30, 60, 90, 120])
+
+        # Round up to the nearest multiple of granularity
+        duration = math.ceil(raw_duration / granularity) * granularity
+        
+        # Determine if case is virtual (5% chance)
+        is_virtual = bool(gen.randint(0, 20) == 0)
+        
+        # Determine if case needs security (5% chance for non-virtual cases)
+        needs_security = bool(not is_virtual and gen.randint(0, 20) == 0)
+        
+        # Split into multiple meetings if needed
+        # Split into multiple meetings if needed
+        meetings = []
+        remaining_duration = duration
+
+        if duration > max_minutes_per_day:
+            # First meeting uses a full day
+            meetings.append({
+                "id": meeting_counter,
+                "duration": max_minutes_per_day
+            })
+            meeting_counter += 1
+            remaining_duration -= max_minutes_per_day
+            
+            # Split remaining duration into additional meetings
+            while remaining_duration > 0:
+                next_meeting_duration = min(remaining_duration, max_minutes_per_day)
+                # Ensure duration is a multiple of granularity
+                next_meeting_duration = math.ceil(next_meeting_duration / granularity) * granularity
+                
+                # Handle edge case where rounding might exceed remaining duration
+                if next_meeting_duration > remaining_duration:
+                    next_meeting_duration = math.floor(remaining_duration / granularity) * granularity
+                    if next_meeting_duration == 0:
+                        next_meeting_duration = granularity
+                
+                meetings.append({
+                    "id": meeting_counter,
+                    "duration": next_meeting_duration
+                })
+                meeting_counter += 1
+                remaining_duration -= next_meeting_duration
+        else:
+            # Case fits in a single meeting
+            meetings.append({
+                "id": meeting_counter,
+                "duration": duration
+            })
+            meeting_counter += 1
         
         # Generate case data structure
         case = {
             "id": i,
             "duration": duration,
-            "type": str(case_type),
+            "type": area_to_attribute[area].name,  # Convert area to attribute name
             "virtual": is_virtual,
             "security": needs_security,
-            "meetings": num_meetings
+            "meetings": meetings,
+            "original_type": case_type  # Keep track of original case type for reference
         }
         cases.append(case)
-    
-    # Generate judges
-    judges = []
-    # Track which case types have been covered
-    covered_types = set()
-
-    for i in range(1, n_judges + 1):
-        # Filter out non-case type attributes
-        all_types = case_types.copy()
-        
-        if i == n_judges and len(covered_types) < len(all_types):
-            # Last judge - ensure any remaining uncovered types are included
-            uncovered = [t for t in all_types if str(t) not in covered_types]
-            # Make sure the judge has at least one skill, up to 3 total
-            num_additional = min(3 - len(uncovered), len(all_types) - len(uncovered))
-            num_additional = max(0, num_additional)  # Ensure non-negative
-            
-            if num_additional > 0:
-                # Add some already covered types if there's room
-                covered_list = [t for t in all_types if str(t) in covered_types]
-                gen.shuffle(covered_list)
-                additional_skills = covered_list[:num_additional]
-            else:
-                additional_skills = []
-                
-            skills = uncovered + additional_skills
-        else:
-            # For judges before the last one, assign random skills
-            gen.shuffle(all_types)
-            num_skills = min(3, max(1, gen.randint(1, 3)))  # Between 1 and 3 skills
-            skills = all_types[:num_skills]
-        
-        # Update the covered types
-        for skill in skills:
-            covered_types.add(str(skill))
-        
-        # Determine if judge is virtual (25% chance)
-        is_virtual = bool(gen.randint(0, 3) == 0)
-        
-        # Determine if judge requires accessibility (10% chance)
-        needs_accessibility = bool(gen.randint(0, 9) == 0)
-        
-        # Determine if judge has health limitations (shortduration) (15% chance)
-        has_health_limits = bool(gen.randint(0, 6) == 0)
-        
-        # Generate judge
-        judge = {
-            "id": i,
-            "skills": [str(skill) for skill in skills],
-            "virtual": is_virtual,
-            "accessibility": needs_accessibility,
-            "shortduration": has_health_limits
-        }
-        judges.append(judge)
-    
-    # Generate rooms
-    rooms = []
-    for i in range(1, n_rooms + 1):
-        # Determine if room is virtual (25% chance)
-        is_virtual = bool(gen.randint(0, 3) == 0)
-        
-        # Determine if room has accessibility (30% chance for physical rooms)
-        has_accessibility = bool(not is_virtual and gen.randint(0, 2) == 0)
-        
-        # Determine if room has security features (20% chance for physical rooms)
-        has_security = bool(not is_virtual and gen.randint(0, 4) == 0)
-        
-        room = {
-            "id": i,
-            "virtual": is_virtual,
-            "accessibility": has_accessibility,
-            "security": has_security
-        }
-        rooms.append(room)
     
     # Create final data structure
     data = {
@@ -177,8 +254,6 @@ def generate_test_data(n_cases: int, n_judges: int, n_rooms: int,
         "min_per_work_day": min_per_work_day,
         "granularity": granularity,
         "cases": cases,
-        "judges": judges,
-        "rooms": rooms
     }
     
     # Save test data to a file for reference (optional)
@@ -187,13 +262,12 @@ def generate_test_data(n_cases: int, n_judges: int, n_rooms: int,
     
     return data
 
-def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int, 
+def generate_test_data_parsed(n_cases: int, 
                              work_days: int, granularity: int, 
                              min_per_work_day: int) -> Dict:
     """Generate and parse test data into model objects."""
     # Generate raw test data
-    test_data = generate_test_data(n_cases, n_judges, n_rooms, 
-                                  work_days, granularity, min_per_work_day)
+    test_data = generate_test_data(n_cases, work_days, granularity, min_per_work_day)
     
     # Parse the data into model objects
     parsed_data = {
@@ -205,38 +279,73 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         "rooms": []
     }
 
-     # Parse judges
-    for judge_data in test_data["judges"]:
-        skills = [Attribute.from_string(skill) for skill in judge_data["skills"]]
-        characteristics = set(skills)
-        case_requirements = set()
-        room_requirements = set()
-        
-        # Add virtual or physical characteristic based on the virtual flag
-        if judge_data["virtual"]:
-            characteristics.add(Attribute.VIRTUAL)
-            
-        # Add accessibility requirement if needed
-        if judge_data["accessibility"]:
-            characteristics.add(Attribute.ACCESSIBILITY)
-            room_requirements.add(Attribute.ACCESSIBILITY)
-            
-        # Add shortduration requirement if judge has health limitations
-        if judge_data["shortduration"]:
-            characteristics.add(Attribute.SHORTDURATION)
-            case_requirements.add(Attribute.SHORTDURATION)
-            
-        judge = Judge(
-            judge_id=judge_data["id"],
-            characteristics=characteristics,
-            case_requirements=case_requirements,
-            room_requirements=room_requirements
-        )
+    all_sagstyper = set(return_all_sagstyper())
 
-        parsed_data["judges"].append(judge)
+            
+    judge1 = Judge(
+        judge_id=1,
+        characteristics=all_sagstyper | {Attribute.SHORTDURATION},
+        case_requirements={Attribute.SHORTDURATION},
+        room_requirements=set()
+    )
+    judge2 = Judge(
+        judge_id=2,
+        characteristics=all_sagstyper | {Attribute.ACCESSIBILITY},
+        case_requirements=set(),
+        room_requirements={Attribute.ACCESSIBILITY}
+    )
+    judge3 = Judge(
+        judge_id=3,
+        characteristics=all_sagstyper | {Attribute.ACCESSIBILITY},
+        case_requirements=set(),
+        room_requirements={Attribute.ACCESSIBILITY}
+    )
+    judge4 = Judge(
+        judge_id=4,
+        characteristics=all_sagstyper,
+        case_requirements=set(),
+        room_requirements=set()
+    )
+    judge5 = Judge(
+        judge_id=5,
+        characteristics=all_sagstyper,
+        case_requirements=set(),
+        room_requirements=set()
+    )
+    judge6 = Judge(
+        judge_id=6,
+        characteristics=all_sagstyper,
+        case_requirements=set(),
+        room_requirements=set()
+    )
+    judge7 = Judge(
+        judge_id=7,
+        characteristics=all_sagstyper,
+        case_requirements=set(),
+        room_requirements=set()
+    )
+    judge8 = Judge(
+        judge_id=8,
+        characteristics=all_sagstyper,   
+        case_requirements=set(),
+        room_requirements=set()
+    )
+    judge9 = Judge(
+        judge_id=9,
+        characteristics={Attribute.STRAFFE, Attribute.GRUNDLOV},
+        case_requirements=set(),
+        room_requirements=set()
+    )
+    judge10 = Judge(
+        judge_id=10,
+        characteristics=all_sagstyper | {Attribute.VIRTUAL},
+        case_requirements=set(),
+        room_requirements=set()
+    )
+    all_judges = [judge1, judge2, judge3, judge4, judge5, judge6, judge7, judge8, judge9, judge10]  
+    parsed_data["judges"].extend(all_judges)
     
-    meeting_counter = 1
-    # Parse cases (cases)
+    # Parse cases
     for case_data in test_data["cases"]:
         case_attr = Attribute.from_string(case_data["type"])
         characteristics = {case_attr}
@@ -245,7 +354,6 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
         
         # Add virtual or physical characteristic based on the virtual flag
         if case_data["virtual"]:
-            
             characteristics.add(Attribute.VIRTUAL)
             judge_requirements.add(Attribute.VIRTUAL)
             room_requirements.add(Attribute.VIRTUAL)
@@ -267,19 +375,20 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             room_requirements=room_requirements
         )
 
+        # Check for compatibility with at least one judge
         compatible = False
         for judge in parsed_data["judges"]:
             if case_judge_compatible(case, judge):
                 compatible = True
                 break
 
-
+        # If no compatible judge, modify a judge to make compatible
         if not compatible:
-            suitable_judges: list[Judge] = [j for j in parsed_data["judges"] if isinstance(j, Judge) and case_attr in j.characteristics]
+            suitable_judges = [j for j in parsed_data["judges"] if isinstance(j, Judge) and case_attr in j.characteristics]
             if not suitable_judges:
                 suitable_judges = parsed_data["judges"]
             
-            suitable_judge: Judge = suitable_judges[0]  # Pick the first suitable judge
+            suitable_judge = suitable_judges[0]  # Pick the first suitable judge
 
             for requirement in case.judge_requirements:
                 if requirement not in suitable_judge.characteristics:
@@ -288,59 +397,88 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
             for requirement in suitable_judge.case_requirements:
                 if requirement not in case.characteristics:
                     if requirement == Attribute.SHORTDURATION:
-                        case.case_duration = 120
                         case.characteristics.add(requirement)
-                 
         
-        for i in range(case_data["meetings"]):
+        # Create meetings for this case
+        for meeting_data in case_data["meetings"]:
             meeting = Meeting(
-                meeting_id=meeting_counter,
-                meeting_duration = case_data["duration"],
-                duration_of_stay = 0,
+                meeting_id=meeting_data["id"],
+                meeting_duration=meeting_data["duration"],
+                duration_of_stay=0,
                 judge=None,
                 room=None,
                 case=case
             )
             case.meetings.append(meeting)
-            meeting_counter += 1  # Increment counter for next meeting
-        
 
         parsed_data["cases"].append(case)
     
-    
-    
-   
-    # Parse rooms
-    for room_data in test_data["rooms"]:
-        characteristics = set()
-        case_requirements = set()
-        judge_requirements = set()
-        
-        # Add virtual or physical characteristic based on the virtual flag
-        if room_data["virtual"]:
-            characteristics.add(Attribute.VIRTUAL)
-            # room_requirements.add(Attribute.VIRTUAL)
-            # case_requirements.add(Attribute.VIRTUAL)
-            
-        # Add accessibility if room has it
-        if room_data["accessibility"]:
-            characteristics.add(Attribute.ACCESSIBILITY)
-            
-        # Add security if room has it
-        if room_data["security"]:
-            if not room_data["virtual"]:
-                characteristics.add(Attribute.SECURITY)
-        
-                    
-        room = Room(
-            room_id=room_data["id"],
-            characteristics=characteristics,
-            case_requirements=case_requirements,
-            judge_requirements=judge_requirements
-        )
 
-        parsed_data["rooms"].append(room)
-        
+
+    room1 = Room(
+        room_id=1,
+        characteristics={Attribute.VIRTUAL},
+        case_requirements={Attribute.VIRTUAL},
+        judge_requirements={Attribute.VIRTUAL}
+    )
+    room2 = Room(
+        room_id=2,
+        characteristics={Attribute.ACCESSIBILITY},
+        case_requirements=set(),
+        judge_requirements=set()
+    )
+    room3 = Room(
+        room_id=3,
+        characteristics={Attribute.ACCESSIBILITY},
+        case_requirements=set(),
+        judge_requirements=set()
+    )
+    room4 = Room(
+        room_id=4,
+        characteristics={Attribute.SECURITY},
+        case_requirements=set(),
+        judge_requirements=set()
+    )
+    room5 = Room(
+        room_id=5,
+        characteristics=set(),
+        case_requirements=set(),
+        judge_requirements=set()
+    )
+    room6 = Room(
+        room_id=6,
+        characteristics={Attribute.SECURITY},
+        case_requirements=set(),
+        judge_requirements=set()
+    )
+    room7 = Room(
+        room_id=7,
+        characteristics={Attribute.SECURITY},
+        case_requirements=set(),
+        judge_requirements=set()
+    )
+    room8 = Room(
+        room_id=8,
+        characteristics={Attribute.ACCESSIBILITY},
+        case_requirements=set(),
+        judge_requirements=set()
+    )
+    room9 = Room(
+        room_id=9,
+        characteristics={Attribute.ACCESSIBILITY},
+        case_requirements=set(),
+        judge_requirements=set()
+    )
+    room10 = Room(
+        room_id=10,
+        characteristics=set(), 
+        case_requirements=set(),
+        judge_requirements=set()
+    )
+    all_rooms = [room1, room2, room3, room4, room5, room6, room7, room8, room9, room10]
+    parsed_data["rooms"].extend(all_rooms)
+    
+    # Ensure necessary attributes are present in at least one room
     attributes_to_ensure = [
         Attribute.VIRTUAL,
         Attribute.ACCESSIBILITY,
@@ -357,48 +495,13 @@ def generate_test_data_parsed(n_cases: int, n_judges: int, n_rooms: int,
 
             if not attribute_found:
                 for room_candidate in parsed_data["rooms"]:
-                    if not room_candidate.characteristics:
-                        room_candidate.characteristics.add(attribute_to_check)
-                        break
+                    room_candidate.characteristics.add(attribute_to_check)
+                    break
+
+    # Set case reference in meetings
+    for case in parsed_data["cases"]:
+        for meeting in case.meetings:
+            meeting.case = case
+
 
     return parsed_data
-
-
-def ensure_jm_pair_room_compatibility(jm_pairs: list[MeetingJudgeNode], rooms: list[Room]) -> list[Room]:
-    """
-    Check if each case-judge pair has at least one compatible room and fix if not.
-    
-    Args:
-        jc_pairs: List of CaseJudgeNode objects
-        rooms: List of Room objects
-        
-    Returns:
-        Updated list of rooms
-    """
-    
-    
-    for jm_pair in jm_pairs:
-        judge = jm_pair.get_judge()
-        case = jm_pair.get_meeting().case
-        
-        # Check if this pair has at least one compatible room
-        has_compatible_room = False
-        for room in rooms:
-            if judge_room_compatible(judge, room) and case_room_compatible(case, room):
-                has_compatible_room = True
-                break
-        
-        if not has_compatible_room:
-            
-            for req in case.room_requirements:
-                if req not in room.characteristics:
-                    room.characteristics.add(req)
-                    
-            
-            
-            for req in judge.room_requirements:
-                if req not in room.characteristics:
-                    room.characteristics.add(req)
-            
-    return rooms
-            

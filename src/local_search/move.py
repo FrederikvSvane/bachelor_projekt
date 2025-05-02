@@ -33,8 +33,12 @@ class Move:
             move_type.append(f"day {self.old_day} → {self.new_day}")
         if self.new_start_timeslot is not None:
             move_type.append(f"timeslot {self.old_start_timeslot} → {self.new_start_timeslot}")
+        if self.appointments:
+            move_type.append(f"appointments={len(self.appointments)}")
         if self.is_delete_move:
             move_type.append("delete")
+        if self.is_insert_move:
+            move_type.append("insert")
 
         return f"Move(meeting {self.meeting_id}: {', '.join(move_type)})"
 
@@ -43,14 +47,65 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
     """Update appointments and the schedule dictionary if provided"""
     if move.is_applied:
         return
+    
+    # Handle insertion move
+    elif move.is_insert_move:
+        if schedule is None:
+            raise ValueError("Schedule must be provided to do insertion move.")
+        
+        # Get the meeting from unplanned meetings
+        try:
+            meeting = schedule.pop_meeting_from_unplanned_meetings(move.meeting_id)
+        except ValueError:
+            raise ValueError(f"Meeting with ID {move.meeting_id} not found in unplanned meetings.")
+        
+        # Set the judge and room on the meeting
+        meeting.judge = move.new_judge
+        meeting.room = move.new_room
+        
+        # Calculate the number of timeslots needed for this meeting
+        if schedule.granularity == 0 or meeting.meeting_duration <= 0:
+            raise ValueError("Granularity must be greater than 0 and meeting duration must be positive.")
+        timeslots_needed = (meeting.meeting_duration // schedule.granularity) 
+        
+        # Create appointment objects for each timeslot
+        for i in range(timeslots_needed):
+            global_timeslot = ((move.new_day - 1) * schedule.timeslots_per_work_day) + move.new_start_timeslot + i
+            day = ((global_timeslot - 1) // schedule.timeslots_per_work_day) + 1
+            timeslot_in_day = ((global_timeslot - 1) % schedule.timeslots_per_work_day) + 1
+            
+            appointment = Appointment(
+                meeting=meeting,
+                judge=move.new_judge,
+                room=move.new_room,
+                day=day,
+                timeslot_in_day=timeslot_in_day
+            )
+            
+            appointment.meeting.judge = appointment.judge
+            appointment.meeting.room = appointment.room
+            
+            move.appointments.append(appointment)
+            
+            if day not in schedule.appointments_by_day_and_timeslot:
+                schedule.appointments_by_day_and_timeslot[day] = {}
+            if timeslot_in_day not in schedule.appointments_by_day_and_timeslot[day]:
+                schedule.appointments_by_day_and_timeslot[day][timeslot_in_day] = []
+            
+            schedule.appointments_by_day_and_timeslot[day][timeslot_in_day].append(appointment)
+        
+        max_day = max(app.day for app in move.appointments)
+        if max_day > schedule.work_days:
+            schedule.work_days = max_day
+            
+        move.is_applied = True
+        return
 
-    # deleting the appointments and raising some errors if schedule or appointments are missing    
-    if move.is_delete_move:
+    # Handle deletion move
+    elif move.is_delete_move:
         if schedule is None:
             raise ValueError("Schedule must be provided for delete move.")
         for app in move.appointments:
-            print(app)
-
             appointments = schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day]
             index = next((i for i, appointment in enumerate(appointments) if appointment is app), None)
             if index is not None:
@@ -64,76 +119,108 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
             move.appointments[0].meeting.judge = None
             move.appointments[0].meeting.room = None
             schedule.add_to_unplanned_meetings(move.appointments[0].meeting)
-        
+            
         move.is_applied = True
+        if schedule is not None:
+            schedule.trim_schedule_length_if_possible()
         return
 
-    changing_position = (move.new_day is not None or move.new_start_timeslot is not None)
+    # Handle regular move
+    else:
+        changing_position = (move.new_day is not None or move.new_start_timeslot is not None)
 
-    for i, app in enumerate(move.appointments):
-        # update the dict - remove the appointments from the old position
-        if schedule is not None and changing_position:
-            old_day = app.day
-            old_timeslot = app.timeslot_in_day
+        for i, app in enumerate(move.appointments):
+            # update the dict - remove the appointments from the old position
+            if schedule is not None and changing_position:
+                old_day = app.day
+                old_timeslot = app.timeslot_in_day
 
-            appointments = schedule.appointments_by_day_and_timeslot[old_day][old_timeslot]
-            index = next((i for i, appointment in enumerate(appointments) if appointment is app), None)
-            if index is not None:
-                appointments.pop(index)
-            else:
-                raise ValueError(f"Appointment {app} not found in schedule.")
+                appointments = schedule.appointments_by_day_and_timeslot[old_day][old_timeslot]
+                index = next((i for i, appointment in enumerate(appointments) if appointment is app), None)
+                if index is not None:
+                    appointments.pop(index)
+                else:
+                    raise ValueError(f"Appointment {app} not found in schedule.")
                         
-        if move.new_judge is not None:
-            app.judge = move.new_judge
-            app.meeting.judge = move.new_judge #sync
+            if move.new_judge is not None:
+                app.judge = move.new_judge
+                app.meeting.judge = move.new_judge #sync
 
-        if move.new_room is not None:
-            app.room = move.new_room
-            app.meeting.room = move.new_room #sync
+            if move.new_room is not None:
+                app.room = move.new_room
+                app.meeting.room = move.new_room #sync
 
-        if move.new_day is not None:
-            app.day = move.new_day
+            if move.new_day is not None:
+                app.day = move.new_day
 
-        if move.new_start_timeslot is not None or move.new_day is not None:
-            
-            start_day = move.new_day if move.new_day is not None else move.old_day
-            start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
-            global_timeslot = ((start_day - 1) * schedule.timeslots_per_work_day) + start_timeslot + i
-
-            app.day = ((global_timeslot - 1) // schedule.timeslots_per_work_day) + 1
-            app.timeslot_in_day = ((global_timeslot - 1) % schedule.timeslots_per_work_day) + 1
-
-            # Extend schedule if needed
-            if schedule is not None and app.day > schedule.work_days:
-                schedule.work_days = app.day
-
-        # update the dict - add the appointments to the new position
-        if schedule is not None and changing_position:
-            new_day = app.day
-            new_timeslot = app.timeslot_in_day
-
-            if new_day not in schedule.appointments_by_day_and_timeslot:
-                schedule.appointments_by_day_and_timeslot[new_day] = {}
-            if new_timeslot not in schedule.appointments_by_day_and_timeslot[new_day]:
-                schedule.appointments_by_day_and_timeslot[new_day][new_timeslot] = []
+            if move.new_start_timeslot is not None or move.new_day is not None:
                 
-            # if app in schedule.appointments_by_day_and_timeslot[new_day][new_timeslot]:
-            #     raise ValueError(f"Appointment {app} already exists in the new position.") # shouldnt happen but good for safety
+                start_day = move.new_day if move.new_day is not None else move.old_day
+                start_timeslot = move.new_start_timeslot if move.new_start_timeslot is not None else move.old_start_timeslot
+                global_timeslot = ((start_day - 1) * schedule.timeslots_per_work_day) + start_timeslot + i
 
-            schedule.appointments_by_day_and_timeslot[new_day][new_timeslot].append(app)
+                app.day = ((global_timeslot - 1) // schedule.timeslots_per_work_day) + 1
+                app.timeslot_in_day = ((global_timeslot - 1) % schedule.timeslots_per_work_day) + 1
 
-    move.is_applied = True
-    
-    if schedule is not None:
-        schedule.trim_schedule_length_if_possible()        
+                # Extend schedule if needed
+                if schedule is not None and app.day > schedule.work_days:
+                    schedule.work_days = app.day
+
+            # update the dict - add the appointments to the new position
+            if schedule is not None and changing_position:
+                new_day = app.day
+                new_timeslot = app.timeslot_in_day
+
+                if new_day not in schedule.appointments_by_day_and_timeslot:
+                    schedule.appointments_by_day_and_timeslot[new_day] = {}
+                if new_timeslot not in schedule.appointments_by_day_and_timeslot[new_day]:
+                    schedule.appointments_by_day_and_timeslot[new_day][new_timeslot] = []
+                    
+                # if app in schedule.appointments_by_day_and_timeslot[new_day][new_timeslot]:
+                #     raise ValueError(f"Appointment {app} already exists in the new position.") # shouldnt happen but good for safety
+
+                schedule.appointments_by_day_and_timeslot[new_day][new_timeslot].append(app)
+
+        move.is_applied = True        
+        
+        if schedule is not None:
+            schedule.trim_schedule_length_if_possible()        
 
 def undo_move(move: Move, schedule: Schedule = None) -> None:
     """Undo a move and update the schedule dictionary if provided"""
     if not move.is_applied:
         return
     
-    # reinserting the deleted appointments and raising some errors if schedule is missing
-    if move.is_delete_move:
+    # Handle insertion moves
+    elif move.is_insert_move:
+        if schedule is None:
+            raise ValueError("Schedule must be provided for undo insertion move.")
+        
+        # Remove all appointments from the schedule
+        for app in move.appointments:
+            if (app.day in schedule.appointments_by_day_and_timeslot and
+                app.timeslot_in_day in schedule.appointments_by_day_and_timeslot[app.day] and
+                app in schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day]):
+                
+                schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day].remove(app)
+        
+        # Get the meeting from the first appointment
+        if move.appointments:
+            meeting = move.appointments[0].meeting
+            # Reset judge and room
+            meeting.judge = None
+            meeting.room = None
+            # Add back to unplanned meetings
+            schedule.add_to_unplanned_meetings(meeting)
+        
+        move.is_applied = False
+        if schedule is not None:
+            schedule.trim_schedule_length_if_possible()
+        return
+        
+
+    # Handle deletion move
+    elif move.is_delete_move:
         
         # remove the meeting from the unplanned meetings
         if schedule is not None and move.appointments:
@@ -171,65 +258,65 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
             schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day].append(app)
         
         move.is_applied = False
-        return
+        return # trimming is not needed because adding meetings into the schedule will never make it shorter
         
+    # Handle regular move
+    else:
+        changing_position = (move.old_day is not None or move.old_start_timeslot is not None)
+        
+        for i, app in enumerate(move.appointments):
+            # update the dict - remove the appointments from the new position
+            if schedule is not None and changing_position:
+                current_day = app.day
+                current_timeslot = app.timeslot_in_day
 
-    changing_position = (move.old_day is not None or move.old_start_timeslot is not None)
+                appointments = schedule.appointments_by_day_and_timeslot[current_day][current_timeslot]
+                index = next((i for i, appointment in enumerate(appointments) if appointment is app), None)
+                if index is not None:
+                    appointments.pop(index)
+                else:
+                    raise ValueError(f"Appointment {app} not found in schedule.")
 
-    for i, app in enumerate(move.appointments):
-        # update the dict - remove the appointments from the new position
-        if schedule is not None and changing_position:
-            current_day = app.day
-            current_timeslot = app.timeslot_in_day
+            if move.old_judge is not None:
+                app.judge = move.old_judge
+                app.meeting.judge = move.old_judge #sync
 
-            appointments = schedule.appointments_by_day_and_timeslot[current_day][current_timeslot]
-            index = next((i for i, appointment in enumerate(appointments) if appointment is app), None)
-            if index is not None:
-                appointments.pop(index)
-            else:
-                raise ValueError(f"Appointment {app} not found in schedule.")
+            if move.old_room is not None:
+                app.room = move.old_room
+                app.meeting.room = move.old_room #sync
 
-        if move.old_judge is not None:
-            app.judge = move.old_judge
-            app.meeting.judge = move.old_judge #sync
+            if move.old_day is not None:
+                app.day = move.old_day
 
-        if move.old_room is not None:
-            app.room = move.old_room
-            app.meeting.room = move.old_room #sync
+            if move.old_start_timeslot is not None:
+                new_timeslot = move.old_start_timeslot + i
 
-        if move.old_day is not None:
-            app.day = move.old_day
+                day_offset = (new_timeslot - 1) // schedule.timeslots_per_work_day
+                adjusted_timeslot = ((new_timeslot - 1) % schedule.timeslots_per_work_day) + 1
 
-        if move.old_start_timeslot is not None:
-            new_timeslot = move.old_start_timeslot + i
+                if day_offset > 0:
+                    app.day = move.old_day + day_offset if move.old_day is not None else app.day + day_offset
+                    app.timeslot_in_day = adjusted_timeslot
+                else:
+                    app.timeslot_in_day = new_timeslot
+                    
+                # Extend schedule if needed
+                if schedule is not None and app.day > schedule.work_days:
+                    schedule.work_days = app.day
 
-            day_offset = (new_timeslot - 1) // schedule.timeslots_per_work_day
-            adjusted_timeslot = ((new_timeslot - 1) % schedule.timeslots_per_work_day) + 1
+            # update the dict - add the appointments to the old position
+            if schedule is not None and changing_position:
+                original_day = app.day
+                original_timeslot = app.timeslot_in_day
 
-            if day_offset > 0:
-                app.day = move.old_day + day_offset if move.old_day is not None else app.day + day_offset
-                app.timeslot_in_day = adjusted_timeslot
-            else:
-                app.timeslot_in_day = new_timeslot
-                
-            # Extend schedule if needed
-            if schedule is not None and app.day > schedule.work_days:
-                schedule.work_days = app.day
+                if original_day not in schedule.appointments_by_day_and_timeslot:
+                    schedule.appointments_by_day_and_timeslot[original_day] = {}
+                if original_timeslot not in schedule.appointments_by_day_and_timeslot[original_day]:
+                    schedule.appointments_by_day_and_timeslot[original_day][original_timeslot] = []
 
-        # update the dict - add the appointments to the old position
-        if schedule is not None and changing_position:
-            original_day = app.day
-            original_timeslot = app.timeslot_in_day
+                schedule.appointments_by_day_and_timeslot[original_day][original_timeslot].append(app)
 
-            if original_day not in schedule.appointments_by_day_and_timeslot:
-                schedule.appointments_by_day_and_timeslot[original_day] = {}
-            if original_timeslot not in schedule.appointments_by_day_and_timeslot[original_day]:
-                schedule.appointments_by_day_and_timeslot[original_day][original_timeslot] = []
-
-            schedule.appointments_by_day_and_timeslot[original_day][original_timeslot].append(app)
-
-    move.is_applied = False
-    
-    # Shrink schedule if the last day is empty
-    if schedule is not None:
-        schedule.trim_schedule_length_if_possible()        
+        move.is_applied = False
+            
+        if schedule is not None:
+            schedule.trim_schedule_length_if_possible()        

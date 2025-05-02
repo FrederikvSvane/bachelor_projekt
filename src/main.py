@@ -8,10 +8,10 @@ from src.base_model.schedule import Schedule, generate_schedule_using_double_flo
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import calculate_full_score
 from src.local_search.simulated_annealing import run_local_search
-from src.base_model.compatibility_checks import initialize_compatibility_matricies
+from src.base_model.compatibility_checks import initialize_compatibility_matricies, case_room_matrix
 from src.local_search.move import Move, do_move, undo_move
-from src.local_search.move_generator import generate_delete_move, generate_compound_move
-from src.heuristic_construction.linear_assignment import generate_schedule
+from src.local_search.move_generator import generate_specific_delete_move, generate_compound_move
+from src.construction.heuristic.linear_assignment import generate_schedule
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -21,7 +21,7 @@ def parse_arguments():
     group.add_argument('--input', type=str, help='Path to input JSON file')
     
     group.add_argument('--test', nargs='+', type=int, 
-                       help='Generate test data with [n_cases] [n_judges] [n_rooms] [n_work_days]')
+                       help='Generate test data with [n_cases] [n_work_days]')
     
     parser.add_argument('--method', type=str, choices=['graph', 'ilp', 'heuristic'], default='graph',
                         help='Method to use for scheduling (default: graph)')
@@ -44,21 +44,31 @@ def main():
                 return 1
             parsed_data = parse_input(input_path)
         elif args.test: 
-            if len(args.test) < 4:
-                print("Error: Test mode requires 3 parameters: n_cases n_judges n_rooms n_work_days")
+            if len(args.test) < 2:
+                print("Error: Test mode requires 2 parameters: n_cases n_work_days")
                 return 1
             
             from src.util.data_generator import generate_test_data_parsed
-            n_cases, n_judges, n_rooms, n_work_days = args.test[:4]
-            parsed_data: dict = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_work_days, granularity=5, min_per_work_day=390)
+            n_cases, n_work_days = args.test[:2]
+            parsed_data: dict = generate_test_data_parsed(n_cases, n_work_days, granularity=5, min_per_work_day=390)
         
 
         initialize_compatibility_matricies(parsed_data)
         
+        # --- Start: Concise Check ---
+        all_case_ids = {case.case_id for case in parsed_data["cases"]}
+        if not all_case_ids.issubset(case_room_matrix.keys()):
+             missing_ids = all_case_ids - case_room_matrix.keys()
+             raise ValueError(f"Error: Case IDs missing from case_room_matrix: {missing_ids}")
+        else:
+            print("All case IDs are present in case_room_matrix.")
+        # --- End: Concise Check ---
+
+        
         # Choose initial schedule construction method
         if args.method == 'ilp':
             print("Using ILP-based scheduling method")
-            from src.ilp_construction.ilp_solver import generate_schedule_using_ilp
+            from src.construction.ilp import generate_schedule_using_ilp
             initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data)
         elif args.method == 'graph':
             print("Using graph-based scheduling method")
@@ -67,67 +77,38 @@ def main():
             print("Using heuristic-based scheduling method")
             initial_schedule: Schedule = generate_schedule(parsed_data)
 
-
+    
         
-        # ___ main operations ___'
-        #final_schedule = initial_schedule
-        #final_schedule.move_all_dayboundary_violations()
-        #visualize(final_schedule)
-        #initial_score = calculate_full_score(final_schedule)
-        #print("Initial score: ", initial_score)
-        
-        # _______________________
+        #_______________________
         initial_schedule.initialize_appointment_chains()
         initial_schedule.move_all_dayboundary_violations()
         initial_schedule.trim_schedule_length_if_possible()
-        initial_score = calculate_full_score(initial_schedule)
+        result = calculate_full_score(initial_schedule)
+        initial_score = result[0]
+        hard_violations = result[1]
+        medm_violations = result[2]
+        soft_violations = result[3]
         visualize(initial_schedule)
-        #visualize(initial_schedule, view_by="room")
+        visualize(initial_schedule, view_by="room")
+        print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
+        print(f"Initial score: {initial_score}")
         
         final_schedule = run_local_search(initial_schedule)
         
         final_score = calculate_full_score(final_schedule)
         visualize(final_schedule)
+        # visualize(final_schedule, view_by="room")
         print(f"Initial score: {initial_score}")
         print(f"Final score: {final_score}")
+        #___________________________________________
 
-        # final_score = calculate_full_score(final_schedule)
-        # visualize(final_schedule)
-        # print(f"Initial score: {initial_score}")
-        # print(f"Final score: {final_score}")        
-        # _______________________
+        final_score = calculate_full_score(final_schedule)
+        visualize(final_schedule)
+        print(f"Initial score: {initial_score}")
+        print(f"Final score: {final_score}")        
+        #_______________________
         
-        # visualize(initial_schedule)
-        # for app in initial_schedule.iter_appointments():
-        #     print(app)
-        # initial_schedule.print_unplanned_meetings()        
-
-        # all_meetings = initial_schedule.get_all_meetings()
-        
-        # first_meeting = all_meetings[0]
-        # first_meeting_id = first_meeting.meeting_id 
-        # move: Move = generate_delete_move(initial_schedule, first_meeting_id)
-        # print(f"Generated move: {move}")
-        # print(f"Move uses the judge {move.old_judge} and room {move.old_room}")
-        # do_move(move, initial_schedule)
-        
-        # visualize(initial_schedule)
-        # for app in initial_schedule.iter_appointments():
-        #     print(app)
-        # initial_schedule.print_unplanned_meetings()        
-        
-        # undo_move(move, initial_schedule)
-        # visualize(initial_schedule)
-        # for app in initial_schedule.iter_appointments():
-        #     print(app)
-        # initial_schedule.print_unplanned_meetings()        
-        
-        # final_schedule = initial_schedule
-        # _______________________
-
-
-
-        # Write schedule to output file
+        #Write schedule to output file
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, 'w') as f:

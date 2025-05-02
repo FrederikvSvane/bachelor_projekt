@@ -1,18 +1,17 @@
 from typing import Dict
 from copy import deepcopy
 
-from src.util.data_generator import ensure_jm_pair_room_compatibility
 from src.base_model.judge import Judge
 from src.base_model.room import Room
+from src.base_model.case import Case
 from src.base_model.meeting import Meeting
 from src.base_model.appointment import Appointment
-from src.base_model.case import Case
-from src.graph_construction.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, construct_conflict_graph
+from src.construction.graph.graph import UndirectedGraph, DirectedGraph, MeetingJudgeRoomNode, construct_conflict_graph
 
-from src.graph_construction.matching import (
+from src.construction.graph.matching import (
     assign_cases_to_judges, assign_meeting_judge_pairs_to_rooms, 
 )
-from src.graph_construction.coloring import DSatur
+from src.construction.graph.coloring import DSatur
 
 
 class Schedule:
@@ -42,76 +41,115 @@ class Schedule:
 
         """Compare two Schedule objects for equality."""
         if not isinstance(other, Schedule):
-            return False
-            
-        if (self.work_days != other.work_days or
-                self.minutes_in_a_work_day != other.minutes_in_a_work_day or
-                self.granularity != other.granularity or
-                self.timeslots_per_work_day != other.timeslots_per_work_day):
-            return False
-            
+            raise TypeError(f"Cannot compare Schedule with {type(other).__name__}")
+        
+        # Compare basic properties
+        if self.work_days != other.work_days:
+            raise ValueError(f"Work days differ: {self.work_days} vs {other.work_days}")
+        if self.minutes_in_a_work_day != other.minutes_in_a_work_day:
+            raise ValueError(f"Minutes in work day differ: {self.minutes_in_a_work_day} vs {other.minutes_in_a_work_day}")
+        if self.granularity != other.granularity:
+            raise ValueError(f"Granularity differs: {self.granularity} vs {other.granularity}")
+        if self.timeslots_per_work_day != other.timeslots_per_work_day:
+            raise ValueError(f"Timeslots per work day differ: {self.timeslots_per_work_day} vs {other.timeslots_per_work_day}")
+        
+        # Compare days with appointments
         self_days = set(self.appointments_by_day_and_timeslot.keys())
         other_days = set(other.appointments_by_day_and_timeslot.keys())
         if self_days != other_days:
-            return False
-            
+            missing_in_self = other_days - self_days
+            missing_in_other = self_days - other_days
+            error_msg = "Days with appointments differ:"
+            if missing_in_self:
+                error_msg += f" Missing in self: {missing_in_self}."
+            if missing_in_other:
+                error_msg += f" Missing in other: {missing_in_other}."
+            raise ValueError(error_msg)
+        
+        # Compare unplanned meetings
         for unplanned_meeting in self.unplanned_meetings:
             if unplanned_meeting not in other.unplanned_meetings:
-                return False
+                raise ValueError(f"Unplanned meeting in self missing from other: {unplanned_meeting}")
+        
         for other_unplanned_meeting in other.unplanned_meetings:
             if other_unplanned_meeting not in self.unplanned_meetings:
-                return False
+                raise ValueError(f"Unplanned meeting in other missing from self: {other_unplanned_meeting}")
         
+        # Compare appointments by day and timeslot
         for day in self_days:
             self_timeslots = set(self.appointments_by_day_and_timeslot[day].keys())
             other_timeslots = set(other.appointments_by_day_and_timeslot[day].keys())
+            
             if self_timeslots != other_timeslots:
-                return False
-                
+                missing_in_self = other_timeslots - self_timeslots
+                missing_in_other = self_timeslots - other_timeslots
+                error_msg = f"Timeslots for day {day} differ:"
+                if missing_in_self:
+                    error_msg += f" Missing in self: {missing_in_self}."
+                if missing_in_other:
+                    error_msg += f" Missing in other: {missing_in_other}."
+                raise ValueError(error_msg)
+            
             for timeslot in self_timeslots:
                 self_appointments = set(self.appointments_by_day_and_timeslot[day][timeslot])
                 other_appointments = set(other.appointments_by_day_and_timeslot[day][timeslot])
                 
+                if len(self_appointments) != len(other_appointments):
+                    raise ValueError(f"Number of appointments differ for day {day}, timeslot {timeslot}: {len(self_appointments)} vs {len(other_appointments)}")
+                
                 for app in self.appointments_by_day_and_timeslot[day][timeslot]:
                     if app not in other.appointments_by_day_and_timeslot[day][timeslot]:
-                        return False
-                        
-                if len(self_appointments) != len(other_appointments):
-                    return False
+                        raise ValueError(f"Appointment in self missing from other at day {day}, timeslot {timeslot}: {app}")
         
+        # Compare judges
         if (self.all_judges is None) != (other.all_judges is None):
-            return False
-            
+            raise ValueError(f"Judges: one has judges, the other doesn't. Self: {self.all_judges is not None}, Other: {other.all_judges is not None}")
+        
         if self.all_judges is not None:
             if len(self.all_judges) != len(other.all_judges):
-                return False
-                
+                raise ValueError(f"Number of judges differ: {len(self.all_judges)} vs {len(other.all_judges)}")
+            
             self_judges_map = {j.judge_id: j for j in self.all_judges}
             other_judges_map = {j.judge_id: j for j in other.all_judges}
             
             if set(self_judges_map.keys()) != set(other_judges_map.keys()):
-                return False
-                
+                missing_in_self = set(other_judges_map.keys()) - set(self_judges_map.keys())
+                missing_in_other = set(self_judges_map.keys()) - set(other_judges_map.keys())
+                error_msg = "Judge IDs differ:"
+                if missing_in_self:
+                    error_msg += f" Missing in self: {missing_in_self}."
+                if missing_in_other:
+                    error_msg += f" Missing in other: {missing_in_other}."
+                raise ValueError(error_msg)
+            
             for judge_id, judge in self_judges_map.items():
                 if judge != other_judges_map[judge_id]:
-                    return False
+                    raise ValueError(f"Judge with ID {judge_id} differs: {judge} vs {other_judges_map[judge_id]}")
         
+        # Compare rooms
         if (self.all_rooms is None) != (other.all_rooms is None):
-            return False
-            
+            raise ValueError(f"Rooms: one has rooms, the other doesn't. Self: {self.all_rooms is not None}, Other: {other.all_rooms is not None}")
+        
         if self.all_rooms is not None:
             if len(self.all_rooms) != len(other.all_rooms):
-                return False
-                
+                raise ValueError(f"Number of rooms differ: {len(self.all_rooms)} vs {len(other.all_rooms)}")
+            
             self_rooms_map = {r.room_id: r for r in self.all_rooms}
             other_rooms_map = {r.room_id: r for r in other.all_rooms}
             
             if set(self_rooms_map.keys()) != set(other_rooms_map.keys()):
-                return False
-                
+                missing_in_self = set(other_rooms_map.keys()) - set(self_rooms_map.keys())
+                missing_in_other = set(self_rooms_map.keys()) - set(other_rooms_map.keys())
+                error_msg = "Room IDs differ:"
+                if missing_in_self:
+                    error_msg += f" Missing in self: {missing_in_self}."
+                if missing_in_other:
+                    error_msg += f" Missing in other: {missing_in_other}."
+                raise ValueError(error_msg)
+            
             for room_id, room in self_rooms_map.items():
                 if room != other_rooms_map[room_id]:
-                    return False
+                    raise ValueError(f"Room with ID {room_id} differs: {room} vs {other_rooms_map[room_id]}")
         
         return True
     
@@ -154,6 +192,25 @@ class Schedule:
     
     def get_all_unplanned_meetings(self) -> list[Meeting]:
         return self.unplanned_meetings    
+    
+    def get_all_planned_meetings(self) -> list[Meeting]:
+        meetings = []
+        meeting_ids = set()
+        
+        for app in self.iter_appointments():
+            if app.meeting.meeting_id not in meeting_ids:
+                meeting_ids.add(app.meeting.meeting_id)
+                meetings.append(app.meeting)
+        return meetings
+    
+    def get_all_meetings(self) -> list[Meeting]:
+        """
+        Returns:
+            A list of all meetings in the schedule, planned and unplanned
+        """
+        meetings = self.get_all_planned_meetings()
+        meetings.extend(self.unplanned_meetings)
+        return meetings
     
     def print_unplanned_meetings(self) -> None:
         if not self.unplanned_meetings:
@@ -271,6 +328,7 @@ class Schedule:
                         break 
 
             if is_empty:
+                #print(f"Trimming empty day {last_day} from schedule.")
                 self.work_days -= 1
             else:
                 break
@@ -363,7 +421,17 @@ class Schedule:
             
         # Adjusting the length of the schedule based on amount of days used
         max_day_used = max_color // self.timeslots_per_work_day + 1
+        old_work_days = self.work_days
         self.work_days = max(self.work_days, max_day_used)
+        
+        # Initialize empty lists for any new days that were added
+        if self.work_days > old_work_days:
+            for day in range(old_work_days + 1, self.work_days + 1):
+                if day not in self.appointments_by_day_and_timeslot:
+                    self.appointments_by_day_and_timeslot[day] = {}
+                for timeslot in range(1, self.timeslots_per_work_day + 1):
+                    if timeslot not in self.appointments_by_day_and_timeslot[day]:
+                        self.appointments_by_day_and_timeslot[day][timeslot] = []
 
 def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     """
@@ -399,7 +467,7 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     meeting_judge_pairs = assign_cases_to_judges(judge_meeting_graph)
     #judge_meeting_graph.visualize()
     
-    rooms = ensure_jm_pair_room_compatibility(meeting_judge_pairs, rooms)
+    #rooms = ensure_jm_pair_room_compatibility(meeting_judge_pairs, rooms)
     # Flow 2: Assign rooms to case-judge pairs
     jm_room_graph = DirectedGraph()
     jm_room_graph.initialize_case_judge_pair_to_room_graph(meeting_judge_pairs, rooms)

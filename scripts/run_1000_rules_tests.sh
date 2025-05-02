@@ -8,10 +8,11 @@ room_overbookings="tests.test_rules_engine.TestRulesEngine.test_nr1_overbooked_r
 judge_overbookings="tests.test_rules_engine.TestRulesEngine.test_nr2_overbooked_judge_in_timeslot"
 time_grain="tests.test_rules_engine.TestRulesEngine.test_nr18_unused_timegrain"
 room_stability="tests.test_rules_engine.TestRulesEngine.test_nr29_room_stability_per_day"
+all_delta_rules="tests.test_rules_engine.TestRulesEngine.test_all_delta_functions"
 
 # ____
 
-to_test=$all
+to_test=$all_delta_rules
 
 # ____
 
