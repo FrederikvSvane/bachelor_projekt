@@ -88,7 +88,7 @@ case_judge_matrix = {}
 case_room_matrix = {}
 judge_room_matrix = {}
 
-def initialize_compatibility_matricies(parsed_data):
+def initialize_compatibility_matricies(parsed_data = None, schedule = None):    
     """
     Initialize compatibility matricies for judges, rooms, and cases.
     
@@ -97,15 +97,17 @@ def initialize_compatibility_matricies(parsed_data):
     """
     global case_judge_matrix, case_room_matrix, judge_room_matrix
 
+    if parsed_data is None and schedule is None:
+        raise ValueError("Either parsed_data or schedule must be provided")
+
     case_judge_matrix.clear()
     case_room_matrix.clear()
     judge_room_matrix.clear()
 
-    cases = parsed_data["cases"]
-    judges = parsed_data["judges"]
-    rooms = parsed_data["rooms"]
-
-
+    cases = schedule.get_all_cases() if schedule is not None else parsed_data["cases"]
+    judges = schedule.get_all_judges() if schedule is not None else parsed_data["judges"]
+    rooms = schedule.get_all_rooms() if schedule is not None else parsed_data["rooms"]
+    
     for case in cases:
         case_id = case.case_id
         case_judge_matrix[case_id] = {}
@@ -137,21 +139,34 @@ def check_case_judge_compatibility(case_id: int, judge_id: int) -> bool:
     Efficiently check if a case and judge are compatible, using compatibility matrix.
     Return true if compatible, false otherwise.
     """
-    return case_judge_matrix[case_id][judge_id]
+    try:
+        return case_judge_matrix[case_id][judge_id]
+    except KeyError:
+        print(f"Warning: Missing compatibility data for case {case_id} and judge {judge_id}")
+        return False  # Assume incompatible if data is missing
 
 def check_case_room_compatibility(case_id: int, room_id: int) -> bool:
     """
     Efficiently check if a case and room are compatible, using compatibility matrix.
     Return true if compatible, false otherwise.
     """
-    return case_room_matrix[case_id][room_id]
+    try:
+        return case_room_matrix[case_id][room_id]
+    except KeyError:
+        print(f"Warning: Missing compatibility data for case {case_id} and room {room_id}")
+        # You can either assume incompatible:
+        return False
 
 def check_judge_room_compatibility(judge_id: int, room_id: int) -> bool:
     """
     Efficiently check if a judge and room are compatible, using compatibility matrix.
     Return true if compatible, false otherwise.
     """
-    return judge_room_matrix[judge_id][room_id]
+    try:
+        return judge_room_matrix[judge_id][room_id]
+    except KeyError:
+        print(f"Warning: Missing compatibility data for judge {judge_id} and room {room_id}")
+        return False
 
 
 

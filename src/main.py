@@ -8,7 +8,7 @@ from src.base_model.schedule import Schedule, generate_schedule_using_double_flo
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import calculate_full_score
 from src.local_search.simulated_annealing import run_local_search
-from src.base_model.compatibility_checks import initialize_compatibility_matricies
+from src.base_model.compatibility_checks import initialize_compatibility_matricies, case_room_matrix
 from src.local_search.move import Move, do_move, undo_move
 from src.local_search.move_generator import generate_specific_delete_move, generate_compound_move
 from src.construction.heuristic.linear_assignment import generate_schedule
@@ -55,6 +55,16 @@ def main():
 
         initialize_compatibility_matricies(parsed_data)
         
+        # --- Start: Concise Check ---
+        all_case_ids = {case.case_id for case in parsed_data["cases"]}
+        if not all_case_ids.issubset(case_room_matrix.keys()):
+             missing_ids = all_case_ids - case_room_matrix.keys()
+             raise ValueError(f"Error: Case IDs missing from case_room_matrix: {missing_ids}")
+        else:
+            print("All case IDs are present in case_room_matrix.")
+        # --- End: Concise Check ---
+
+        
         # Choose initial schedule construction method
         if args.method == 'ilp':
             print("Using ILP-based scheduling method")
@@ -87,7 +97,7 @@ def main():
         
         final_score = calculate_full_score(final_schedule)
         visualize(final_schedule)
-        visualize(final_schedule, view_by="room")
+        # visualize(final_schedule, view_by="room")
         print(f"Initial score: {initial_score}")
         print(f"Final score: {final_score}")
         #___________________________________________
