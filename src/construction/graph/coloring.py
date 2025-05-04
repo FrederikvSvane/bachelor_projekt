@@ -130,11 +130,8 @@ def find_start_of_chain(graph: UndirectedGraph, vertex: int) -> int:
 def color_all_meetings_in_chain(graph: UndirectedGraph, start_vertex: MeetingJudgeRoomNode):
     """
     Color all vertices in a chain consecutively, starting from the given vertex.
-    Uses the lowest possible starting color that doesn't conflict with neighbors.
-    
-    Args:
-        graph: The undirected graph
-        start_vertex: The first vertex of the chain to color
+    Searches for the lowest valid starting color that doesn't conflict with neighbors
+    AND doesn't cross day boundaries.
     """
     # Get meeting, judge, and room IDs to identify all nodes in this chain
     meeting_id = start_vertex.get_meeting().meeting_id
@@ -165,14 +162,33 @@ def color_all_meetings_in_chain(graph: UndirectedGraph, start_vertex: MeetingJud
         print(f"Warning: No vertices found for chain with meeting_id={meeting_id}, judge_id={judge_id}, room_id={room_id}")
         return
     
-    # For each potential starting color, check if it works for the entire chain
+    chain_length = len(chain_indices)
+    
+    # Search for a valid starting color
     start_color = 0
     valid_start_found = False
+    max_searches = graph.get_num_nodes() * 80  # Maximum searches to prevent infinite loop
     
-    while not valid_start_found:
-        valid_start_found = True
+    for search_count in range(max_searches):
+        # Check if this starting color would cross day boundary
+        current_day = start_color // 78
+        day_start = current_day * 78
+        day_end = day_start + 78
         
-        # Check if this starting color works for all positions in the chain
+        # If the chain would exceed the day boundary, move to next valid position
+        if start_color % 78 + chain_length > 78:
+            # Move to either the next valid position in current day
+            # or start of next day if no valid position exists
+            remaining_slots_today = day_end - start_color
+            if remaining_slots_today < chain_length:
+                start_color = day_end  # Move to start of next day
+            else:
+                start_color += 1  # Try next position
+            continue
+        
+        # Check if this starting color has any conflicts
+        has_conflict = False
+        
         for i, vertex_idx in enumerate(chain_indices):
             current_color = start_color + i
             
@@ -180,13 +196,25 @@ def color_all_meetings_in_chain(graph: UndirectedGraph, start_vertex: MeetingJud
             for neighbor in graph.get_neighbors(vertex_idx):
                 neighbor_color = graph.get_node(neighbor).get_color()
                 if neighbor_color == current_color:
-                    # Conflict found - this starting color won't work
-                    valid_start_found = False
-                    start_color += 1
+                    has_conflict = True
                     break
             
-            if not valid_start_found:
+            if has_conflict:
                 break
+        
+        if not has_conflict:
+            # Found a valid placement!
+            valid_start_found = True
+            break
+        
+        # No valid placement found, try next color
+        start_color += 1
+    
+    if not valid_start_found:
+        print(f"Warning: Could not find valid coloring for chain after {max_searches} attempts")
+        print(f"Chain details: meeting_id={meeting_id}, judge_id={judge_id}, room_id={room_id}, length={chain_length}")
+        # If it should fail just color it and local-search will fix it later
+        start_color = graph.get_num_nodes()  # Start beyond all existing colors
     
     # Color the chain consecutively with the found starting color
     for i, vertex_idx in enumerate(chain_indices):
