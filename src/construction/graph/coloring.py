@@ -73,7 +73,7 @@ def find_valid_timeslot(graph: UndirectedGraph, vertex: int, granularity: int) -
     meeting_length = max(1, meeting.meeting_duration // granularity)
     
     timeslot = 0
-    max_attempts = 100_000  # Reasonable limit
+    max_attempts = 100_000
     
     for attempt in range(max_attempts):
         # Check day boundary
@@ -82,7 +82,6 @@ def find_valid_timeslot(graph: UndirectedGraph, vertex: int, granularity: int) -
         
         # If meeting would cross day boundary, move to next valid position
         if timeslot + meeting_length > day_end:
-            # If the meeting doesn't fit in the current day, move to next day
             if day_end - timeslot < meeting_length:
                 timeslot = day_end
             else:
@@ -95,11 +94,10 @@ def find_valid_timeslot(graph: UndirectedGraph, vertex: int, granularity: int) -
             neighbor_node = graph.get_node(neighbor_idx)
             neighbor_timeslot = neighbor_node.get_color()
             
-            if neighbor_timeslot != -1:  # Skip uncolored neighbors
+            if neighbor_timeslot != -1:
                 neighbor_meeting = neighbor_node.get_meeting()
                 neighbor_length = max(1, neighbor_meeting.meeting_duration // granularity)
                 
-                # Check if meetings overlap
                 if overlaps(timeslot, timeslot + meeting_length, 
                            neighbor_timeslot, neighbor_timeslot + neighbor_length):
                     has_conflict = True
@@ -121,7 +119,6 @@ def find_valid_timeslot(graph: UndirectedGraph, vertex: int, granularity: int) -
             node_end = node.get_color() + node_length
             highest_timeslot = max(highest_timeslot, node_end)
     
-    # Place at the next available position after the highest used timeslot
     return highest_timeslot
 
 def DSatur(graph: UndirectedGraph, granularity: int) -> None:
