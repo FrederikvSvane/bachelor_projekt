@@ -372,54 +372,67 @@ class Schedule:
         
         return result
 
-    def generate_schedule_from_colored_graph(self, graph: UndirectedGraph) -> None:
+    def generate_schedule_from_colored_graph(self, graph: UndirectedGraph, granularity: int) -> None:
         """
         Generate appointments using the node "color" as timeslot.
+        Expands meetings into multiple appointments based on duration.
         
         Args:
             graph: The colored undirected graph
+            granularity: The granularity of timeslots
         """
         
-        # For safety, clear the schedule first
+        # Clear the schedule first
         self.appointments_by_day_and_timeslot = {day: {ts: [] for ts in range(1, self.timeslots_per_work_day + 1)} for day in range(1, self.work_days + 1)}
         
-        max_color = -1 # tracking the maximum color (timeslot) used
+        max_color = -1
         
         for i in range(graph.get_num_nodes()):
-            node = graph.get_node(i) # getting the CaseJudgeRoomNode from the graph
+            node = graph.get_node(i)
             
             if not isinstance(node, MeetingJudgeRoomNode):
                 raise ValueError(f"Node {i} is not a MeetingJudgeRoomNode. Cannot add to schedule. Terminating.")
             
-            # Determining the day and timeslot in day based on assigned color
-            color = node.get_color()
-            if color == -1:
+            # Get starting timeslot for this meeting
+            start_color = node.get_color()
+            if start_color == -1:
                 raise ValueError(f"Node {i} has no color assigned. Cannot add to schedule. Terminating.")
-            day = color // self.timeslots_per_work_day + 1
-            timeslot_in_day = color % self.timeslots_per_work_day + 1
-            max_color = max(max_color, color)            
             
-            # Also for safety, initialize empty appointment list for the day and timeslot
-            if day not in self.appointments_by_day_and_timeslot:
-                self.appointments_by_day_and_timeslot[day] = {}
-            if timeslot_in_day not in self.appointments_by_day_and_timeslot[day]:
-                self.appointments_by_day_and_timeslot[day][timeslot_in_day] = []
-
-            # Create an appointment
-            appointment = Appointment(
-                meeting = node.get_meeting(),
-                judge = node.get_judge(),
-                room = node.get_room(),
-                day = day,
-                timeslot_in_day = timeslot_in_day,
+            meeting = node.get_meeting()
+            judge = node.get_judge()
+            room = node.get_room()
+            
+            # Calculate number of appointments for this meeting
+            num_appointments = max(1, meeting.meeting_duration // granularity)
+            
+            # Create appointments for each timeslot
+            for j in range(num_appointments):
+                color = start_color + j
+                day = color // self.timeslots_per_work_day + 1
+                timeslot_in_day = color % self.timeslots_per_work_day + 1
+                max_color = max(max_color, color)
+                
+                # Initialize empty appointment list for the day and timeslot
+                if day not in self.appointments_by_day_and_timeslot:
+                    self.appointments_by_day_and_timeslot[day] = {}
+                if timeslot_in_day not in self.appointments_by_day_and_timeslot[day]:
+                    self.appointments_by_day_and_timeslot[day][timeslot_in_day] = []
+                
+                # Create an appointment
+                appointment = Appointment(
+                    meeting=meeting,
+                    judge=judge,
+                    room=room,
+                    day=day,
+                    timeslot_in_day=timeslot_in_day,
                 )
-            
-            appointment.meeting.judge = appointment.judge
-            appointment.meeting.room = appointment.room
-            
-            self.appointments_by_day_and_timeslot[day][timeslot_in_day].append(appointment)
-            
-        # Adjusting the length of the schedule based on amount of days used
+                
+                appointment.meeting.judge = appointment.judge
+                appointment.meeting.room = appointment.room
+                
+                self.appointments_by_day_and_timeslot[day][timeslot_in_day].append(appointment)
+        
+        # Adjust the length of the schedule based on amount of days used
         max_day_used = max_color // self.timeslots_per_work_day + 1
         old_work_days = self.work_days
         self.work_days = max(self.work_days, max_day_used)
@@ -479,10 +492,10 @@ def generate_schedule_using_double_flow(parsed_data: Dict) -> Schedule:
     # conflict_graph.visualize()
     
     # Perform graph coloring
-    DSatur(conflict_graph)
+    DSatur(conflict_graph, granularity)
     
     # Generate schedule
     schedule = Schedule(work_days, minutes_per_work_day, granularity, judges, rooms, meetings, cases)
-    schedule.generate_schedule_from_colored_graph(conflict_graph)
+    schedule.generate_schedule_from_colored_graph(conflict_graph, granularity)
     
     return schedule

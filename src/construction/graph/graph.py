@@ -775,77 +775,32 @@ class UndirectedGraph:
             node.set_color(-1)
             
 def construct_conflict_graph(assigned_meetings: List[MeetingJudgeRoomNode], granularity):
-    """
-    Construct a conflict graph where nodes are case-judge-room assignments
-    and edges connect assignments that conflict (same judge or same room).
-    
-    Args:
-        assigned_cases: List of CaseJudgeRoomNode objects representing assignments
-        
-    Returns:
-        An UndirectedGraph representing the conflicts
-    """
-
+    """Construct a conflict graph with ONE node per meeting (not per timeslot)"""
     conflict_graph = UndirectedGraph()
-    all_nodes = []
-    node_to_index = {}  # Map to track node objects to their indices
     
-    # Dictionary to track all nodes by judge_id and room_id for faster conflict detection
-    nodes_by_judge = {}
-    nodes_by_room = {}
+    # Create exactly one node per meeting
+    for i, assigned_meeting in enumerate(assigned_meetings):
+        node_id = f"meeting_{assigned_meeting.get_meeting().meeting_id}"
+        node = MeetingJudgeRoomNode(node_id, 
+                                  assigned_meeting.get_meeting(), 
+                                  assigned_meeting.get_judge(), 
+                                  assigned_meeting.get_room())
+        conflict_graph.add_node(node)
     
-    # Add nodes based on how many timeslots the meeting span
-    for assigned_meeting in assigned_meetings:
-        length = max(1, assigned_meeting.get_meeting().meeting_duration // granularity)
-        
-        # Create nodes for each timeslot of this case
-        meeting_indices = []
-        for i in range(length):
-            # Create a node identifier
-            node_id = f"meeting_{assigned_meeting.get_meeting().meeting_id},{i}"
+    # Add conflicts between meetings
+    nodes = conflict_graph.nodes
+    for i in range(len(nodes)):
+        for j in range(i + 1, len(nodes)):
+            meeting_i = nodes[i].get_meeting()
+            meeting_j = nodes[j].get_meeting()
+            judge_i = nodes[i].get_judge()
+            judge_j = nodes[j].get_judge()
+            room_i = nodes[i].get_room()
+            room_j = nodes[j].get_room()
             
-            # Create a new node for each timeslot with all required parameters
-            node = MeetingJudgeRoomNode(node_id, 
-                                     assigned_meeting.get_meeting(), 
-                                     assigned_meeting.get_judge(), 
-                                     assigned_meeting.get_room())
-            
-            # Add the node and get its index
-            index = conflict_graph.add_node(node)
-            node_to_index[node] = index  # Store mapping from node to index
-            all_nodes.append(node)
-            meeting_indices.append(index)
-            
-            # Track nodes by judge and room for conflict detection
-            judge_id = assigned_meeting.get_judge().judge_id
-            room_id = assigned_meeting.get_room().room_id
-            
-            if judge_id not in nodes_by_judge:
-                nodes_by_judge[judge_id] = []
-            nodes_by_judge[judge_id].append(index)
-            
-            if room_id not in nodes_by_room:
-                nodes_by_room[room_id] = []
-            nodes_by_room[room_id].append(index)
-        
-        # Add edges between all pairs of nodes in this case's chain
-        for i in range(len(meeting_indices)):
-            for j in range(i+1, len(meeting_indices)):
-                conflict_graph.add_edge(meeting_indices[i], meeting_indices[j])
-    
-    # Add edges for conflicts (same judge or same room)
-    # Process conflicts by judge
-    for judge_id, indices in nodes_by_judge.items():
-        for i in range(len(indices)):
-            for j in range(i+1, len(indices)):
-                conflict_graph.add_edge(indices[i], indices[j])
-    
-    # Process conflicts by room
-    for room_id, indices in nodes_by_room.items():
-        for i in range(len(indices)):
-            for j in range(i+1, len(indices)):
-                conflict_graph.add_edge(indices[i], indices[j])
+            # Check if meetings conflict (same judge or same room)
+            if judge_i.judge_id == judge_j.judge_id or room_i.room_id == room_j.room_id:
+                conflict_graph.add_edge(i, j)
     
     return conflict_graph
-
         

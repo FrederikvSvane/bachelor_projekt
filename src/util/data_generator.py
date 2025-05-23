@@ -423,13 +423,13 @@ def generate_test_data_parsed(n_cases: int,
     )
     room2 = Room(
         room_id=2,
-        characteristics={Attribute.ACCESSIBILITY},
+        characteristics={Attribute.VIRTUAL, Attribute.ACCESSIBILITY, Attribute.SECURITY},
         case_requirements=set(),
         judge_requirements=set()
     )
     room3 = Room(
         room_id=3,
-        characteristics={Attribute.ACCESSIBILITY},
+        characteristics={Attribute.ACCESSIBILITY, Attribute.SECURITY},
         case_requirements=set(),
         judge_requirements=set()
     )
@@ -441,19 +441,19 @@ def generate_test_data_parsed(n_cases: int,
     )
     room5 = Room(
         room_id=5,
-        characteristics=set(),
+        characteristics={Attribute.ACCESSIBILITY, Attribute.SECURITY},
         case_requirements=set(),
         judge_requirements=set()
     )
     room6 = Room(
         room_id=6,
-        characteristics={Attribute.SECURITY},
+        characteristics={Attribute.SECURITY, Attribute.ACCESSIBILITY},
         case_requirements=set(),
         judge_requirements=set()
     )
     room7 = Room(
         room_id=7,
-        characteristics={Attribute.SECURITY},
+        characteristics={Attribute.SECURITY, Attribute.ACCESSIBILITY},
         case_requirements=set(),
         judge_requirements=set()
     )
@@ -471,7 +471,7 @@ def generate_test_data_parsed(n_cases: int,
     )
     room10 = Room(
         room_id=10,
-        characteristics=set(), 
+        characteristics={Attribute.ACCESSIBILITY, Attribute.SECURITY}, 
         case_requirements=set(),
         judge_requirements=set()
     )
