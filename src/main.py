@@ -83,7 +83,7 @@ def main():
         
         #_______________________
         initial_schedule.initialize_appointment_chains()
-        initial_schedule.move_all_dayboundary_violations()
+        #initial_schedule.move_all_dayboundary_violations()
         initial_schedule.trim_schedule_length_if_possible()
         result = calculate_full_score(initial_schedule)
         initial_score = result[0]

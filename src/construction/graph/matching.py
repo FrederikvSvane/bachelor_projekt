@@ -169,9 +169,6 @@ def assign_cases_to_judges(graph: DirectedGraph) -> List[MeetingJudgeNode]:
     
     return assigned_pairs
 
-
-
-
 def extract_c_j_room_assignments(graph: DirectedGraph) -> List[MeetingJudgeRoomNode]:
     """
     Extract final judge-case assignments from the graph after Ford-Fulkerson completes.
