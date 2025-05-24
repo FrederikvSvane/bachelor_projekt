@@ -131,7 +131,7 @@ def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, m
     return hard_count, medium_count, soft_count
 
 
-def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, log_file_path: str = None) -> Schedule:
+def ssimulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, log_file_path: str = None) -> Schedule:
     from copy import deepcopy
     start_time = time.time()
     
@@ -145,7 +145,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     
     # Custom log function to write to both console and file
     def log_output(message):
-        print(message)
+        #print(message)
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately
@@ -330,7 +330,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         
         if plateau_count >= current_plateau_limit:
             log_output("\n \n _______________________________________________________________ \n Large plateau detected! Applying Ruin and Recreate... \n _______________________________________________________________ \n")
-            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
+            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True, log_file=log_file)
             plateau_count = 0
             if r_r_success:
                 log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
@@ -364,4 +364,50 @@ def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
         log_file_path=log_file_path
     )
     
+    return optimized_schedule
+
+
+
+def run_local_search_benchmark(schedule: Schedule, log_file_path: str = None) -> Schedule:
+    """
+    Run a benchmark of the local search algorithm with various configurations.
+    """
+
+    iterations_per_temperature = [1000, 2000, 3000, 4000, 5000]
+    max_time_seconds = 60 * 5
+    start_temps = [100, 200, 300, 400, 500]
+    end_temps = [10, 20, 30, 40, 50]
+    results = []
+
+    print("Running local search benchmark with the following configurations:")
+    print(f"Iterations per temperature: {iterations_per_temperature}")
+    print(f"Max time: {max_time_seconds} seconds")
+    print(f"Start temperatures: {start_temps}")
+    print(f"End temperatures: {end_temps}")
+    for iters in iterations_per_temperature:
+        for start_temp in start_temps:
+            for end_temp in end_temps:
+                print(f"Running with iters={iters}, start_temp={start_temp}, end_temp={end_temp}...")
+                log_file = f"local_search_benchmark_{iters}_{start_temp}_{end_temp}.log"
+                optimized_schedule = simulated_annealing(
+                    schedule, 
+                    iters, 
+                    max_time_seconds, 
+                    start_temp, 
+                    end_temp,
+                    log_file_path=log_file
+                )
+                
+                final_score = calculate_full_score(optimized_schedule)[0]
+                results.append((iters, start_temp, end_temp, final_score, optimized_schedule))
+                
+                print(f"Results for iters={iters}, start_temp={start_temp}, end_temp={end_temp}: Final score = {final_score}")
+
+    print("\nBenchmark results:")
+    for iters, start_temp, end_temp, score in results:
+        print(f"Iterations: {iters}, Start Temp: {start_temp}, End Temp: {end_temp}, Final Score: {score}")
+    
+    results.sort(key=lambda x: x[3])  # Sort by final score
+    optimized_schedule = results[0][4]  # Best schedule is the one with the lowest score  
+
     return optimized_schedule

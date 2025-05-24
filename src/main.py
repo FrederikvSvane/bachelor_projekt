@@ -90,22 +90,22 @@ def main():
         hard_violations = result[1]
         medm_violations = result[2]
         soft_violations = result[3]
-        visualize(initial_schedule)
-        visualize(initial_schedule, view_by="room")
+        #visualize(initial_schedule)
+        #visualize(initial_schedule, view_by="room")
         print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
         print(f"Initial score: {initial_score}")
         
         final_schedule = run_local_search(initial_schedule, args.log)
         
         final_score = calculate_full_score(final_schedule)
-        visualize(final_schedule)
+        #visualize(final_schedule)
         # visualize(final_schedule, view_by="room")
         print(f"Initial score: {initial_score}")
         print(f"Final score: {final_score}")
         #___________________________________________
 
         final_score = calculate_full_score(final_schedule)
-        visualize(final_schedule)
+        #visualize(final_schedule)
         print(f"Initial score: {initial_score}")
         print(f"Final score: {final_score}")        
         #_______________________
