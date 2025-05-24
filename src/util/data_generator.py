@@ -26,8 +26,8 @@ def generate_test_data(n_cases: int,
                        min_per_work_day: int) -> Dict[str, Any]:
     """Generate test data for court scheduling."""
     # Initialize random generator
-    gen = random.Random(13062025)  # Fixed seed for reproducibility
-    
+    gen = random.Random(13062025) # With a fix a seed for reproducibility    
+
     # Define area probabilities
     area_probabilities = {
         "CIVIL_OMRAADE": 0.043,
@@ -155,7 +155,7 @@ def generate_test_data(n_cases: int,
     
     for i in range(1, n_cases + 1):
         # Step 1: Select case area based on probabilities
-        area = random.choices(
+        area = gen.choices(
             list(area_probabilities.keys()),
             weights=list(area_probabilities.values()),
             k=1
@@ -177,15 +177,15 @@ def generate_test_data(n_cases: int,
         if total_prob > 0:
             type_probs = [p/total_prob for p in type_probs]
         
-        case_type = random.choices(area_case_types, weights=type_probs, k=1)[0]
+        case_type = gen.choices(area_case_types, weights=type_probs, k=1)[0]
         
         if case_type in case_type_data:
             duration_distribution = case_type_data[case_type]["durations"]
             durations, probs = zip(*duration_distribution)
-            raw_duration = random.choices(durations, weights=probs, k=1)[0]
+            raw_duration = gen.choices(durations, weights=probs, k=1)[0]
         else:
             # Default duration if not found
-            raw_duration = random.choice([30, 60, 90, 120])
+            raw_duration = gen.choice([30, 60, 90, 120])
 
         # Round up to the nearest multiple of granularity
         duration = math.ceil(raw_duration / granularity) * granularity
@@ -429,7 +429,7 @@ def generate_test_data_parsed(n_cases: int,
     )
     room3 = Room(
         room_id=3,
-        characteristics={Attribute.ACCESSIBILITY, Attribute.SECURITY},
+        characteristics={Attribute.ACCESSIBILITY, Attribute.SECURITY, Attribute.VIRTUAL},
         case_requirements=set(),
         judge_requirements=set()
     )
@@ -465,7 +465,7 @@ def generate_test_data_parsed(n_cases: int,
     )
     room9 = Room(
         room_id=9,
-        characteristics={Attribute.ACCESSIBILITY},
+        characteristics=set(),
         case_requirements=set(),
         judge_requirements=set()
     )
