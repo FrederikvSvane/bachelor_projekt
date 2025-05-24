@@ -6,7 +6,6 @@ from src.base_model.room import Room
 from src.base_model.meeting import Meeting
 from src.base_model.compatibility_checks import (case_requires_from_judge, judge_requires_from_case,
                                                 case_room_compatible, judge_room_compatible)
-
 def calculate_all_judge_capacities(meetings: list[Meeting], judges: List[Judge]) -> Dict[int, int]:
     """
     Calculate the capacities of all judges such that the sum of their weighted capacities equals the total number of cases.
@@ -71,15 +70,21 @@ def calculate_all_judge_capacities(meetings: list[Meeting], judges: List[Judge])
     remaining = total_cases - current_sum
     
     if remaining > 0:
-        remainders = [
-            (judge.judge_id, float_capacities[judge.judge_id] - int_capacities[judge.judge_id])
+        # Create list with judge info including current capacity
+        judge_info = [
+            (judge.judge_id, 
+             int_capacities[judge.judge_id],
+             float_capacities[judge.judge_id] - int_capacities[judge.judge_id])
             for judge in judges if float_capacities[judge.judge_id] > 0
         ]
+        
         for _ in range(remaining):
-            remainders.sort(key=lambda x: x[1], reverse=True)
-            judge_id, remainder = remainders[0]
+            # Sort by current capacity (ascending), then by remainder (descending)
+            judge_info.sort(key=lambda x: (x[1], -x[2]))
+            judge_id, current_cap, remainder = judge_info[0]
             int_capacities[judge_id] += 1
-            remainders[0] = (judge_id, remainder - 1.0)
+            # Update the judge info for next iteration
+            judge_info[0] = (judge_id, current_cap + 1, remainder - 1.0)
     
     return int_capacities
 
@@ -121,7 +126,8 @@ def calculate_all_room_capacities(jm_pairs, rooms: list[Room]) -> dict[int, int]
             if pairs_in_group:
                 sample_pair = pairs_in_group[0]
                 # Use one-directional compatibility checks
-                compatible = (case_room_compatible(sample_pair.get_meeting().case, room) and judge_room_compatible(sample_pair.get_judge(), room))
+                compatible = (case_room_compatible(sample_pair.get_meeting().case, room) and 
+                            judge_room_compatible(sample_pair.get_judge(), room))
             else:
                 compatible = False
 
@@ -153,16 +159,22 @@ def calculate_all_room_capacities(jm_pairs, rooms: list[Room]) -> dict[int, int]
     remaining = total_pairs - current_sum
     
     if remaining > 0:
-        # Sort rooms by fractional remainder
-        remainders = [(r.room_id, float_capacities[r.room_id] - int_capacities[r.room_id]) 
-                     for r in rooms if float_capacities[r.room_id] > 0]
+        # Create list with room info including current capacity
+        room_info = [
+            (r.room_id,
+             int_capacities[r.room_id],
+             float_capacities[r.room_id] - int_capacities[r.room_id])
+            for r in rooms if float_capacities[r.room_id] > 0
+        ]
         
-        # Add one case to rooms with largest remainders
+        # Add one case to rooms with lowest current capacity and highest remainder
         for _ in range(remaining):
-            remainders.sort(key=lambda x: x[1], reverse=True)
-            room_id, remainder = remainders[0]
+            # Sort by current capacity (ascending), then by remainder (descending)
+            room_info.sort(key=lambda x: (x[1], -x[2]))
+            room_id, current_cap, remainder = room_info[0]
             int_capacities[room_id] += 1
-            remainders[0] = (room_id, remainder - 1.0)
+            # Update the room info for next iteration
+            room_info[0] = (room_id, current_cap + 1, remainder - 1.0)
     
     # Safety check - ensure all cases are assigned
     if sum(int_capacities.values()) != total_pairs:
