@@ -131,7 +131,7 @@ def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, m
     return hard_count, medium_count, soft_count
 
 
-def ssimulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, log_file_path: str = None) -> Schedule:
+def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, log_file_path: str = None) -> Schedule:
     from copy import deepcopy
     start_time = time.time()
     
@@ -375,8 +375,8 @@ def run_local_search_benchmark(schedule: Schedule, log_file_path: str = None) ->
 
     iterations_per_temperature = [1000, 2000, 3000, 4000, 5000]
     max_time_seconds = 60 * 5
-    start_temps = [100, 200, 300, 400, 500]
-    end_temps = [10, 20, 30, 40, 50]
+    start_temps = [200, 300, 400, 500, 600]
+    end_temps = [1, 10, 20, 30, 40]
     results = []
 
     print("Running local search benchmark with the following configurations:")
