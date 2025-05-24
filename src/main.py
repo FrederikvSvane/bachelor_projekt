@@ -97,7 +97,7 @@ def main():
         print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
         print(f"Initial score: {initial_score}")
         
-        final_schedule = run_local_search(initial_schedule, args.log, args.time)
+        final_schedule = run_local_search(initial_schedule, args.log)
         
         final_score = calculate_full_score(final_schedule)
         #visualize(final_schedule)
