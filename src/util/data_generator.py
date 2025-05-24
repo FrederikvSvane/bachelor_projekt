@@ -26,7 +26,7 @@ def generate_test_data(n_cases: int,
                        min_per_work_day: int) -> Dict[str, Any]:
     """Generate test data for court scheduling."""
     # Initialize random generator
-    gen = random.Random()
+    gen = random.Random(13062025)  # Fixed seed for reproducibility
     
     # Define area probabilities
     area_probabilities = {
