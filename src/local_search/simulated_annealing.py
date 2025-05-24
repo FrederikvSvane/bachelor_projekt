@@ -145,7 +145,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     
     # Custom log function to write to both console and file
     def log_output(message):
-        #print(message)
+        print(message)
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately
