@@ -145,7 +145,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     
     # Custom log function to write to both console and file
     def log_output(message):
-        #print(message)
+        print(message)
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately
@@ -247,10 +247,10 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     if random.random() < p_do_compound_move: 
                         # compound move
                         p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
-                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d, tabu_list, current_score, best_score)
                     else: 
                         # single move
-                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
+                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
                         
                 # MEDIUM TEMP
                 elif medium_temp_threshold < current_temperature < high_temp_threshold: 
@@ -258,10 +258,10 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     if random.random() < p_do_compound_move: 
                         # compound move
                         p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
-                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d, tabu_list, current_score, best_score)
                     else: 
                         # single move
-                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
+                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
                         
                 # LOW TEMP
                 else: 
@@ -269,10 +269,10 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     if random.random() < p_do_compound_move: 
                         # compound move
                         p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
-                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d)
+                        move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d, tabu_list, current_score, best_score)
                     else: 
                         # single move
-                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
+                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
                 
             delta = calculate_delta_score(schedule, move)
                 

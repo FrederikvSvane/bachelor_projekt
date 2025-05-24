@@ -11,90 +11,136 @@ from src.local_search.rules_engine import calculate_delta_score
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.rules_engine_helpers import populate_insert_move_appointments
 
-def generate_single_random_move(schedule: Schedule, compatible_judges_dict: Dict[int, List[Judge]], 
-                        compatible_rooms_dict: Dict[int, List[Room]]) -> list[Move]:
-    """Generate a random valid move"""
 
-    meetings: list[Meeting] = schedule.get_all_meetings()
-
+def generate_single_random_move(
+    schedule: Schedule,
+    compatible_judges_dict: Dict[int, List[Judge]],
+    compatible_rooms_dict: Dict[int, List[Room]],
+    tabu_list: deque = None,
+    current_score: int = None,
+    best_score: int = None
+) -> Move:
+    """Generate a random valid move with inline tabu checking."""
+    meetings = schedule.get_all_meetings()
     if not meetings:
         raise ValueError("No meetings found in the schedule.")
     
-    chosen_meeting_id: int = random.choice(meetings).meeting_id
-    
-    chosen_appointments = sorted(schedule.get_appointment_chain(chosen_meeting_id), key=lambda app: (app.day, app.timeslot_in_day))
-    first_appointment = chosen_appointments[0]
-    current_day = first_appointment.day
-    current_start_timeslot = first_appointment.timeslot_in_day
+    chosen_meeting_id = random.choice(meetings).meeting_id
+    chosen_appointments = sorted(
+        schedule.get_appointment_chain(chosen_meeting_id),
+        key=lambda app: (app.day, app.timeslot_in_day)
+    )
+    first_app = chosen_appointments[0]
+    current_day = first_app.day
+    current_start = first_app.timeslot_in_day
     
     move = Move(chosen_meeting_id, chosen_appointments)
-    move.old_judge = first_appointment.judge
-    move.old_room = first_appointment.room
+    move.old_judge = first_app.judge
+    move.old_room = first_app.room
     move.old_day = current_day
-    move.old_start_timeslot = current_start_timeslot
+    move.old_start_timeslot = current_start
     
-    # Randomly decide which type of move to make
-    n_compatible_judges= len(compatible_judges_dict[chosen_meeting_id])
-    n_compatible_rooms = len(compatible_rooms_dict[chosen_meeting_id])
+    def meets_aspiration(temp_move: Move) -> bool:
+        if current_score is None or best_score is None:
+            return False
+        delta = calculate_delta_score(schedule, temp_move)
+        return current_score + delta < best_score
     
-    if n_compatible_judges == 1 and n_compatible_rooms == 1:
-        move_type = random.choice(["day", "timeslot"])
-    elif n_compatible_judges == 1:
-        move_type = random.choice(["room", "day", "timeslot"])
-    elif n_compatible_rooms == 1:
-        move_type = random.choice(["judge", "day", "timeslot"])
-    else:
-        move_type = random.choice(["judge", "room", "day", "timeslot"])
+    # Precompute some values
+    meeting_length = len(chosen_appointments)
+    max_start = schedule.timeslots_per_work_day - meeting_length + 1
     
-    # Fill in move details based on type
-    if move_type == "judge" and compatible_judges_dict[chosen_meeting_id]:
-        old_judge = first_appointment.judge
-        compatible_judges = compatible_judges_dict[chosen_meeting_id]
-        if len(compatible_judges) > 1:  # Ensure there's a different judge to pick
-            new_judge = random.choice([j for j in compatible_judges 
-                                    if j.judge_id != old_judge.judge_id])
-            move.new_judge = new_judge
+    compatible_judges = compatible_judges_dict.get(chosen_meeting_id, [])
+    compatible_rooms  = compatible_rooms_dict.get(chosen_meeting_id, [])
+    
+    # Build lists of valid alternatives
+    valid_judges = []
+    for j in compatible_judges:
+        if j.judge_id == first_app.judge.judge_id:
+            continue
+        key = (chosen_meeting_id, 'judge', j.judge_id)
+        if tabu_list is None or key not in tabu_list:
+            valid_judges.append(j)
         else:
-            print("No compatible judges")
+            temp = Move(chosen_meeting_id, chosen_appointments,
+                        old_judge=first_app.judge, new_judge=j,
+                        old_room=first_app.room,
+                        old_day=current_day, old_start_timeslot=current_start)
+            if meets_aspiration(temp):
+                valid_judges.append(j)
     
-    elif move_type == "room" and compatible_rooms_dict[chosen_meeting_id]:
-        old_room = first_appointment.room
-        compatible_rooms = compatible_rooms_dict[chosen_meeting_id]
-        if len(compatible_rooms) > 1:  # Ensure there's a different room to pick
-            new_room = random.choice([r for r in compatible_rooms 
-                                    if r.room_id != old_room.room_id])
-            move.new_room = new_room
+    valid_rooms = []
+    for r in compatible_rooms:
+        if r.room_id == first_app.room.room_id:
+            continue
+        key = (chosen_meeting_id, 'room', r.room_id)
+        if tabu_list is None or key not in tabu_list:
+            valid_rooms.append(r)
         else:
-            print("No compatible rooms")
+            temp = Move(chosen_meeting_id, chosen_appointments,
+                        old_judge=first_app.judge,
+                        old_room=first_app.room, new_room=r,
+                        old_day=current_day, old_start_timeslot=current_start)
+            if meets_aspiration(temp):
+                valid_rooms.append(r)
     
-    elif move_type == "day":
-        # Pick a new day different from the current day
-        valid_days = [d for d in range(1, schedule.work_days + 1) if d != current_day]
-        if valid_days:  # Make sure there's at least one other day
-            new_day = random.choice(valid_days)
-            move.new_day = new_day
+    valid_days = []
+    for d in range(1, schedule.work_days + 1):
+        if d == current_day:
+            continue
+        key = (chosen_meeting_id, 'position', d, current_start)
+        if tabu_list is None or key not in tabu_list:
+            valid_days.append(d)
         else:
-            print("No valid days")
+            temp = Move(chosen_meeting_id, chosen_appointments,
+                        old_judge=first_app.judge, old_room=first_app.room,
+                        old_day=current_day, new_day=d,
+                        old_start_timeslot=current_start)
+            if meets_aspiration(temp):
+                valid_days.append(d)
     
-    elif move_type == "timeslot":
-        # Calculate length of the appointment chain
-        meeting_length = len(chosen_appointments)
-        
-        # Make sure we don't exceed day boundary
-        max_start_timeslot = schedule.timeslots_per_work_day - meeting_length + 1
-        
-        if max_start_timeslot > 1:  # Ensure there's room to move
-            # Generate new timeslot different from current
-            valid_timeslots = [t for t in range(1, max_start_timeslot + 1) 
-                            if t != current_start_timeslot]
-            
-            if valid_timeslots:  # Make sure there's at least one valid option
-                new_start_timeslot = random.choice(valid_timeslots)
-                move.new_start_timeslot = new_start_timeslot
+    valid_timeslots = []
+    if meeting_length != 78:
+        for t in range(1, max_start + 1):
+            if t == current_start:
+                continue
+            key = (chosen_meeting_id, 'position', current_day, t)
+            if tabu_list is None or key not in tabu_list:
+                valid_timeslots.append(t)
             else:
-                print("No valid timeslots")
+                temp = Move(chosen_meeting_id, chosen_appointments,
+                            old_judge=first_app.judge, old_room=first_app.room,
+                            old_day=current_day, old_start_timeslot=current_start,
+                            new_start_timeslot=t)
+                if meets_aspiration(temp):
+                    valid_timeslots.append(t)
+    
+    # Map move‐types to their valid options
+    move_buckets = {
+        "judge":   valid_judges,
+        "room":    valid_rooms,
+        "day":     valid_days,
+        "timeslot": valid_timeslots
+    }
+    possible_moves = [m for m, opts in move_buckets.items() if opts]
+    if not possible_moves:
+        raise ValueError(f"No valid moves for meeting_length={meeting_length}")
+    
+    move_type = random.choice(possible_moves)
+    
+    # Assign the chosen alternative
+    if move_type == "judge":
+        move.new_judge = random.choice(valid_judges)
+    elif move_type == "room":
+        move.new_room = random.choice(valid_rooms)
+    elif move_type == "day":
+        move.new_day = random.choice(valid_days)
+    elif move_type == "timeslot":
+        move.new_start_timeslot = random.choice(valid_timeslots)
     
     return move
+
+
 
 def generate_specific_delete_move(schedule: Schedule, meeting_id: int) -> Move:
     """
@@ -241,130 +287,131 @@ def generate_random_insert_move(schedule: Schedule) -> Move:
     
     return move
 
-def generate_compound_move(schedule: Schedule, 
-                          compatible_judges_dict: Dict[int, List[Judge]], 
-                          compatible_rooms_dict: Dict[int, List[Room]],
-                          p_j: float = 0.5, p_r: float = 0.5, 
-                          p_t: float = 0.5, p_d: float = 0.5) -> Move:
-    """
-    Generate a move that changes multiple aspects of a meeting based on probabilities.
-    Always changes at least two aspects of the meeting.
+def generate_compound_move(
+    schedule: Schedule, 
+    compatible_judges_dict: Dict[int, List[Judge]], 
+    compatible_rooms_dict: Dict[int, List[Room]],
+    p_j: float = 0.5, p_r: float = 0.5, 
+    p_t: float = 0.5, p_d: float = 0.5,
+    tabu_list: deque = None, current_score: int = None, 
+    best_score: int = None
+) -> Move:
     
-    Args:
-        schedule: The current schedule
-        compatible_judges_dict: Dict mapping meeting IDs to compatible judges
-        compatible_rooms_dict: Dict mapping meeting IDs to compatible rooms
-        p_j, p_r, p_d, p_t: Probabilities of changing judge, room, day, timeslot
-    
-    Returns:
-        Move: A move object with AT LEAST two aspects changed
-        
-    Raises:
-        ValueError: If a valid move with at least two changes cannot be created
-    """
-    # Validate inputs
+    """Generate a compound move with inline tabu checking; fallback to single if <2 aspects."""
     if not schedule:
         raise ValueError("No schedule provided")
-        
     chain_dict = schedule.appointment_chains
     if not chain_dict:
         raise ValueError("No appointments found in schedule")
     
-    if not compatible_judges_dict or not compatible_rooms_dict:
-        raise ValueError("No compatible judges or rooms dictionaries provided")
-    
-    # Select a random meeting
+    # Pick a random meeting
     chosen_meeting_id = random.choice(list(chain_dict.keys()))
     chosen_appointments = chain_dict[chosen_meeting_id]
-    
     if not chosen_appointments:
-        raise ValueError(f"No appointments found for meeting ID {chosen_meeting_id}")
+        raise ValueError(f"No appointments for meeting {chosen_meeting_id}")
     
-    first_appointment = chosen_appointments[0]
+    first_app = chosen_appointments[0]
+    old_judge = first_app.judge
+    old_room  = first_app.room
+    old_day   = first_app.day
+    old_slot  = first_app.timeslot_in_day
     
-    # Create the base move
+    # Helper for aspiration
+    def meets_aspiration(m: Move) -> bool:
+        if current_score is None or best_score is None or tabu_list is None:
+            return False
+        if not check_if_move_is_tabu(m, tabu_list):
+            return True
+        return current_score + calculate_delta_score(schedule, m) < best_score
+    
+    # Build valid lists
+    valid_judges = []
+    for j in compatible_judges_dict.get(chosen_meeting_id, []):
+        if j.judge_id == old_judge.judge_id: continue
+        key = (chosen_meeting_id, 'judge', j.judge_id)
+        m = Move(chosen_meeting_id, chosen_appointments,
+                 old_judge=old_judge, new_judge=j,
+                 old_room=old_room, old_day=old_day, old_start_timeslot=old_slot)
+        if tabu_list is None or key not in tabu_list or meets_aspiration(m):
+            valid_judges.append(j)
+    valid_rooms = []
+    for r in compatible_rooms_dict.get(chosen_meeting_id, []):
+        if r.room_id == old_room.room_id: continue
+        key = (chosen_meeting_id, 'room', r.room_id)
+        m = Move(chosen_meeting_id, chosen_appointments,
+                 old_judge=old_judge, old_room=old_room, new_room=r,
+                 old_day=old_day, old_start_timeslot=old_slot)
+        if tabu_list is None or key not in tabu_list or meets_aspiration(m):
+            valid_rooms.append(r)
+    valid_days = []
+    for d in range(1, schedule.work_days + 1):
+        if d == old_day: continue
+        key = (chosen_meeting_id, 'position', d, old_slot)
+        m = Move(chosen_meeting_id, chosen_appointments,
+                 old_judge=old_judge, old_room=old_room,
+                 old_day=old_day, new_day=d, old_start_timeslot=old_slot)
+        if tabu_list is None or key not in tabu_list or meets_aspiration(m):
+            valid_days.append(d)
+    # timeslot aspect (skip 78‐slot meetings)
+    meeting_length = len(chosen_appointments)
+    valid_timeslots = []
+    if meeting_length != 78:
+        max_start = schedule.timeslots_per_work_day - meeting_length + 1
+        for t in range(1, max_start + 1):
+            if t == old_slot: continue
+            key = (chosen_meeting_id, 'position', old_day, t)
+            m = Move(chosen_meeting_id, chosen_appointments,
+                     old_judge=old_judge, old_room=old_room,
+                     old_day=old_day, old_start_timeslot=old_slot,
+                     new_start_timeslot=t)
+            if tabu_list is None or key not in tabu_list or meets_aspiration(m):
+                valid_timeslots.append(t)
+    
+    # Collect aspects
+    changeable_aspects = []
+    if valid_judges:   changeable_aspects.append(("judge",   valid_judges,   p_j))
+    if valid_rooms:    changeable_aspects.append(("room",    valid_rooms,    p_r))
+    if valid_days:     changeable_aspects.append(("day",     valid_days,     p_d))
+    if valid_timeslots:changeable_aspects.append(("timeslot",valid_timeslots,p_t))
+    
+    # Fallback if we don’t have at least 2 aspects
+    if len(changeable_aspects) < 2:
+        return generate_single_random_move(
+            schedule, compatible_judges_dict, compatible_rooms_dict,
+            tabu_list, current_score, best_score
+        )
+    
+    # Now pick at least 2 aspects (by p_*, then fill to 2)
+    selected = []
+    for name, opts, prob in changeable_aspects:
+        if random.random() < prob:
+            selected.append((name, opts))
+    # ensure two
+    if len(selected) < 2:
+        remaining = [ (n,o) for n,o,_ in changeable_aspects if n not in {s[0] for s in selected} ]
+        random.shuffle(remaining)
+        selected.extend(remaining[:2-len(selected)])
+    
+    # Build final Move
     move = Move(
         meeting_id=chosen_meeting_id,
         appointments=chosen_appointments,
-        old_judge=first_appointment.judge,
-        old_room=first_appointment.room,
-        old_day=first_appointment.day,
-        old_start_timeslot=first_appointment.timeslot_in_day
+        old_judge=old_judge,
+        old_room=old_room,
+        old_day=old_day,
+        old_start_timeslot=old_slot
     )
-    
-    # Identify changeable aspects with their alternatives and probabilities
-    changeable_aspects = []
-    
-    # Check for alternative judges
-    compatible_judges = compatible_judges_dict.get(chosen_meeting_id, [])
-    alternative_judges = [j for j in compatible_judges 
-                        if j.judge_id != first_appointment.judge.judge_id]
-    if alternative_judges:
-        changeable_aspects.append(("judge", alternative_judges, p_j))
-    
-    # Check for alternative rooms
-    compatible_rooms = compatible_rooms_dict.get(chosen_meeting_id, [])
-    alternative_rooms = [r for r in compatible_rooms 
-                        if r.room_id != first_appointment.room.room_id]
-    if alternative_rooms:
-        changeable_aspects.append(("room", alternative_rooms, p_r))
-    
-    # Check for alternative days
-    valid_days = [d for d in range(1, schedule.work_days + 1) 
-                if d != first_appointment.day]
-    if valid_days:
-        changeable_aspects.append(("day", valid_days, p_d))
-    
-    # Check for alternative timeslots
-    meeting_length = len(chosen_appointments)
-    max_start_timeslot = schedule.timeslots_per_work_day - meeting_length + 1
-    valid_timeslots = [t for t in range(1, max_start_timeslot + 1) 
-                        if t != first_appointment.timeslot_in_day]
-    if valid_timeslots:
-        changeable_aspects.append(("timeslot", valid_timeslots, p_t))
-    
-    # Ensure we have at least 2 changeable aspects
-    if len(changeable_aspects) < 2:
-        raise ValueError(f"Meeting {chosen_meeting_id} does not have at least 2 changeable aspects")
-    
-    # Apply probabilities and ensure at least 2 aspects change
-    selected_aspects = []
-    
-    # First pass: Apply probabilities
-    for aspect_name, alternatives, probability in changeable_aspects:
-        if random.random() < probability:
-            selected_aspects.append((aspect_name, alternatives))
-    
-    # Second pass: If we don't have at least 2 aspects, randomly select more
-    if len(selected_aspects) < 2:
-        # Get aspects not already selected
-        remaining_aspects = [(name, alts) for name, alts, _ in changeable_aspects 
-                           if name not in [a[0] for a in selected_aspects]]
-        
-        # How many more do we need?
-        additional_needed = 2 - len(selected_aspects)
-        
-        # Randomly select additional aspects
-        random.shuffle(remaining_aspects)
-        selected_aspects.extend(remaining_aspects[:additional_needed])
-    
-    # Final check
-    if len(selected_aspects) < 2:
-        raise ValueError(f"Unable to create a move with at least 2 changes for meeting {chosen_meeting_id}")
-    
-    # Apply the changes
-    for aspect_name, alternatives in selected_aspects:
-        if aspect_name == "judge":
-            move.new_judge = random.choice(alternatives)
-        elif aspect_name == "room":
-            move.new_room = random.choice(alternatives)
-        elif aspect_name == "day":
-            move.new_day = random.choice(alternatives)
-        elif aspect_name == "timeslot":
-            move.new_start_timeslot = random.choice(alternatives)
+    for name, opts in selected:
+        if name == "judge":
+            move.new_judge = random.choice(opts)
+        elif name == "room":
+            move.new_room = random.choice(opts)
+        elif name == "day":
+            move.new_day = random.choice(opts)
+        elif name == "timeslot":
+            move.new_start_timeslot = random.choice(opts)
     
     return move
-
 
 def check_if_move_is_tabu(move: Move, tabu_list: deque) -> bool:
     meeting_id = move.meeting_id
