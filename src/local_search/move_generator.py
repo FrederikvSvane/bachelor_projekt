@@ -5,7 +5,7 @@ from src.base_model.meeting import Meeting
 from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.schedule import Schedule
-from src.local_search.move import Move
+from src.local_search.move import Move, ContractingMove, do_move
 from collections import deque
 from src.local_search.rules_engine import calculate_delta_score
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
@@ -540,3 +540,117 @@ def generate_random_move_of_random_type(
         except ValueError:
             # Fallback to single move if compound not possible
             return generate_single_random_move(schedule, compatible_judges_dict, compatible_rooms_dict)
+
+
+def check_room_availability(schedule: Schedule, room_id: int, day: int, start_slot: int, duration_slots: int) -> bool:
+    """
+    Check if a room is available for a given time range.
+    
+    Args:
+        schedule: The current schedule
+        room_id: ID of the room to check
+        day: Day to check
+        start_slot: Starting timeslot
+        duration_slots: Number of timeslots needed
+        
+    Returns:
+        True if room is available for all required timeslots, False otherwise
+    """
+    for slot_offset in range(duration_slots):
+        current_slot = start_slot + slot_offset
+        
+        # Check if this day/timeslot exists in schedule
+        if day in schedule.appointments_by_day_and_timeslot:
+            if current_slot in schedule.appointments_by_day_and_timeslot[day]:
+                # Check all appointments in this slot
+                for appointment in schedule.appointments_by_day_and_timeslot[day][current_slot]:
+                    if appointment.room.room_id == room_id:
+                        return False  # Room is occupied
+    
+    return True  # Room is available for all required slots
+
+
+def generate_contracting_move(schedule: Schedule, debug=False) -> ContractingMove:
+    """
+    Generate a contracting move that compacts the schedule by moving meetings
+    earlier in the day when possible, respecting room availability.
+    
+    Returns:
+        ContractingMove: A compound move containing all individual meeting moves
+    """
+    contracting_move = ContractingMove()
+    
+    # Process each judge
+    for judge in schedule.get_all_judges():
+        # Get all meetings for this judge, sorted by day and timeslot
+        judge_meetings = []
+        
+        # Collect all meetings for this judge
+        for meeting_id, appointments in schedule.appointment_chains.items():
+            if appointments and appointments[0].judge.judge_id == judge.judge_id:
+                first_app = appointments[0]
+                judge_meetings.append({
+                    'meeting_id': meeting_id,
+                    'appointments': appointments,
+                    'day': first_app.day,
+                    'start_slot': first_app.timeslot_in_day,
+                    'duration': len(appointments)
+                })
+        
+        # Sort meetings by day and start timeslot
+        judge_meetings.sort(key=lambda m: (m['day'], m['start_slot']))
+        
+        # Process meetings for each day
+        current_day = None
+        next_available_slot = 1
+        
+        for meeting_info in judge_meetings:
+            meeting_id = meeting_info['meeting_id']
+            appointments = meeting_info['appointments']
+            meeting_day = meeting_info['day']
+            current_start = meeting_info['start_slot']
+            duration = meeting_info['duration']
+            
+            # Check if we're on a new day
+            if meeting_day != current_day:
+                current_day = meeting_day
+                next_available_slot = 1
+            
+            # Determine target start slot
+            target_start_slot = next_available_slot
+            
+            # Only try to move if it would actually move the meeting earlier
+            if target_start_slot < current_start:
+                # Check room availability
+                room_id = appointments[0].room.room_id
+                
+                if check_room_availability(schedule, room_id, meeting_day, target_start_slot, duration):
+                    # Create move
+                    move = Move(
+                        meeting_id=meeting_id,
+                        appointments=appointments,
+                        old_judge=appointments[0].judge,
+                        old_room=appointments[0].room,
+                        old_day=meeting_day,
+                        old_start_timeslot=current_start,
+                        new_start_timeslot=target_start_slot
+                    )
+                    
+                    # Apply the move immediately to update schedule state
+                    do_move(move, schedule)
+                    contracting_move.add_move(move)
+                    
+                    # Update next available slot
+                    next_available_slot = target_start_slot + duration
+                else:
+                    # Room conflict - skip this meeting
+                    contracting_move.add_skipped(meeting_id, f"Room {room_id} occupied at target slot {target_start_slot}")
+                    next_available_slot = current_start + duration
+            else:
+                # Meeting is already optimally placed or would move later
+                contracting_move.add_skipped(meeting_id, "Already optimally placed")
+                next_available_slot = current_start + duration
+    
+    # Mark the contracting move as applied since we applied moves during generation
+    contracting_move.is_applied = True
+    return contracting_move

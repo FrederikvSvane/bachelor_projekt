@@ -13,7 +13,7 @@ from src.base_model.judge import Judge
 from src.base_model.room import Room
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.move import do_move, undo_move, Move
-from src.local_search.move_generator import generate_single_random_move, generate_list_of_random_moves, generate_compound_move, generate_specific_delete_move, generate_random_insert_move
+from src.local_search.move_generator import generate_single_random_move, generate_list_of_random_moves, generate_compound_move, generate_specific_delete_move, generate_random_insert_move, generate_contracting_move
 from src.local_search.rules_engine import calculate_full_score, calculate_delta_score
 from src.local_search.ruin_and_recreate import apply_ruin_and_recreate
 from src.util.schedule_visualizer import visualize
@@ -200,6 +200,38 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         current_plateau_limit = int(plateau_count_min + (plateau_count_max - plateau_count_min) * (1 - normalized_temp)) # starts low, goes high
         current_ruin_percentage = ruin_percentage_min + (ruin_percentage_max - ruin_percentage_min) * (1 - normalized_temp) # start low, goes high
         
+        # Apply contracting move at the start of each outer iteration (temperature change)
+        # This is a large, expensive move that should not be in the inner loop
+        if current_iteration > 0:  # Skip first iteration to avoid double-contracting initial schedule
+            # log_output(f"Applying contracting move at start of iteration {current_iteration + 1}...")
+            pre_contract_score = current_score
+            
+            contracting_move = generate_contracting_move(schedule, debug=False)
+            post_contract_score = calculate_full_score(schedule)[0]
+            
+            # Always accept contracting move if it improves the score
+            if post_contract_score < pre_contract_score:
+                current_score = post_contract_score
+                # log_output(f"Contracting move accepted: {pre_contract_score} -> {post_contract_score} "
+                        #   f"(Δ: {post_contract_score - pre_contract_score}, "
+                        #   f"moves: {len(contracting_move.individual_moves)}, "
+                        #   f"skipped: {len(contracting_move.skipped_meetings)})")
+                
+                # Update best score if this is a new best
+                if current_score < best_score:
+                    best_score = current_score
+                    best_schedule_snapshot = ScheduleSnapshot(schedule)
+                    best_score_improved_this_iteration = True
+                    # log_output(f"New best score found from contracting: {best_score}")
+                    
+            else:
+                # Contracting move didn't improve - undo it
+                from src.local_search.move import undo_contracting_move
+                undo_contracting_move(contracting_move, schedule)
+                log_output(f"Contracting move rejected: no improvement "
+                          f"(moves: {len(contracting_move.individual_moves)}, "
+                          f"skipped: {len(contracting_move.skipped_meetings)})")
+        
         for i in range(iterations_per_temperature):
             move = None
             if schedule.unplanned_meetings and random.random() < p_attempt_insert: # After RnR, we risk having unplanned meetings due to the regret based insertion strategy. Therefore we look at the unplanned meetings, and try to generate insert moves if its not empty.
@@ -319,7 +351,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
 def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
     iterations_per_temperature = 5000
-    max_time_seconds = 60 * 40
+    max_time_seconds = 60 * 2
     start_temp = 300
     end_temp = 10
     

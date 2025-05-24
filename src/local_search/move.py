@@ -1,6 +1,7 @@
 from src.base_model.schedule import Schedule
 from src.base_model.meeting import Meeting
 from src.base_model.appointment import Appointment
+from typing import List, Tuple
 
 class Move:
     def __init__(self, meeting_id, appointments: list[Appointment],
@@ -263,7 +264,7 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
         
     # Handle regular move
     else:
-        changing_position = (move.old_day is not None or move.old_start_timeslot is not None)
+        changing_position = (move.new_day is not None or move.new_start_timeslot is not None)
         
         for i, app in enumerate(move.appointments):
             # update the dict - remove the appointments from the new position
@@ -286,20 +287,16 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
                 app.room = move.old_room
                 app.meeting.room = move.old_room #sync
 
-            if move.old_day is not None:
+            if move.new_day is not None:  # Only restore day if it was actually changed
                 app.day = move.old_day
 
             if move.old_start_timeslot is not None:
-                new_timeslot = move.old_start_timeslot + i
+                start_day = move.old_day if move.old_day is not None else app.day
+                start_timeslot = move.old_start_timeslot if move.old_start_timeslot is not None else app.timeslot_in_day
+                global_timeslot = ((start_day - 1) * schedule.timeslots_per_work_day) + start_timeslot + i
 
-                day_offset = (new_timeslot - 1) // schedule.timeslots_per_work_day
-                adjusted_timeslot = ((new_timeslot - 1) % schedule.timeslots_per_work_day) + 1
-
-                if day_offset > 0:
-                    app.day = move.old_day + day_offset if move.old_day is not None else app.day + day_offset
-                    app.timeslot_in_day = adjusted_timeslot
-                else:
-                    app.timeslot_in_day = new_timeslot
+                app.day = ((global_timeslot - 1) // schedule.timeslots_per_work_day) + 1
+                app.timeslot_in_day = ((global_timeslot - 1) % schedule.timeslots_per_work_day) + 1
                     
                 # Extend schedule if needed
                 if schedule is not None and app.day > schedule.work_days:
@@ -320,4 +317,73 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
         move.is_applied = False
             
         if schedule is not None:
-            schedule.trim_schedule_length_if_possible()        
+            schedule.trim_schedule_length_if_possible()
+
+
+class ContractingMove:
+    """
+    A compound move that contracts the schedule by moving meetings earlier in the day
+    when possible, respecting room availability constraints.
+    """
+    def __init__(self):
+        self.individual_moves: List[Move] = []  # List of moves to be applied
+        self.skipped_meetings: List[Tuple[int, str]] = []  # List of (meeting_id, reason) tuples
+        self.is_applied = False
+    
+    def add_move(self, move: Move):
+        """Add an individual move to the contracting move."""
+        self.individual_moves.append(move)
+    
+    def add_skipped(self, meeting_id: int, reason: str):
+        """Track a meeting that was skipped and why."""
+        self.skipped_meetings.append((meeting_id, reason))
+    
+    def __str__(self):
+        return f"ContractingMove(moves={len(self.individual_moves)}, skipped={len(self.skipped_meetings)})"
+    
+    def get_summary(self):
+        """Get a detailed summary of the contracting move."""
+        summary = f"Contracting Move Summary:\n"
+        summary += f"  - Total moves: {len(self.individual_moves)}\n"
+        summary += f"  - Skipped meetings: {len(self.skipped_meetings)}\n"
+        
+        if self.individual_moves:
+            summary += "\nMoves applied:\n"
+            for move in self.individual_moves[:5]:  # Show first 5
+                summary += f"  - Meeting {move.meeting_id}: timeslot {move.old_start_timeslot} → {move.new_start_timeslot}\n"
+            if len(self.individual_moves) > 5:
+                summary += f"  ... and {len(self.individual_moves) - 5} more\n"
+        
+        if self.skipped_meetings:
+            summary += "\nSkipped meetings:\n"
+            for meeting_id, reason in self.skipped_meetings[:5]:  # Show first 5
+                summary += f"  - Meeting {meeting_id}: {reason}\n"
+            if len(self.skipped_meetings) > 5:
+                summary += f"  ... and {len(self.skipped_meetings) - 5} more\n"
+        
+        return summary
+
+
+def do_contracting_move(contracting_move: ContractingMove, schedule: Schedule) -> None:
+    """Apply all individual moves in the contracting move."""
+    if contracting_move.is_applied:
+        return
+    
+    for move in contracting_move.individual_moves:
+        do_move(move, schedule)
+    
+    contracting_move.is_applied = True
+
+
+def undo_contracting_move(contracting_move: ContractingMove, schedule: Schedule) -> None:
+    """Undo all individual moves in the contracting move in reverse order."""
+    if not contracting_move.is_applied:
+        return
+    
+    # Undo in reverse order to maintain consistency
+    for move in reversed(contracting_move.individual_moves):
+        # Force reset the is_applied flag since moves were applied during generation
+        move.is_applied = True
+        undo_move(move, schedule)
+    
+    contracting_move.is_applied = False        
