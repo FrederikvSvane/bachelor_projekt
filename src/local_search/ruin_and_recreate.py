@@ -134,7 +134,7 @@ def _violation_based_ruin(schedule: Schedule, compatible_judges_dict: dict[int, 
     meeting_violations.sort(key=lambda x: x[1])
     
     # Determine number of meetings to remove
-    num_to_remove = max(1, int(len(planned_meetings) * percentage / 100))
+    num_to_remove = 10#max(1, int(len(planned_meetings) * percentage / 100))
     meetings_to_remove = [meeting for meeting, _ in meeting_violations[:num_to_remove]]
     
     log_output(f"Top {num_to_remove} meeting violations with deltas: {[(pair[0].meeting_id, pair[1]) for pair in meeting_violations[:num_to_remove]]}")

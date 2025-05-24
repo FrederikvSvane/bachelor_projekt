@@ -145,7 +145,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     
     # Custom log function to write to both console and file
     def log_output(message):
-        print(message)
+        #print(message)
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately
@@ -272,7 +272,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                         move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d, tabu_list, current_score, best_score)
                     else: 
                         # single move
-                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms,   tabu_list, current_score, best_score)
                 
             delta = calculate_delta_score(schedule, move)
                 
@@ -304,6 +304,9 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         hard_violations = best_hard
         medium_violations = best_medium
         soft_violations = best_soft
+
+        if best_hard == 0:
+            return best_schedule_snapshot.restore_schedule(schedule)
         
 
         current_iteration += 1
@@ -351,7 +354,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
 def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
     iterations_per_temperature = 5000
-    max_time_seconds = 60 * 2
+    max_time_seconds = 60 * 30
     start_temp = 300
     end_temp = 10
     
