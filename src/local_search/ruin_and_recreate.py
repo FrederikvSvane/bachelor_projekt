@@ -33,7 +33,7 @@ def apply_ruin_and_recreate(schedule: Schedule,
     """
     # Define local log function that captures log_file through closure
     def log_output(message):
-        print(message)  # Uncomment if you want console output too
+        #print(message)  # Uncomment if you want console output too
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately
@@ -227,11 +227,11 @@ def _calculate_insertion_score_parallel(args):
 
 
 def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_rooms_dict,
-                                 removed_meetings, parallel: bool, log_output) -> int:
+                         removed_meetings, parallel: bool, log_output) -> int:
     """
     Insert meetings using removal delta to decide strategy:
-    - If removal_delta < 0: meeting was violating, do comprehensive search
-    - If removal_delta >= 0: meeting was good, try original position or greedy insert
+    - If removal_delta < 0: meeting was violating, use regret-based with pre-computation
+    - If removal_delta >= 0: meeting was good, try original position then simple greedy
     """
     if not removed_meetings:
         return 0
@@ -241,62 +241,114 @@ def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_
     # Sort meetings by duration (longest first)
     removed_meetings.sort(key=lambda x: x['meeting'].meeting_duration, reverse=True)
 
-    num_inserted = 0
+    # STEP 1: Pre-compute positions and regret for violating meetings
+    violating_meeting_evaluations = []  # (removed_info, regret, sorted_positions)
+    positions_evaluated = 0
     
     for removed_info in removed_meetings:
-        meeting = removed_info['meeting']
-        removal_delta = removed_info['removal_delta']
-        original_day = removed_info['original_day']
-        original_timeslot = removed_info['original_timeslot']
-        
-        compatible_judges = compatible_judges_dict.get(meeting.case.case_id, [])
-        compatible_rooms = compatible_rooms_dict.get(meeting.case.case_id, [])
+        if removed_info['removal_delta'] < 0:  # Only pre-compute for violating meetings
+            meeting = removed_info['meeting']
+            compatible_judges = compatible_judges_dict.get(meeting.case.case_id, [])
+            compatible_rooms = compatible_rooms_dict.get(meeting.case.case_id, [])
 
-        if not compatible_judges or not compatible_rooms:
-            log_output(f"Warning: No compatible judges or rooms for meeting {meeting.meeting_id}, skipping.")
-            continue
+            if not compatible_judges or not compatible_rooms:
+                log_output(f"Warning: No compatible judges or rooms for meeting {meeting.meeting_id}, skipping.")
+                continue
 
-        meeting_duration_slots = meeting.meeting_duration // schedule.granularity
-        
-        if removal_delta < 0:
-            # Meeting was causing violations - do comprehensive search for best position
-            log_output(f"  Meeting {meeting.meeting_id}: Was violating (delta={removal_delta:.2f}) - comprehensive search")
-            
-            # Build all available positions
-            all_positions = []
+            available_positions_args = []
+            meeting_duration_slots = meeting.meeting_duration // schedule.granularity
+
+            # Build all possible positions for this violating meeting
             for judge in compatible_judges:
                 for room in compatible_rooms:
                     for day in range(1, schedule.work_days + 1):
                         max_start = schedule.timeslots_per_work_day - meeting_duration_slots + 1
                         if max_start < 1: continue
-                        
+
                         for start_time in range(1, max_start + 1, 2):
                             if _is_position_available(schedule, meeting, judge, room, day, start_time):
-                                all_positions.append((schedule, meeting, judge, room, day, start_time))
-            
-            if not all_positions:
-                log_output(f"    No available positions found")
+                                available_positions_args.append((schedule, meeting, judge, room, day, start_time))
+
+            if not available_positions_args:
+                log_output(f"Warning: No initially available positions found for violating meeting {meeting.meeting_id}")
                 continue
-                
+
+            positions_evaluated += len(available_positions_args)
+
             # Calculate scores for all positions
-            if parallel and len(all_positions) > 15:
+            position_scores = []
+            if parallel and len(available_positions_args) > 10:
                 with ProcessPoolExecutor(initializer=_worker_initializer, initargs=(schedule,)) as executor:
-                    results = list(executor.map(_calculate_insertion_score_parallel, all_positions))
+                    results = list(executor.map(_calculate_insertion_score_parallel, available_positions_args))
+                    position_scores.extend(results)
             else:
-                results = [_calculate_insertion_score_parallel(args) for args in all_positions]
+                for args in available_positions_args:
+                    score_result = _calculate_insertion_score_parallel(args)
+                    position_scores.append(score_result)
+
+            position_scores.sort(key=lambda x: x[0])  # Sort by delta score
+
+            # Calculate regret
+            regret = 0.0
+            if len(position_scores) >= 2:
+                best_delta = position_scores[0][0]
+                second_best_delta = position_scores[1][0]
+                regret = second_best_delta - best_delta
+            elif len(position_scores) == 1:
+                regret = float('inf')
+
+            violating_meeting_evaluations.append((removed_info, regret, position_scores))
+
+    log_output(f"Pre-computed {positions_evaluated} positions for {len(violating_meeting_evaluations)} violating meetings")
+
+    # Sort violating meetings by regret (highest first)
+    violating_meeting_evaluations.sort(key=lambda x: x[1], reverse=True)
+
+    num_inserted = 0
+
+    # STEP 2: Insert violating meetings in regret order
+    for removed_info, regret, sorted_positions in violating_meeting_evaluations:
+        meeting = removed_info['meeting']
+        log_output(f"  Meeting {meeting.meeting_id}: Was violating (delta={removed_info['removal_delta']:.2f}, regret={regret:.2f}) - regret-based insertion")
+
+        best_position = None
+        # Try positions from best to worst until we find one that's currently available
+        for position_info in sorted_positions:
+            delta, day, start_timeslot, judge, room = position_info
             
-            # Find best available position
-            results.sort(key=lambda x: x[0])  # Sort by delta (best first)
-            
-            best_position = None
-            for delta, day, start_timeslot, judge, room in results:
-                if _is_position_available(schedule, meeting, judge, room, day, start_timeslot):
-                    best_position = (judge, room, day, start_timeslot)
-                    log_output(f"    Best position found: delta={delta:.2f}")
-                    break
-                    
+            if _is_position_available(schedule, meeting, judge, room, day, start_timeslot):
+                best_position = (judge, room, day, start_timeslot)
+                log_output(f"    Best available position: Day {day}, Slot {start_timeslot}, Delta: {delta:.2f}")
+                break
+
+        if best_position:
+            judge, room, day, start_timeslot = best_position
+            insertion_move = generate_specific_insert_move(
+                schedule=schedule, meeting=meeting, judge=judge, room=room, day=day, start_timeslot=start_timeslot
+            )
+            do_move(insertion_move, schedule)
+            num_inserted += 1
+            log_output(f"  ✓ Inserted violating meeting {meeting.meeting_id}")
         else:
-            # Meeting was in a good position - try to put back in original spot or greedy insert
+            log_output(f"  ✗ Could not find position for violating meeting {meeting.meeting_id}")
+
+    # STEP 3: Insert good meetings (simple approach)
+    for removed_info in removed_meetings:
+        if removed_info['removal_delta'] >= 0:  # Good meetings
+            meeting = removed_info['meeting']
+            removal_delta = removed_info['removal_delta']
+            original_day = removed_info['original_day']
+            original_timeslot = removed_info['original_timeslot']
+            
+            compatible_judges = compatible_judges_dict.get(meeting.case.case_id, [])
+            compatible_rooms = compatible_rooms_dict.get(meeting.case.case_id, [])
+
+            if not compatible_judges or not compatible_rooms:
+                log_output(f"Warning: No compatible judges or rooms for meeting {meeting.meeting_id}, skipping.")
+                continue
+
+            meeting_duration_slots = meeting.meeting_duration // schedule.granularity
+            
             log_output(f"  Meeting {meeting.meeting_id}: Was good (delta={removal_delta:.2f}) - trying original/greedy")
             
             best_position = None
@@ -331,23 +383,23 @@ def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_
                 if best_position:
                     log_output(f"    Greedy insert: Day {best_position[2]}, Slot {best_position[3]}")
 
-        # Insert the meeting if we found a position
-        if best_position:
-            judge, room, day, start_timeslot = best_position
-            
-            insertion_move = generate_specific_insert_move(
-                schedule=schedule,
-                meeting=meeting,
-                judge=judge,
-                room=room,
-                day=day,
-                start_timeslot=start_timeslot
-            )
-            
-            do_move(insertion_move, schedule)
-            num_inserted += 1
-            log_output(f"  ✓ Inserted meeting {meeting.meeting_id}")
-        else:
-            log_output(f"  ✗ Could not find position for meeting {meeting.meeting_id}")
+            # Insert the meeting if we found a position
+            if best_position:
+                judge, room, day, start_timeslot = best_position
+                
+                insertion_move = generate_specific_insert_move(
+                    schedule=schedule,
+                    meeting=meeting,
+                    judge=judge,
+                    room=room,
+                    day=day,
+                    start_timeslot=start_timeslot
+                )
+                
+                do_move(insertion_move, schedule)
+                num_inserted += 1
+                log_output(f"  ✓ Inserted good meeting {meeting.meeting_id}")
+            else:
+                log_output(f"  ✗ Could not find position for good meeting {meeting.meeting_id}")
 
     return num_inserted
