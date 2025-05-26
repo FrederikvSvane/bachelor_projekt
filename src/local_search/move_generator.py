@@ -15,7 +15,7 @@ def generate_single_random_move(schedule: Schedule, compatible_judges_dict: Dict
                         compatible_rooms_dict: Dict[int, List[Room]]) -> list[Move]:
     """Generate a random valid move"""
 
-    meetings: list[Meeting] = schedule.get_all_meetings()
+    meetings: list[Meeting] = schedule.get_all_planned_meetings()
 
     if not meetings:
         raise ValueError("No meetings found in the schedule.")
@@ -580,6 +580,10 @@ def generate_contracting_move(schedule: Schedule, debug=False) -> ContractingMov
     """
     contracting_move = ContractingMove()
     
+    if debug:
+        print(f"\n=== Generating Contracting Move ===")
+        print(f"Processing {len(schedule.get_all_judges())} judges")
+    
     # Process each judge
     for judge in schedule.get_all_judges():
         # Get all meetings for this judge, sorted by day and timeslot
@@ -599,6 +603,9 @@ def generate_contracting_move(schedule: Schedule, debug=False) -> ContractingMov
         
         # Sort meetings by day and start timeslot
         judge_meetings.sort(key=lambda m: (m['day'], m['start_slot']))
+        
+        if debug and judge_meetings:
+            print(f"\nJudge {judge.judge_id}: {len(judge_meetings)} meetings")
         
         # Process meetings for each day
         current_day = None
@@ -640,11 +647,16 @@ def generate_contracting_move(schedule: Schedule, debug=False) -> ContractingMov
                     do_move(move, schedule)
                     contracting_move.add_move(move)
                     
+                    if debug:
+                        print(f"  Meeting {meeting_id}: moved from slot {current_start} to {target_start_slot}")
+                    
                     # Update next available slot
                     next_available_slot = target_start_slot + duration
                 else:
                     # Room conflict - skip this meeting
                     contracting_move.add_skipped(meeting_id, f"Room {room_id} occupied at target slot {target_start_slot}")
+                    if debug:
+                        print(f"  Meeting {meeting_id}: skipped - room {room_id} occupied at slot {target_start_slot}")
                     next_available_slot = current_start + duration
             else:
                 # Meeting is already optimally placed or would move later
@@ -653,4 +665,10 @@ def generate_contracting_move(schedule: Schedule, debug=False) -> ContractingMov
     
     # Mark the contracting move as applied since we applied moves during generation
     contracting_move.is_applied = True
+    
+    if debug:
+        print(f"\n=== Contracting Move Summary ===")
+        print(f"Total moves: {len(contracting_move.individual_moves)}")
+        print(f"Skipped meetings: {len(contracting_move.skipped_meetings)}")
+    
     return contracting_move

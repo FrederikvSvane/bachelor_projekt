@@ -98,6 +98,10 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
         max_day = max(app.day for app in move.appointments)
         if max_day > schedule.work_days:
             schedule.work_days = max_day
+        
+        # Add the appointment chain to schedule
+        if schedule is not None and move.appointments:
+            schedule.appointment_chains[move.meeting_id] = move.appointments
             
         move.is_applied = True
         return
@@ -120,6 +124,10 @@ def do_move(move: Move, schedule: Schedule = None) -> None:
             move.appointments[0].meeting.judge = None
             move.appointments[0].meeting.room = None
             schedule.add_to_unplanned_meetings(move.appointments[0].meeting)
+            
+            # Remove the appointment chain from schedule
+            if move.meeting_id in schedule.appointment_chains:
+                del schedule.appointment_chains[move.meeting_id]
             
         move.is_applied = True
         if schedule is not None:
@@ -214,6 +222,10 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
             meeting.room = None
             # Add back to unplanned meetings
             schedule.add_to_unplanned_meetings(meeting)
+            
+            # Remove the appointment chain from schedule
+            if move.meeting_id in schedule.appointment_chains:
+                del schedule.appointment_chains[move.meeting_id]
         
         move.is_applied = False
         if schedule is not None:
@@ -258,6 +270,10 @@ def undo_move(move: Move, schedule: Schedule = None) -> None:
             #     raise ValueError(f"Appointment {app} already exists in the new position.") # shouldnt happen but good for safety
             
             schedule.appointments_by_day_and_timeslot[app.day][app.timeslot_in_day].append(app)
+        
+        # Restore the appointment chain
+        if schedule is not None and move.appointments:
+            schedule.appointment_chains[move.meeting_id] = move.appointments
         
         move.is_applied = False
         return # trimming is not needed because adding meetings into the schedule will never make it shorter

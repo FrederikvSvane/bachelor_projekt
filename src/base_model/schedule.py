@@ -162,6 +162,8 @@ class Schedule:
 
 
     def initialize_appointment_chains(self) -> None:
+        # Clear existing appointment chains to avoid stale references
+        self.appointment_chains = {}
         for app in self.iter_appointments():
             if app.meeting.meeting_id not in self.appointment_chains:
                 self.appointment_chains[app.meeting.meeting_id] = []

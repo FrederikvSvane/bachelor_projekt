@@ -79,6 +79,8 @@ def generate_schedule(parsed_data: dict) -> Schedule:
 
     for meeting in meetings_to_schedule:
         add_meeting_to_schedule(schedule, meeting, compatible_judges_dict, compatible_rooms_dict)
-        
+    
+    # Initialize appointment chains after adding all meetings to schedule
+    schedule.initialize_appointment_chains()
         
     return schedule

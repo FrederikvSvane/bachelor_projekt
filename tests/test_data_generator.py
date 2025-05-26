@@ -21,7 +21,7 @@ class TestDataGenerator(unittest.TestCase):
         for n_cases, n_judges, n_rooms, n_days in test_configs:
             with self.subTest(f"Testing with {n_cases} cases, {n_judges} judges, {n_rooms} rooms"):
                 # Generate data
-                parsed_data = generate_test_data_parsed(n_cases, n_judges, n_rooms, n_days, granularity=5, min_per_work_day=390)
+                parsed_data = generate_test_data_parsed(n_cases, n_days, granularity=5, min_per_work_day=390)
                 
                 cases = parsed_data["cases"]
                 judges = parsed_data["judges"]
