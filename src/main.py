@@ -7,7 +7,7 @@ from src.util.parser import parse_input
 from src.base_model.schedule import Schedule, generate_schedule_using_double_flow
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import calculate_full_score
-from src.local_search.simulated_annealing import run_local_search, run_cooling_rate_tuning, run_focused_benchmark
+from src.local_search.simulated_annealing import run_local_search, run_move_probability_and_threshold_tuning
 from src.base_model.compatibility_checks import initialize_compatibility_matricies, case_room_matrix
 from src.local_search.move import Move, do_move, undo_move
 from src.local_search.move_generator import generate_specific_delete_move, generate_compound_move
@@ -106,7 +106,15 @@ def main():
 
         #best_params = (4000, 200, 30, 0.3, 0.5, 0.7)  # Your best config: (iterations, start_temp, end_temp)
         #final_schedule = run_cooling_rate_tuning(initial_schedule, best_params, num_runs_per_config=2, max_time_seconds=600)
-        final_schedule = run_focused_benchmark(initial_schedule, 2, max_time_seconds=120)
+#        final_schedule = run_focused_benchmark(initial_schedule, 2, max_time_seconds=120)
+
+        best_params = (4000, 500, 20)  # Your best configuration: (iterations, start_temp, end_temp)
+        final_schedule = run_move_probability_and_threshold_tuning(
+            initial_schedule, 
+            best_params, 
+            num_runs_per_config=1,  # 3 runs per configuration (adjust as needed)
+            max_time_seconds=300   # 2 minutes per run (adjust as needed)
+        )
 
         final_score = calculate_full_score(final_schedule)
         #visualize(final_schedule)
