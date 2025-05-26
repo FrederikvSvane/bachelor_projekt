@@ -52,7 +52,7 @@ def add_meeting_to_schedule(schedule: Schedule, meeting: Meeting, compatible_jud
 
 def generate_schedule(parsed_data: dict) -> Schedule:
     # Set seed once at the beginning for reproducible results
-    random.seed(42)
+    random.seed(13062025)
     
     cases: list[Case] = parsed_data["cases"]
     judges: list[Judge] = parsed_data["judges"]

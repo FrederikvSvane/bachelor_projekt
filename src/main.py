@@ -12,6 +12,9 @@ from src.base_model.compatibility_checks import initialize_compatibility_matrici
 from src.local_search.move import Move, do_move, undo_move
 from src.local_search.move_generator import generate_specific_delete_move, generate_compound_move
 from src.construction.heuristic.linear_assignment import generate_schedule
+import random
+
+random.seed(13062025)  # Set seed for reproducibility
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -99,7 +102,7 @@ def main():
         
         # In your main function, use:
         best_params = (4000, 200, 30)  # Your best config: (iterations, start_temp, end_temp)
-        final_schedule = run_move_probability_tuning(initial_schedule, best_params, num_runs_per_config=2, max_time_seconds=600)  
+        final_schedule = run_local_search(initial_schedule, args.log)  
 
         final_score = calculate_full_score(final_schedule)
         #visualize(final_schedule)

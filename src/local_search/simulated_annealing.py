@@ -19,6 +19,8 @@ from src.local_search.ruin_and_recreate import apply_ruin_and_recreate
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import _calculate_constraint_weights
 
+random.seed(13062025)
+
 def _add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
     """
     Adds the reverse of the accepted move to the tabu list.
@@ -148,7 +150,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     
     # Custom log function to write to both console and file
     def log_output(message):
-        #print(message)
+        print(message)
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately
@@ -357,10 +359,10 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     return best_schedule_snapshot.restore_schedule(schedule)
 
 def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
-    iterations_per_temperature = 5000
+    iterations_per_temperature = 4000
     max_time_seconds = 60 * 3
-    start_temp = 300
-    end_temp = 10
+    start_temp = 200
+    end_temp = 30
     
     optimized_schedule = simulated_annealing(
         schedule, 

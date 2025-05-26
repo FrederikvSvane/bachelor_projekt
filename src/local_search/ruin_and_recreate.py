@@ -12,6 +12,8 @@ from typing import List, Dict, Tuple
 from concurrent.futures import ProcessPoolExecutor
 import time
 
+random.seed(13062025)  # Set seed for reproducibility
+
 def apply_ruin_and_recreate(schedule: Schedule, 
                             compatible_judges_dict: dict[int, list[Judge]], 
                             compatible_rooms_dict: dict[int, list[Room]],
