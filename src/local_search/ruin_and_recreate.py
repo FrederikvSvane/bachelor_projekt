@@ -16,7 +16,8 @@ def apply_ruin_and_recreate(schedule: Schedule,
                             compatible_judges_dict: dict[int, list[Judge]], 
                             compatible_rooms_dict: dict[int, list[Room]],
                             percentage: float = 0.1, #% of all meetings
-                            in_parallel: bool = True) -> Tuple[bool, int]:
+                            in_parallel: bool = True,
+                            log_file=None) -> Tuple[bool, int]:  # Changed to accept file object
     """Apply violation-based ruin and regret-based recreate.
     
     Args:
@@ -25,29 +26,37 @@ def apply_ruin_and_recreate(schedule: Schedule,
         compatible_rooms_dict: Dictionary of compatible rooms for each meeting
         percentage: Percentage of meetings to remove based on violations
         parallel: Whether to use parallel processing
+        log_file: Open file object for logging (not a string path)
 
     Returns:
         Tuple containing a boolean indicating success and the number of meetings inserted
     """
-    start_time = time.time()
+    # Define local log function that captures log_file through closure
+    def log_output(message):
+        #print(message)  # Uncomment if you want console output too
+        if log_file:
+            log_file.write(message + "\n")
+            log_file.flush()  # Ensure data is written immediately
     
+    start_time = time.time()
+
     # Ruin phase - remove meetings with highest violations
-    removed_meetings = _violation_based_ruin(schedule, compatible_judges_dict, compatible_rooms_dict, percentage, in_parallel)
+    removed_meetings = _violation_based_ruin(schedule, compatible_judges_dict, compatible_rooms_dict, percentage, in_parallel, log_output)
     
     # Stop if no meetings were removed
     if not removed_meetings:
         return False, 0
     
     ruin_time = time.time() - start_time
-    print(f"Ruined {len(removed_meetings)} meetings in {ruin_time:.2f} seconds")
+    log_output(f"Ruined {len(removed_meetings)} meetings in {ruin_time:.2f} seconds")
     
     # Recreate phase - use regret-based insertion
     recreate_start = time.time()
-    num_inserted = _regret_based_insert(schedule, compatible_judges_dict, compatible_rooms_dict, removed_meetings, in_parallel)
+    num_inserted = _regret_based_insert(schedule, compatible_judges_dict, compatible_rooms_dict, removed_meetings, in_parallel, log_output)
     recreate_time = time.time() - recreate_start
     
-    print(f"Recreated {num_inserted} meetings in {recreate_time:.2f} seconds")
-    print(f"Total R&R time: {time.time() - start_time:.2f} seconds")
+    log_output(f"Recreated {num_inserted} meetings in {recreate_time:.2f} seconds")
+    log_output(f"Total R&R time: {time.time() - start_time:.2f} seconds")
     
     # Return success status and metrics
     return (num_inserted > 0), num_inserted
@@ -75,7 +84,7 @@ def _worker_initializer(init_schedule): #NOTE We do this because spawning a subp
     _initialize_constraint_weights(schedule=init_schedule) 
     #TODO this could be done better, using shared_memory from multiprocessing and pickle. But we do this because it works and time is money $$$
 
-def _violation_based_ruin(schedule: Schedule, compatible_judges_dict: dict[int, list[Judge]], compatible_rooms_dict: dict[int, list[Room]], percentage: float, in_parallel: bool = True) -> List[Dict]:
+def _violation_based_ruin(schedule: Schedule, compatible_judges_dict: dict[int, list[Judge]], compatible_rooms_dict: dict[int, list[Room]], percentage: float, in_parallel: bool, log_output) -> List[Dict]:
     # convert percentage to int
     percentage = int(percentage * 100)
     """
@@ -85,6 +94,7 @@ def _violation_based_ruin(schedule: Schedule, compatible_judges_dict: dict[int, 
         schedule: Schedule to modify
         percentage: Percentage of meetings to remove
         parallel: Whether to use parallel processing for calculating violations
+        log_output: Logging function
         
     Returns:
         List of removed meeting info dictionaries
@@ -93,7 +103,7 @@ def _violation_based_ruin(schedule: Schedule, compatible_judges_dict: dict[int, 
     if not planned_meetings:
         return []
     
-    print(f"Calculating violations for {len(planned_meetings)} meetings...")
+    log_output(f"Calculating violations for {len(planned_meetings)} meetings...")
     start_time = time.time()
     
     # Calculate violations for each meeting
@@ -109,16 +119,16 @@ def _violation_based_ruin(schedule: Schedule, compatible_judges_dict: dict[int, 
                 results = list(executor.map(_calculate_meeting_violations_parallel, args_list, timeout=120))
                 meeting_violations: List[Tuple[Meeting, int]] = results # List of tuples (meeting, delta)
             except TimeoutError:
-                print("Error: Violation calculation timed out. Proceeding with available results.")
+                log_output("Error: Violation calculation timed out. Proceeding with available results.")
             except Exception as e:
-                print(f"Error during parallel violation calculation: {e}")    
+                log_output(f"Error during parallel violation calculation: {e}")    
     else:
         # Sequential calculation
         for meeting in planned_meetings:
             violation_score = _calculate_meeting_violations_parallel((schedule, meeting))
             meeting_violations.append(violation_score)
     
-    print(f"Violation calculation took {time.time() - start_time:.2f} seconds")
+    log_output(f"Violation calculation took {time.time() - start_time:.2f} seconds")
     
     # Sort by violation score (most violating first - lowest/most negative delta)
     meeting_violations.sort(key=lambda x: x[1])
@@ -127,8 +137,8 @@ def _violation_based_ruin(schedule: Schedule, compatible_judges_dict: dict[int, 
     num_to_remove = max(1, int(len(planned_meetings) * percentage / 100))
     meetings_to_remove = [meeting for meeting, _ in meeting_violations[:num_to_remove]]
     
-    print(f"Top {num_to_remove} meeting violations with deltas: {[(pair[0].meeting_id, pair[1]) for pair in meeting_violations[:num_to_remove]]}")
-    print(f"Removing {len(meetings_to_remove)} most violating meetings")
+    log_output(f"Top {num_to_remove} meeting violations with deltas: {[(pair[0].meeting_id, pair[1]) for pair in meeting_violations[:num_to_remove]]}")
+    log_output(f"Removing {len(meetings_to_remove)} most violating meetings")
     
     # Remove the meetings
     removed_meetings = []
@@ -220,7 +230,7 @@ def _calculate_insertion_score_parallel(args):
 
 
 def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_rooms_dict,
-                         removed_meetings, parallel: bool = True) -> int:
+                         removed_meetings, parallel: bool, log_output) -> int:
     """
     Insert meetings using regret-based insertion, checking availability dynamically.
     Specifically, 2-regret insert with a maintained list of best positions dynamic availability check. 
@@ -231,6 +241,7 @@ def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_
         compatible_rooms_dict: Dictionary of compatible rooms for each meeting
         removed_meetings: List of dicts with meeting info to reinsert
         parallel: Whether to use parallel processing for calculating scores
+        log_output: Logging function
 
     Returns:
         Number of meetings successfully inserted
@@ -238,7 +249,7 @@ def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_
     if not removed_meetings:
         return 0
 
-    print(f"Starting regret-based insertion for {len(removed_meetings)} meetings")
+    log_output(f"Starting regret-based insertion for {len(removed_meetings)} meetings")
 
     # Sort meetings by duration (longest first)
     removed_meetings.sort(key=lambda x: x['meeting'].meeting_duration, reverse=True)
@@ -254,7 +265,7 @@ def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_
         compatible_rooms = compatible_rooms_dict.get(meeting.case.case_id, [])   # Use case_id if dict is keyed by case
 
         if not compatible_judges or not compatible_rooms:
-            print(f"Warning: No compatible judges or rooms for meeting {meeting.meeting_id}, skipping.")
+            log_output(f"Warning: No compatible judges or rooms for meeting {meeting.meeting_id}, skipping.")
             continue
 
         available_positions_args = []
@@ -272,7 +283,7 @@ def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_
                             available_positions_args.append((schedule, meeting, judge, room, day, start_time))
 
         if not available_positions_args:
-            print(f"Warning: No initially available positions found for meeting {meeting.meeting_id}, skipping.")
+            log_output(f"Warning: No initially available positions found for meeting {meeting.meeting_id}, skipping.")
             continue
 
         positions_evaluated += len(available_positions_args)
@@ -300,14 +311,14 @@ def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_
         # Store the meeting, its regret, and its full sorted list of potential positions
         meeting_evaluations.append((meeting, regret, position_scores))
 
-    print(f"Evaluated {positions_evaluated} initial positions for {len(meeting_evaluations)} meetings")
+    log_output(f"Evaluated {positions_evaluated} initial positions for {len(meeting_evaluations)} meetings")
 
     meeting_evaluations.sort(key=lambda x: x[1], reverse=True) # Sort by regret (highest first)
 
     num_inserted = 0
     for meeting, regret, sorted_positions in meeting_evaluations:
         inserted_this_meeting = False
-        print(f"Attempting insertion for meeting {meeting.meeting_id} (Regret: {regret:.2f})")
+        log_output(f"Attempting insertion for meeting {meeting.meeting_id} (Regret: {regret:.2f})")
 
         # Iterate through the pre-calculated positions, starting with the best
         for position_info in sorted_positions:
@@ -316,7 +327,7 @@ def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_
             # Re-check availability against CURRENT schedule
             if _is_position_available(schedule, meeting, judge, room, day, start_timeslot):
                 # Found the best *currently* available position from the initial list
-                print(f"  Inserting meeting {meeting.meeting_id} at Day {day}, Slot {start_timeslot}, Judge {judge.judge_id}, Room {room.room_id}")
+                log_output(f"  Inserting meeting {meeting.meeting_id} at Day {day}, Slot {start_timeslot}, Judge {judge.judge_id}, Room {room.room_id}")
 
                 insertion_move = generate_specific_insert_move(
                     schedule=schedule, 
@@ -334,14 +345,6 @@ def _regret_based_insert(schedule: Schedule, compatible_judges_dict, compatible_
                 break # Stop searching for positions for this meeting
 
         if not inserted_this_meeting:
-            print(f"  Warning: Could not find a currently available position for meeting {meeting.meeting_id} from its initial list. Leaving unplanned.")
-            # Ensure the meeting is marked as unplanned if it wasn't inserted
-            # if meeting not in schedule.unplanned_meetings: 
-            #      # It should already be there from the ruin phase, but double-check
-            #      # We need to make sure its judge/room are None if left unplanned
-            #      meeting.judge = None
-            #      meeting.room = None
-            #      schedule.add_to_unplanned_meetings(meeting)
-
+            log_output(f"  Warning: Could not find a currently available position for meeting {meeting.meeting_id} from its initial list. Leaving unplanned.")
 
     return num_inserted
