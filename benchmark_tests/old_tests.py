@@ -165,7 +165,7 @@ def run_focused_benchmark(schedule: Schedule, num_runs_per_config: int = 5, max_
     
     # Top 5 configurations from previous benchmark
     top_configs = [
-        (2000, 400, 40, "Config1_2000_400_40"),
+        (2000, 200, 20, "Config1_2000_400_40"),
         (4000, 200, 30, "Config2_4000_200_30"), 
         (2000, 200, 1,  "Config3_2000_200_1"),
         (5000, 200, 30, "Config4_5000_200_30"),
