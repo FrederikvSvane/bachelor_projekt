@@ -131,7 +131,10 @@ def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, m
     return hard_count, medium_count, soft_count
 
 
-def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, log_file_path: str = None) -> Schedule:
+def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, 
+                       high_temp_compound_prob: float = 0.2, medium_temp_compound_prob: float = 0.6, low_temp_compound_prob: float = 0.8,
+                       K: int = 100,
+                       log_file_path: str = None) -> Schedule:
     from copy import deepcopy
     start_time = time.time()
     
@@ -171,7 +174,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     low_temp_threshold = full_temp_range * 0 # bottom 10% of the temperature range 
      
     plateau_count = 0
-    cooling_rate = _calculate_cooling_rate(100, start_temp, end_temp)  # Initial cooling rate # K is 100
+    cooling_rate = _calculate_cooling_rate(K, start_temp, end_temp)  # Initial cooling rate # K is 100
     
     tabu_list = deque(maxlen=20)
     time_used = 0
@@ -185,6 +188,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     log_output(f"Max time: {max_time_seconds} seconds")
     log_output(f"Start temperature: {start_temp}")
     log_output(f"End temperature: {end_temp}")
+    log_output(f"Move probabilities - High: {high_temp_compound_prob}, Medium: {medium_temp_compound_prob}, Low: {low_temp_compound_prob}")
     log_output(f"Initial score: {current_score}")
     log_output(f"Initial violations - Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}")
 
@@ -243,7 +247,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             if move is None: # No insert move was generated, so we generate a random single or compound move
                 # HIGH TEMP
                 if current_temperature > high_temp_threshold: 
-                    p_do_compound_move = 0.2
+                    p_do_compound_move = high_temp_compound_prob  # Use parameter instead of hardcoded 0.2
                     if random.random() < p_do_compound_move: 
                         # compound move
                         p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
@@ -254,7 +258,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                         
                 # MEDIUM TEMP
                 elif medium_temp_threshold < current_temperature < high_temp_threshold: 
-                    p_do_compound_move = 0.6
+                    p_do_compound_move = medium_temp_compound_prob  # Use parameter instead of hardcoded 0.6
                     if random.random() < p_do_compound_move: 
                         # compound move
                         p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
@@ -265,7 +269,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                         
                 # LOW TEMP
                 else: 
-                    p_do_compound_move = 0.8
+                    p_do_compound_move = low_temp_compound_prob  # Use parameter instead of hardcoded 0.8
                     if random.random() < p_do_compound_move: 
                         # compound move
                         p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
@@ -703,6 +707,241 @@ Average Runtime: {winner_results['mean_runtime']:.1f} seconds
     print(f"│   ├── focused_benchmark_summary_[timestamp].log")
     for config_name, _ in sorted_configs:
         print(f"│   ├── {config_name}/")
+        for run in range(1, num_runs_per_config + 1):
+            print(f"│   │   └── run_{run}.log")
+    
+    return best_overall_schedule
+
+
+def run_move_probability_tuning(schedule: Schedule, best_config_params: tuple, num_runs_per_config: int = 3, max_time_seconds: int = 120) -> Schedule:
+    """
+    Tune the move selection probabilities for different temperature ranges.
+    best_config_params should be (iterations, start_temp, end_temp) from your previous best result.
+    """
+    import copy
+    import statistics
+    
+    # Create benchmark_tests directory if it doesn't exist
+    benchmark_dir = "benchmark_tests"
+    os.makedirs(benchmark_dir, exist_ok=True)
+    
+    # Create separate folder for move probability tuning
+    tuning_dir = os.path.join(benchmark_dir, "move_probability_tuning")
+    os.makedirs(tuning_dir, exist_ok=True)
+    
+    # Extract best configuration parameters
+    best_iters, best_start_temp, best_end_temp = best_config_params
+    
+    # Define probability combinations to test
+    # Format: (high_temp_prob, medium_temp_prob, low_temp_prob, description)
+    probability_combinations = [
+        # Current baseline
+        (0.2, 0.6, 0.8, "Current_Baseline"),
+        
+        # More exploration at high temp
+        (0.4, 0.6, 0.8, "HighExplore_1"),
+        (0.5, 0.6, 0.8, "HighExplore_2"),
+        
+        # Less compound moves at high temp (more single moves for exploration)
+        (0.1, 0.6, 0.8, "LowHigh_1"),
+        (0.15, 0.6, 0.8, "LowHigh_2"),
+        
+        # Adjust medium temp
+        (0.2, 0.5, 0.8, "MediumLow_1"),
+        (0.2, 0.7, 0.8, "MediumHigh_1"),
+        
+        # Adjust low temp (more fine-tuning)
+        (0.2, 0.6, 0.9, "LowHigh_3"),
+        (0.2, 0.6, 0.7, "LowLow_1"),
+        
+        # Balanced approaches
+        (0.3, 0.5, 0.7, "Balanced_1"),
+        (0.3, 0.6, 0.7, "Balanced_2"),
+        
+        # Gradual increase
+        (0.2, 0.4, 0.6, "Gradual_1"),
+        (0.3, 0.5, 0.8, "Gradual_2"),
+        
+        # Aggressive compound moves
+        (0.6, 0.7, 0.9, "Aggressive_1"),
+        (0.5, 0.8, 0.9, "Aggressive_2"),
+    ]
+    
+    # Store the original schedule
+    original_schedule = copy.deepcopy(schedule)
+    
+    # Create summary log file
+    summary_log_path = os.path.join(tuning_dir, f"move_probability_tuning_summary_{int(time.time())}.log")
+    
+    print("Running move probability tuning with best configuration:")
+    print(f"Base config: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}")
+    print(f"Number of probability combinations: {len(probability_combinations)}")
+    print(f"Runs per combination: {num_runs_per_config}")
+    print(f"Max time per run: {max_time_seconds} seconds")
+    print(f"Results will be saved to: {tuning_dir}/")
+    print("=" * 80)
+    
+    all_results = {}
+    best_overall_score = float('inf')
+    best_overall_schedule = None
+    best_overall_config = None
+    
+    with open(summary_log_path, 'w') as summary_log:
+        summary_log.write("MOVE PROBABILITY TUNING\n")
+        summary_log.write(f"Base configuration: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}\n")
+        summary_log.write(f"Probability combinations tested: {len(probability_combinations)}\n")
+        summary_log.write(f"Runs per combination: {num_runs_per_config}\n")
+        summary_log.write(f"Max time per run: {max_time_seconds} seconds\n")
+        summary_log.write("=" * 80 + "\n\n")
+        
+        for combo_idx, (high_prob, med_prob, low_prob, combo_name) in enumerate(probability_combinations, 1):
+            print(f"\n[{combo_idx}/{len(probability_combinations)}] Testing {combo_name}")
+            print(f"  High temp: {high_prob} | Medium temp: {med_prob} | Low temp: {low_prob}")
+            print("-" * 60)
+            
+            summary_log.write(f"COMBINATION {combo_idx}: {combo_name}\n")
+            summary_log.write(f"Probabilities: High={high_prob}, Medium={med_prob}, Low={low_prob}\n")
+            summary_log.write("-" * 60 + "\n")
+            
+            combo_results = []
+            combo_runtimes = []
+            
+            # Create subdirectory for this combination's runs
+            combo_dir = os.path.join(tuning_dir, combo_name)
+            os.makedirs(combo_dir, exist_ok=True)
+            
+            for run in range(1, num_runs_per_config + 1):
+                print(f"  Run {run}/{num_runs_per_config}...", end="", flush=True)
+                
+                # Create fresh copy for this run
+                test_schedule = copy.deepcopy(original_schedule)
+                
+                # Individual run log
+                run_log_path = os.path.join(combo_dir, f"run_{run}.log")
+                
+                # Run simulated annealing with modified probabilities
+                start_time = time.time()
+                optimized_schedule = simulated_annealing(
+                    test_schedule,
+                    best_iters,
+                    max_time_seconds,
+                    best_start_temp,
+                    best_end_temp,
+                    high_temp_compound_prob=high_prob,
+                    medium_temp_compound_prob=med_prob,
+                    low_temp_compound_prob=low_prob,
+                    log_file_path=run_log_path
+                )
+                end_time = time.time()
+                
+                final_score = calculate_full_score(optimized_schedule)[0]
+                runtime = end_time - start_time
+                
+                combo_results.append(final_score)
+                combo_runtimes.append(runtime)
+                
+                print(f" Score: {final_score:.0f} ({runtime:.1f}s)")
+                
+                summary_log.write(f"Run {run}: Score={final_score:.0f}, Runtime={runtime:.1f}s\n")
+                
+                # Track best overall
+                if final_score < best_overall_score:
+                    best_overall_score = final_score
+                    best_overall_schedule = copy.deepcopy(optimized_schedule)
+                    best_overall_config = f"{combo_name}_run{run}"
+            
+            # Calculate statistics
+            mean_score = statistics.mean(combo_results)
+            std_score = statistics.stdev(combo_results) if len(combo_results) > 1 else 0
+            min_score = min(combo_results)
+            max_score = max(combo_results)
+            mean_runtime = statistics.mean(combo_runtimes)
+            
+            all_results[combo_name] = {
+                'probabilities': (high_prob, med_prob, low_prob),
+                'scores': combo_results,
+                'mean_score': mean_score,
+                'std_score': std_score,
+                'min_score': min_score,
+                'max_score': max_score,
+                'mean_runtime': mean_runtime
+            }
+            
+            print(f"  → Mean: {mean_score:.0f} ± {std_score:.0f}")
+            print(f"  → Best: {min_score:.0f}")
+            
+            summary_log.write(f"Statistics: Mean={mean_score:.0f}, Std={std_score:.0f}, Min={min_score:.0f}, Max={max_score:.0f}\n")
+            summary_log.write(f"Average Runtime: {mean_runtime:.1f}s\n\n")
+        
+        # Final comparison
+        print("\n" + "=" * 80)
+        print("MOVE PROBABILITY TUNING RESULTS:")
+        print("=" * 80)
+        
+        # Sort by mean score
+        sorted_results = sorted(all_results.items(), key=lambda x: x[1]['mean_score'])
+        
+        print(f"{'Rank':<4} {'Configuration':<18} {'High':<6} {'Med':<6} {'Low':<6} {'Mean Score':<12} {'±Std':<10} {'Best':<12}")
+        print("-" * 85)
+        
+        summary_log.write("=" * 80 + "\n")
+        summary_log.write("FINAL RESULTS RANKING:\n")
+        summary_log.write("=" * 80 + "\n")
+        summary_log.write(f"{'Rank':<4} {'Configuration':<18} {'High':<6} {'Med':<6} {'Low':<6} {'Mean Score':<12} {'±Std':<10} {'Best':<12}\n")
+        summary_log.write("-" * 85 + "\n")
+        
+        for rank, (combo_name, results) in enumerate(sorted_results, 1):
+            high_p, med_p, low_p = results['probabilities']
+            result_line = f"{rank:<4} {combo_name:<18} {high_p:<6} {med_p:<6} {low_p:<6} {results['mean_score']:<12.0f} ±{results['std_score']:<9.0f} {results['min_score']:<12.0f}"
+            print(result_line)
+            summary_log.write(result_line + "\n")
+        
+        # Winner analysis
+        winner_name, winner_results = sorted_results[0]
+        winner_high, winner_med, winner_low = winner_results['probabilities']
+        
+        winner_text = f"""
+{("=" * 80)}
+🏆 BEST MOVE PROBABILITY CONFIGURATION:
+{("=" * 80)}
+Configuration: {winner_name}
+High Temperature Compound Probability: {winner_high} ({winner_high*100:.0f}% compound, {(1-winner_high)*100:.0f}% single)
+Medium Temperature Compound Probability: {winner_med} ({winner_med*100:.0f}% compound, {(1-winner_med)*100:.0f}% single)
+Low Temperature Compound Probability: {winner_low} ({winner_low*100:.0f}% compound, {(1-winner_low)*100:.0f}% single)
+
+Performance:
+Mean Score: {winner_results['mean_score']:.0f} ± {winner_results['std_score']:.0f}
+Best Run: {winner_results['min_score']:.0f}
+Consistency: {winner_results['std_score']/winner_results['mean_score']*100:.2f}% variation
+Average Runtime: {winner_results['mean_runtime']:.1f} seconds
+
+Compared to baseline:
+"""
+        
+        # Compare to baseline if it exists
+        if "Current_Baseline" in all_results:
+            baseline = all_results["Current_Baseline"]
+            improvement = baseline['mean_score'] - winner_results['mean_score']
+            winner_text += f"Improvement over baseline: {improvement:.0f} points ({improvement/baseline['mean_score']*100:.2f}%)\n"
+        
+        winner_text += f"{('=' * 80)}\n"
+        
+        print(winner_text)
+        summary_log.write(winner_text + "\n")
+        
+        summary_log.write(f"\nFOLDER STRUCTURE:\n")
+        summary_log.write(f"Main directory: {tuning_dir}/\n")
+        summary_log.write(f"Summary log: {summary_log_path}\n")
+        for combo_name, _ in sorted_results:
+            summary_log.write(f"Config logs: {os.path.join(tuning_dir, combo_name)}/\n")
+    
+    print(f"\nMove probability tuning results saved to: {tuning_dir}/")
+    print(f"Summary: {summary_log_path}")
+    print(f"\nFolder structure:")
+    print(f"├── {tuning_dir}/")
+    print(f"│   ├── move_probability_tuning_summary_[timestamp].log")
+    for combo_name, _ in sorted_results:
+        print(f"│   ├── {combo_name}/")
         for run in range(1, num_runs_per_config + 1):
             print(f"│   │   └── run_{run}.log")
     
