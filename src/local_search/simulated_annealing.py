@@ -135,7 +135,7 @@ def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, m
 
 def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, 
                        high_temp_compound_prob: float = 0.2, medium_temp_compound_prob: float = 0.6, low_temp_compound_prob: float = 0.8,
-                       high_temp_threshold_pct: float = 0.6, medium_temp_threshold_pct: float = 0.1,
+                       high_temp_threshold_pct: float = 0.5, medium_temp_threshold_pct: float = 0.15,
                        K: int = 100,
                        log_file_path: str = None) -> Schedule:
     from copy import deepcopy
@@ -377,10 +377,10 @@ def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
     return optimized_schedule
 
 
-def run_move_probability_and_threshold_tuning(schedule: Schedule, best_config_params: tuple, num_runs_per_config: int = 3, max_time_seconds: int = 120) -> Schedule:
+def run_cooling_rate_tuning(schedule: Schedule, best_config_params: tuple, num_runs_per_config: int = 3, max_time_seconds: int = 120) -> Schedule:
     """
-    Tune both move selection probabilities AND temperature thresholds using systematic grid search.
-    Tests all combinations of 5 move probability sets × 5 threshold sets = 25 total configurations.
+    Tune the K parameter that controls the cooling rate.
+    best_config_params should be (iterations, start_temp, end_temp, high_prob, med_prob, low_prob) from your previous best results.
     """
     import copy
     import statistics
@@ -389,253 +389,204 @@ def run_move_probability_and_threshold_tuning(schedule: Schedule, best_config_pa
     benchmark_dir = "benchmark_tests"
     os.makedirs(benchmark_dir, exist_ok=True)
     
-    # Create separate folder for combined tuning
-    tuning_dir = os.path.join(benchmark_dir, "move_prob_and_threshold_tuning")
+    # Create separate folder for K tuning
+    tuning_dir = os.path.join(benchmark_dir, "cooling_rate_tuning")
     os.makedirs(tuning_dir, exist_ok=True)
     
     # Extract best configuration parameters
-    best_iters, best_start_temp, best_end_temp = best_config_params
+    best_iters, best_start_temp, best_end_temp, best_high_prob, best_med_prob, best_low_prob = best_config_params
     
-    # Define 5 different move probability combinations
-    # Format: (high_temp_prob, medium_temp_prob, low_temp_prob, name)
-    move_probability_sets = [
-        (0.2, 0.6, 0.8, "Baseline"),
-        (0.3, 0.5, 0.7, "Balanced"),
-        (0.1, 0.6, 0.8, "LowHigh"),
-        (0.2, 0.7, 0.8, "MediumHigh"),
-        (0.4, 0.6, 0.9, "Progressive"),
-        (0.5, 0.7, 0.9, "Aggressive"),
-    ]
-    
-    # Define 5 different temperature threshold combinations  
-    # Format: (high_threshold, medium_threshold, name)
-    threshold_sets = [
-        (0.6, 0.1, "Current"),          # Current baseline
-        (0.5, 0.15, "EarlyMedium"),     # Medium kicks in earlier
-        (0.7, 0.2, "LateSwitches"),     # Both switch later  
-        (0.4, 0.05, "EarlySwitches"),   # Both switch earlier
-        (0.8, 0.3, "Conservative"),      # Very conservative switching
-        (0.9, 0.4, "VeryConservative"),  # Extremely conservative switching
+    # Define K values to test
+    # Format: (K_value, description)
+    k_values = [
+        (5, "Very_Fast_5"),
+        (10, "Fast_Cooling_10"),
+        (25, "Very_Fast_25"),
+        (50, "Fast_Cooling_50"),
+        (75, "Moderate_Cooling_75"),
+        (100, "Current_Baseline_100"),
+        (125, "Moderate_Cooling_125"),
+        (150, "Slow_Cooling_150"),
+        (200, "Very_Slow_200"),
+        (300, "Extremely_Slow_300"),
     ]
     
     # Store the original schedule
     original_schedule = copy.deepcopy(schedule)
     
     # Create summary log file
-    summary_log_path = os.path.join(tuning_dir, f"grid_search_tuning_summary_{int(time.time())}.log")
+    summary_log_path = os.path.join(tuning_dir, f"cooling_rate_tuning_summary_{int(time.time())}.log")
     
-    total_configs = len(move_probability_sets) * len(threshold_sets)
-    
-    print("Running systematic grid search tuning:")
+    print("Running cooling rate (K parameter) tuning:")
     print(f"Base config: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}")
-    print(f"Move probability sets: {len(move_probability_sets)}")
-    print(f"Threshold sets: {len(threshold_sets)}")
-    print(f"Total configurations: {total_configs}")
-    print(f"Runs per configuration: {num_runs_per_config}")
+    print(f"Move probs: High={best_high_prob}, Med={best_med_prob}, Low={best_low_prob}")
+    print(f"Number of K values: {len(k_values)}")
+    print(f"Runs per K value: {num_runs_per_config}")
     print(f"Max time per run: {max_time_seconds} seconds")
     print(f"Results will be saved to: {tuning_dir}/")
-    print("=" * 90)
+    print("=" * 80)
     
     all_results = {}
     best_overall_score = float('inf')
     best_overall_schedule = None
     best_overall_config = None
-    current_config = 0
     
     with open(summary_log_path, 'w') as summary_log:
-        summary_log.write("SYSTEMATIC GRID SEARCH TUNING\n")
+        summary_log.write("COOLING RATE (K PARAMETER) TUNING\n")
         summary_log.write(f"Base configuration: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}\n")
-        summary_log.write(f"Move probability sets: {len(move_probability_sets)}\n")
-        summary_log.write(f"Threshold sets: {len(threshold_sets)}\n")
-        summary_log.write(f"Total configurations: {total_configs}\n")
-        summary_log.write(f"Runs per configuration: {num_runs_per_config}\n")
+        summary_log.write(f"Move probabilities: High={best_high_prob}, Med={best_med_prob}, Low={best_low_prob}\n")
+        summary_log.write(f"K values tested: {len(k_values)}\n")
+        summary_log.write(f"Runs per K value: {num_runs_per_config}\n")
         summary_log.write(f"Max time per run: {max_time_seconds} seconds\n")
-        summary_log.write("=" * 90 + "\n\n")
+        summary_log.write("=" * 80 + "\n\n")
         
-        # Write the parameter sets being tested
-        summary_log.write("MOVE PROBABILITY SETS:\n")
-        for i, (hp, mp, lp, name) in enumerate(move_probability_sets, 1):
-            summary_log.write(f"{i}. {name}: High={hp}, Med={mp}, Low={lp}\n")
-        
-        summary_log.write("\nTHRESHOLD SETS:\n")
-        for i, (ht, mt, name) in enumerate(threshold_sets, 1):
-            summary_log.write(f"{i}. {name}: High={ht}, Med={mt}\n")
-        summary_log.write("\n" + "=" * 90 + "\n\n")
-        
-        # Test all combinations
-        for prob_idx, (high_prob, med_prob, low_prob, prob_name) in enumerate(move_probability_sets):
-            for thresh_idx, (high_thresh, med_thresh, thresh_name) in enumerate(threshold_sets):
-                current_config += 1
-                config_name = f"{prob_name}_{thresh_name}"
+        for k_idx, (k_value, k_name) in enumerate(k_values, 1):
+            print(f"\n[{k_idx}/{len(k_values)}] Testing {k_name}: K={k_value}")
+            
+            # Calculate what the cooling rate will be for reference
+            cooling_rate = (best_end_temp / best_start_temp) ** (1 / (k_value - 1))
+            print(f"  Cooling rate: {cooling_rate:.6f}")
+            print("-" * 60)
+            
+            summary_log.write(f"K VALUE {k_idx}: {k_name}\n")
+            summary_log.write(f"K parameter: {k_value}\n")
+            summary_log.write(f"Calculated cooling rate: {cooling_rate:.6f}\n")
+            summary_log.write("-" * 60 + "\n")
+            
+            k_results = []
+            k_runtimes = []
+            
+            # Create subdirectory for this K value's runs
+            k_dir = os.path.join(tuning_dir, k_name)
+            os.makedirs(k_dir, exist_ok=True)
+            
+            for run in range(1, num_runs_per_config + 1):
+                print(f"  Run {run}/{num_runs_per_config}...", end="", flush=True)
                 
-                print(f"\n[{current_config}/{total_configs}] Testing {config_name}")
-                print(f"  Move Probs: H={high_prob}, M={med_prob}, L={low_prob}")
-                print(f"  Thresholds: H={high_thresh}, M={med_thresh}")
-                print("-" * 70)
+                # Create fresh copy for this run
+                test_schedule = copy.deepcopy(original_schedule)
                 
-                summary_log.write(f"CONFIGURATION {current_config}: {config_name}\n")
-                summary_log.write(f"Move Probabilities: High={high_prob}, Med={med_prob}, Low={low_prob}\n")
-                summary_log.write(f"Temperature Thresholds: High={high_thresh}, Med={med_thresh}\n")
-                summary_log.write("-" * 70 + "\n")
+                # Individual run log
+                run_log_path = os.path.join(k_dir, f"run_{run}.log")
                 
-                config_results = []
-                config_runtimes = []
+                # Run simulated annealing with modified K value
+                start_time = time.time()
+                optimized_schedule = simulated_annealing(
+                    test_schedule,
+                    best_iters,
+                    max_time_seconds,
+                    best_start_temp,
+                    best_end_temp,
+                    high_temp_compound_prob=best_high_prob,
+                    medium_temp_compound_prob=best_med_prob,
+                    low_temp_compound_prob=best_low_prob,
+                    K=k_value,  # This is the parameter we're tuning
+                    log_file_path=run_log_path
+                )
+                end_time = time.time()
                 
-                # Create subdirectory for this configuration's runs
-                config_dir = os.path.join(tuning_dir, config_name)
-                os.makedirs(config_dir, exist_ok=True)
+                final_score = calculate_full_score(optimized_schedule)[0]
+                runtime = end_time - start_time
                 
-                for run in range(1, num_runs_per_config + 1):
-                    print(f"  Run {run}/{num_runs_per_config}...", end="", flush=True)
-                    
-                    # Create fresh copy for this run
-                    test_schedule = copy.deepcopy(original_schedule)
-                    
-                    # Individual run log
-                    run_log_path = os.path.join(config_dir, f"run_{run}.log")
-                    
-                    # Run simulated annealing with this combination
-                    start_time = time.time()
-                    optimized_schedule = simulated_annealing(
-                        test_schedule,
-                        best_iters,
-                        max_time_seconds,
-                        best_start_temp,
-                        best_end_temp,
-                        high_temp_compound_prob=high_prob,
-                        medium_temp_compound_prob=med_prob,
-                        low_temp_compound_prob=low_prob,
-                        high_temp_threshold_pct=high_thresh,
-                        medium_temp_threshold_pct=med_thresh,
-                        log_file_path=run_log_path
-                    )
-                    end_time = time.time()
-                    
-                    final_score = calculate_full_score(optimized_schedule)[0]
-                    runtime = end_time - start_time
-                    
-                    config_results.append(final_score)
-                    config_runtimes.append(runtime)
-                    
-                    print(f" Score: {final_score:.0f} ({runtime:.1f}s)")
-                    
-                    summary_log.write(f"Run {run}: Score={final_score:.0f}, Runtime={runtime:.1f}s\n")
-                    
-                    # Track best overall
-                    if final_score < best_overall_score:
-                        best_overall_score = final_score
-                        best_overall_schedule = copy.deepcopy(optimized_schedule)
-                        best_overall_config = f"{config_name}_run{run}"
+                k_results.append(final_score)
+                k_runtimes.append(runtime)
                 
-                # Calculate statistics
-                mean_score = statistics.mean(config_results)
-                std_score = statistics.stdev(config_results) if len(config_results) > 1 else 0
-                min_score = min(config_results)
-                max_score = max(config_results)
-                mean_runtime = statistics.mean(config_runtimes)
+                print(f" Score: {final_score:.0f} ({runtime:.1f}s)")
                 
-                all_results[config_name] = {
-                    'move_probs': (high_prob, med_prob, low_prob),
-                    'thresholds': (high_thresh, med_thresh),
-                    'prob_name': prob_name,
-                    'thresh_name': thresh_name,
-                    'scores': config_results,
-                    'mean_score': mean_score,
-                    'std_score': std_score,
-                    'min_score': min_score,
-                    'max_score': max_score,
-                    'mean_runtime': mean_runtime
-                }
+                summary_log.write(f"Run {run}: Score={final_score:.0f}, Runtime={runtime:.1f}s\n")
                 
-                print(f"  → Mean: {mean_score:.0f} ± {std_score:.0f}")
-                print(f"  → Best: {min_score:.0f}")
-                
-                summary_log.write(f"Statistics: Mean={mean_score:.0f}, Std={std_score:.0f}, Min={min_score:.0f}, Max={max_score:.0f}\n")
-                summary_log.write(f"Average Runtime: {mean_runtime:.1f}s\n\n")
+                # Track best overall
+                if final_score < best_overall_score:
+                    best_overall_score = final_score
+                    best_overall_schedule = copy.deepcopy(optimized_schedule)
+                    best_overall_config = f"{k_name}_run{run}"
+            
+            # Calculate statistics
+            mean_score = statistics.mean(k_results)
+            std_score = statistics.stdev(k_results) if len(k_results) > 1 else 0
+            min_score = min(k_results)
+            max_score = max(k_results)
+            mean_runtime = statistics.mean(k_runtimes)
+            
+            all_results[k_name] = {
+                'k_value': k_value,
+                'cooling_rate': cooling_rate,
+                'scores': k_results,
+                'mean_score': mean_score,
+                'std_score': std_score,
+                'min_score': min_score,
+                'max_score': max_score,
+                'mean_runtime': mean_runtime
+            }
+            
+            print(f"  → Mean: {mean_score:.0f} ± {std_score:.0f}")
+            print(f"  → Best: {min_score:.0f}")
+            
+            summary_log.write(f"Statistics: Mean={mean_score:.0f}, Std={std_score:.0f}, Min={min_score:.0f}, Max={max_score:.0f}\n")
+            summary_log.write(f"Average Runtime: {mean_runtime:.1f}s\n\n")
         
         # Final comparison
-        print("\n" + "=" * 100)
-        print("GRID SEARCH RESULTS:")
-        print("=" * 100)
+        print("\n" + "=" * 80)
+        print("COOLING RATE (K PARAMETER) TUNING RESULTS:")
+        print("=" * 80)
         
         # Sort by mean score
         sorted_results = sorted(all_results.items(), key=lambda x: x[1]['mean_score'])
         
-        print(f"{'Rank':<4} {'Configuration':<20} {'Move Set':<12} {'Thresh Set':<12} {'Mean Score':<12} {'±Std':<10} {'Best':<10}")
-        print("-" * 100)
+        print(f"{'Rank':<4} {'Configuration':<20} {'K':<6} {'Cooling Rate':<12} {'Mean Score':<12} {'±Std':<10} {'Best':<12}")
+        print("-" * 85)
         
-        summary_log.write("=" * 100 + "\n")
+        summary_log.write("=" * 80 + "\n")
         summary_log.write("FINAL RESULTS RANKING:\n")
-        summary_log.write("=" * 100 + "\n")
-        summary_log.write(f"{'Rank':<4} {'Configuration':<20} {'Move Set':<12} {'Thresh Set':<12} {'Mean Score':<12} {'±Std':<10} {'Best':<10}\n")
-        summary_log.write("-" * 100 + "\n")
+        summary_log.write("=" * 80 + "\n")
+        summary_log.write(f"{'Rank':<4} {'Configuration':<20} {'K':<6} {'Cooling Rate':<12} {'Mean Score':<12} {'±Std':<10} {'Best':<12}\n")
+        summary_log.write("-" * 85 + "\n")
         
-        for rank, (config_name, results) in enumerate(sorted_results, 1):
-            result_line = f"{rank:<4} {config_name:<20} {results['prob_name']:<12} {results['thresh_name']:<12} {results['mean_score']:<12.0f} ±{results['std_score']:<9.0f} {results['min_score']:<10.0f}"
+        for rank, (k_name, results) in enumerate(sorted_results, 1):
+            result_line = f"{rank:<4} {k_name:<20} {results['k_value']:<6} {results['cooling_rate']:<12.6f} {results['mean_score']:<12.0f} ±{results['std_score']:<9.0f} {results['min_score']:<12.0f}"
             print(result_line)
             summary_log.write(result_line + "\n")
         
         # Winner analysis
         winner_name, winner_results = sorted_results[0]
-        winner_high_p, winner_med_p, winner_low_p = winner_results['move_probs']
-        winner_high_t, winner_med_t = winner_results['thresholds']
         
         winner_text = f"""
-{("=" * 100)}
-🏆 BEST GRID SEARCH CONFIGURATION:
-{("=" * 100)}
+{("=" * 80)}
+🏆 BEST COOLING RATE CONFIGURATION:
+{("=" * 80)}
 Configuration: {winner_name}
-Move Probability Set: {winner_results['prob_name']}
-Threshold Set: {winner_results['thresh_name']}
+K Parameter: {winner_results['k_value']}
+Cooling Rate: {winner_results['cooling_rate']:.6f}
+Temperature Steps: {winner_results['k_value']} (controls how gradually temperature decreases)
 
-DETAILED SETTINGS:
-Move Probabilities: High={winner_high_p}, Med={winner_med_p}, Low={winner_low_p}
-Temperature Thresholds: High={winner_high_t}, Med={winner_med_t}
-
-PERFORMANCE:
+Performance:
 Mean Score: {winner_results['mean_score']:.0f} ± {winner_results['std_score']:.0f}
 Best Run: {winner_results['min_score']:.0f}
 Consistency: {winner_results['std_score']/winner_results['mean_score']*100:.2f}% variation
 Average Runtime: {winner_results['mean_runtime']:.1f} seconds
 
-ANALYSIS BY COMPONENT:
+Interpretation:
 """
-        
-        # Analyze which move probability set and threshold set work best overall
-        prob_performance = {}
-        thresh_performance = {}
-        
-        for config_name, results in all_results.items():
-            prob_name = results['prob_name']
-            thresh_name = results['thresh_name']
-            score = results['mean_score']
+        if winner_results['k_value'] < 100:
+            winner_text += "Faster cooling (fewer temperature steps) works better - algorithm converges quicker\n"
+        elif winner_results['k_value'] > 100:
+            winner_text += "Slower cooling (more temperature steps) works better - more gradual exploration\n"
+        else:
+            winner_text += "Current baseline K=100 is optimal\n"
             
-            if prob_name not in prob_performance:
-                prob_performance[prob_name] = []
-            prob_performance[prob_name].append(score)
-            
-            if thresh_name not in thresh_performance:
-                thresh_performance[thresh_name] = []
-            thresh_performance[thresh_name].append(score)
+        # Compare to baseline if it exists
+        if "Current_Baseline_100" in all_results:
+            baseline = all_results["Current_Baseline_100"]
+            improvement = baseline['mean_score'] - winner_results['mean_score']
+            winner_text += f"Improvement over K=100 baseline: {improvement:.0f} points ({improvement/baseline['mean_score']*100:.2f}%)\n"
         
-        winner_text += "Best Move Probability Sets (by average performance):\n"
-        prob_avg = [(name, statistics.mean(scores)) for name, scores in prob_performance.items()]
-        prob_avg.sort(key=lambda x: x[1])
-        for i, (name, avg_score) in enumerate(prob_avg, 1):
-            winner_text += f"{i}. {name}: {avg_score:.0f} average\n"
-        
-        winner_text += "\nBest Threshold Sets (by average performance):\n"
-        thresh_avg = [(name, statistics.mean(scores)) for name, scores in thresh_performance.items()]
-        thresh_avg.sort(key=lambda x: x[1])
-        for i, (name, avg_score) in enumerate(thresh_avg, 1):
-            winner_text += f"{i}. {name}: {avg_score:.0f} average\n"
-        
-        winner_text += f"\n{('=' * 100)}\n"
+        winner_text += f"{('=' * 80)}\n"
         
         print(winner_text)
         summary_log.write(winner_text + "\n")
     
-    print(f"\nGrid search results saved to: {tuning_dir}/")
+    print(f"\nCooling rate tuning results saved to: {tuning_dir}/")
     print(f"Summary: {summary_log_path}")
     
     return best_overall_schedule
+
