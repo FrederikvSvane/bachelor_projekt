@@ -738,3 +738,187 @@ Runtime: {best_runtime:.1f} seconds
     print(f"Summary saved to: {summary_log_path}")
     
     return best_schedule
+
+def run_focused_benchmark(schedule: Schedule, num_runs_per_config: int = 5, max_time_seconds: int = 180) -> Schedule:
+    """
+    Run a focused benchmark on the top performing configurations with multiple runs each.
+    """
+    import copy
+    import statistics
+    
+    # Create benchmark_tests directory if it doesn't exist
+    benchmark_dir = "benchmark_tests"
+    os.makedirs(benchmark_dir, exist_ok=True)
+    
+    # Create separate folder for focused benchmark
+    focused_dir = os.path.join(benchmark_dir, "focused_benchmark")
+    os.makedirs(focused_dir, exist_ok=True)
+    
+    # Top 5 configurations from previous benchmark
+    top_configs = [
+        (2000, 200, 20, "Config1_2000_200_20"),
+        (4000, 500, 20, "Config2_4000_500_20"), 
+        (5000, 500, 10,  "Config3_5000_500_10"),
+        (3000, 300, 20, "Config4_3000_300_20"),
+        (5000, 400, 40, "Config5_5000_400_40")
+    ]
+    
+    # Store the original schedule
+    original_schedule = copy.deepcopy(schedule)
+    
+    # Create detailed log file in focused directory
+    detailed_log_path = os.path.join(focused_dir, f"focused_benchmark_summary_{int(time.time())}.log")
+    
+    print("Running focused benchmark on top 5 configurations:")
+    print(f"Number of runs per configuration: {num_runs_per_config}")
+    print(f"Max time per run: {max_time_seconds} seconds")
+    print(f"Results will be saved to: {focused_dir}/")
+    print("=" * 80)
+    
+    all_results = {}
+    best_overall_score = float('inf')
+    best_overall_schedule = None
+    best_overall_config = None
+    
+    with open(detailed_log_path, 'w') as detailed_log:
+        detailed_log.write("FOCUSED BENCHMARK - TOP 5 CONFIGURATIONS\n")
+        detailed_log.write(f"Runs per configuration: {num_runs_per_config}\n")
+        detailed_log.write(f"Max time per run: {max_time_seconds} seconds\n")
+        detailed_log.write(f"Results directory: {focused_dir}\n")
+        detailed_log.write("=" * 80 + "\n\n")
+        
+        for config_idx, (iters, start_temp, end_temp, config_name) in enumerate(top_configs, 1):
+            print(f"\n[{config_idx}/5] Testing {config_name}: Iters={iters}, Start={start_temp}, End={end_temp}")
+            print("-" * 60)
+            
+            detailed_log.write(f"CONFIGURATION {config_idx}: {config_name}\n")
+            detailed_log.write(f"Parameters: Iters={iters}, Start={start_temp}, End={end_temp}\n")
+            detailed_log.write("-" * 60 + "\n")
+            
+            config_results = []
+            config_runtimes = []
+            
+            # Create subdirectory for this configuration's runs
+            config_dir = os.path.join(focused_dir, config_name)
+            os.makedirs(config_dir, exist_ok=True)
+            
+            for run in range(1, num_runs_per_config + 1):
+                print(f"  Run {run}/{num_runs_per_config}...", end="", flush=True)
+                
+                # Create fresh copy for this run
+                test_schedule = copy.deepcopy(original_schedule)
+                
+                # Individual run log in config subdirectory
+                run_log_path = os.path.join(config_dir, f"run_{run}.log")
+                
+                # Run the algorithm
+                start_time = time.time()
+                optimized_schedule = simulated_annealing(
+                    test_schedule,
+                    iters,
+                    max_time_seconds,
+                    start_temp,
+                    end_temp,
+                    log_file_path=run_log_path
+                )
+                end_time = time.time()
+                
+                final_score = calculate_full_score(optimized_schedule)[0]
+                runtime = end_time - start_time
+                
+                config_results.append(final_score)
+                config_runtimes.append(runtime)
+                
+                print(f" Score: {final_score:.0f} ({runtime:.1f}s)")
+                
+                detailed_log.write(f"Run {run}: Score={final_score:.0f}, Runtime={runtime:.1f}s, Log: {run_log_path}\n")
+                
+                # Track best overall
+                if final_score < best_overall_score:
+                    best_overall_score = final_score
+                    best_overall_schedule = copy.deepcopy(optimized_schedule)
+                    best_overall_config = f"{config_name}_run{run}"
+            
+            # Calculate statistics for this configuration
+            mean_score = statistics.mean(config_results)
+            std_score = statistics.stdev(config_results) if len(config_results) > 1 else 0
+            min_score = min(config_results)
+            max_score = max(config_results)
+            mean_runtime = statistics.mean(config_runtimes)
+            
+            all_results[config_name] = {
+                'params': (iters, start_temp, end_temp),
+                'scores': config_results,
+                'runtimes': config_runtimes,
+                'mean_score': mean_score,
+                'std_score': std_score,
+                'min_score': min_score,
+                'max_score': max_score,
+                'mean_runtime': mean_runtime
+            }
+            
+            print(f"  → Mean: {mean_score:.0f} ± {std_score:.0f}")
+            print(f"  → Range: {min_score:.0f} - {max_score:.0f}")
+            print(f"  → Avg Runtime: {mean_runtime:.1f}s")
+            
+            detailed_log.write(f"Statistics: Mean={mean_score:.0f}, Std={std_score:.0f}, Min={min_score:.0f}, Max={max_score:.0f}\n")
+            detailed_log.write(f"Average Runtime: {mean_runtime:.1f}s\n")
+            detailed_log.write(f"Individual run logs saved in: {config_dir}/\n\n")
+    
+    # Final comparison
+    print("\n" + "=" * 80)
+    print("FOCUSED BENCHMARK RESULTS COMPARISON:")
+    print("=" * 80)
+    
+    # Sort configurations by mean score
+    sorted_configs = sorted(all_results.items(), key=lambda x: x[1]['mean_score'])
+    
+    print(f"{'Rank':<4} {'Configuration':<20} {'Mean Score':<15} {'±Std':<12} {'Best':<15} {'Worst':<15} {'Avg Time':<10}")
+    print("-" * 100)
+    
+    with open(detailed_log_path, 'a') as detailed_log:
+        detailed_log.write("=" * 80 + "\n")
+        detailed_log.write("FINAL COMPARISON RESULTS:\n")
+        detailed_log.write("=" * 80 + "\n")
+        detailed_log.write(f"{'Rank':<4} {'Configuration':<20} {'Mean Score':<15} {'±Std':<12} {'Best':<15} {'Worst':<15} {'Avg Time':<10}\n")
+        detailed_log.write("-" * 100 + "\n")
+        
+        for rank, (config_name, results) in enumerate(sorted_configs, 1):
+            iters, start_temp, end_temp = results['params']
+            result_line = f"{rank:<4} {config_name:<20} {results['mean_score']:<15.0f} ±{results['std_score']:<11.0f} {results['min_score']:<15.0f} {results['max_score']:<15.0f} {results['mean_runtime']:<10.1f}s"
+            print(result_line)
+            detailed_log.write(result_line + "\n")
+        
+        # Winner details
+        winner_name, winner_results = sorted_configs[0]
+        winner_text = f"""
+{("=" * 80)}
+🏆 WINNER: {winner_name}
+{("=" * 80)}
+Parameters: Iters={winner_results['params'][0]}, Start={winner_results['params'][1]}, End={winner_results['params'][2]}
+Mean Score: {winner_results['mean_score']:.0f} ± {winner_results['std_score']:.0f}
+Best Run Score: {winner_results['min_score']:.0f}
+Consistency: {winner_results['std_score']/winner_results['mean_score']*100:.2f}% variation
+Average Runtime: {winner_results['mean_runtime']:.1f} seconds
+{("=" * 80)}
+"""
+        print(winner_text)
+        detailed_log.write(winner_text + "\n")
+        
+        detailed_log.write(f"\nFOLDER STRUCTURE:\n")
+        detailed_log.write(f"Main directory: {focused_dir}/\n")
+        detailed_log.write(f"Summary log: {detailed_log_path}\n")
+        for config_name, _ in sorted_configs:
+            detailed_log.write(f"Config logs: {os.path.join(focused_dir, config_name)}/\n")
+    
+    print(f"\nAll focused benchmark results saved to: {focused_dir}/")
+    print(f"Summary log: {detailed_log_path}")
+    print(f"\nFolder structure:")
+    print(f"├── {focused_dir}/")
+    print(f"│   ├── focused_benchmark_summary_[timestamp].log")
+    for config_name, _ in sorted_configs:
+        print(f"│   ├── {config_name}/")
+        for run in range(1, num_runs_per_config + 1):
+            print(f"│   │   └── run_{run}.log")
+    
+    return best_overall_schedule
