@@ -588,3 +588,153 @@ Interpretation:
     print(f"Summary: {summary_log_path}")
     
     return best_overall_schedule
+
+def run_local_search_benchmark(schedule: Schedule, log_file_path: str = None) -> Schedule:
+    """
+    Run a benchmark of the local search algorithm with various configurations.
+    """
+    # Create benchmark_tests directory if it doesn't exist
+    benchmark_dir = "benchmark_tests"
+    os.makedirs(benchmark_dir, exist_ok=True)
+    
+    iterations_per_temperature = [1000, 2000, 3000, 4000, 5000]
+    max_time_seconds = 60 * 2
+    start_temps = [200, 300, 400, 500, 600]
+    end_temps = [1, 10, 20, 30, 40]
+    results = []
+    
+    # Store the original schedule to copy from for each test
+    original_schedule = copy.deepcopy(schedule)
+    
+    total_combinations = len(iterations_per_temperature) * len(start_temps) * len(end_temps)
+    current_combination = 0
+    
+    # Create a summary log file for the entire benchmark
+    summary_log_path = os.path.join(benchmark_dir, f"benchmark_summary_{int(time.time())}.log")
+    
+    print("Running local search benchmark with the following configurations:")
+    print(f"Iterations per temperature: {iterations_per_temperature}")
+    print(f"Max time: {max_time_seconds} seconds")
+    print(f"Start temperatures: {start_temps}")
+    print(f"End temperatures: {end_temps}")
+    print(f"Total combinations to test: {total_combinations}")
+    print(f"Logs will be saved to: {benchmark_dir}/")
+    print(f"Summary log: {summary_log_path}")
+    print("=" * 80)
+    
+    # Open summary log file
+    with open(summary_log_path, 'w') as summary_log:
+        summary_log.write("BENCHMARK CONFIGURATION:\n")
+        summary_log.write(f"Iterations per temperature: {iterations_per_temperature}\n")
+        summary_log.write(f"Max time: {max_time_seconds} seconds\n")
+        summary_log.write(f"Start temperatures: {start_temps}\n")
+        summary_log.write(f"End temperatures: {end_temps}\n")
+        summary_log.write(f"Total combinations: {total_combinations}\n")
+        summary_log.write("=" * 80 + "\n\n")
+        
+        for iters in iterations_per_temperature:
+            for start_temp in start_temps:
+                for end_temp in end_temps:
+                    current_combination += 1
+                    print(f"[{current_combination}/{total_combinations}] Running with iters={iters}, start_temp={start_temp}, end_temp={end_temp}...")
+                    
+                    # Create individual log file in benchmark_tests directory
+                    log_filename = f"local_search_benchmark_{iters}_{start_temp}_{end_temp}.log"
+                    log_file_path = os.path.join(benchmark_dir, log_filename)
+                    
+                    # Log to summary file
+                    summary_log.write(f"[{current_combination}/{total_combinations}] Configuration: iters={iters}, start_temp={start_temp}, end_temp={end_temp}\n")
+                    summary_log.write(f"Individual log file: {log_filename}\n")
+                    summary_log.flush()
+                    
+                    # **KEY FIX: Create a fresh copy of the original schedule for each test**
+                    test_schedule = copy.deepcopy(original_schedule)
+                    
+                    # Run the simulation on the fresh copy
+                    start_time = time.time()
+                    optimized_schedule = simulated_annealing(
+                        test_schedule,  # Use the fresh copy instead of the modified schedule
+                        iters,
+                        max_time_seconds,
+                        start_temp,
+                        end_temp,
+                        log_file_path=log_file_path
+                    )
+                    end_time = time.time()
+                    
+                    final_score = calculate_full_score(optimized_schedule)[0]
+                    runtime = end_time - start_time
+                    
+                    results.append((iters, start_temp, end_temp, final_score, optimized_schedule, runtime))
+                    
+                    print(f"  → Final score: {final_score} (Runtime: {runtime:.1f}s)")
+                    
+                    # Log result to summary file
+                    summary_log.write(f"Final score: {final_score}\n")
+                    summary_log.write(f"Runtime: {runtime:.1f} seconds\n")
+                    summary_log.write("-" * 40 + "\n")
+                    summary_log.flush()
+        
+        # Rest of the function remains the same...
+        print("\n" + "=" * 80)
+        print("BENCHMARK RESULTS SUMMARY:")
+        print("=" * 80)
+        
+        # Sort by final score (best first)
+        results.sort(key=lambda x: x[3])
+        
+        # Write results to summary log
+        summary_log.write("\n" + "=" * 80 + "\n")
+        summary_log.write("BENCHMARK RESULTS SUMMARY:\n")
+        summary_log.write("=" * 80 + "\n\n")
+        
+        print("\nAll results (sorted by score, best first):")
+        print(f"{'Rank':<4} {'Iterations':<10} {'Start Temp':<10} {'End Temp':<8} {'Final Score':<12} {'Runtime':<10}")
+        print("-" * 70)
+        
+        summary_log.write("All results (sorted by score, best first):\n")
+        summary_log.write(f"{'Rank':<4} {'Iterations':<10} {'Start Temp':<10} {'End Temp':<8} {'Final Score':<12} {'Runtime':<10}\n")
+        summary_log.write("-" * 70 + "\n")
+        
+        for rank, (iters, start_temp, end_temp, score, _, runtime) in enumerate(results, 1):
+            result_line = f"{rank:<4} {iters:<10} {start_temp:<10} {end_temp:<8} {score:<12.2f} {runtime:<10.1f}s"
+            print(result_line)
+            summary_log.write(result_line + "\n")
+        
+        # Display best configuration
+        best_iters, best_start_temp, best_end_temp, best_score, best_schedule, best_runtime = results[0]
+        
+        best_config_text = f"""
+{("=" * 80)}
+🏆 BEST CONFIGURATION FOUND:
+{("=" * 80)}
+Iterations per temperature: {best_iters}
+Start temperature: {best_start_temp}
+End temperature: {best_end_temp}
+Final score: {best_score:.2f}
+Runtime: {best_runtime:.1f} seconds
+{("=" * 80)}
+"""
+        
+        print(best_config_text)
+        summary_log.write(best_config_text + "\n")
+        
+        # Optional: Show top 5 configurations
+        top5_text = "\nTop 5 configurations:\n"
+        print(top5_text.strip())
+        summary_log.write(top5_text)
+        
+        for rank, (iters, start_temp, end_temp, score, _, runtime) in enumerate(results[:5], 1):
+            improvement = ""
+            if rank > 1:
+                score_diff = score - results[0][3]
+                improvement = f" (+{score_diff:.2f})"
+            
+            config_line = f"{rank}. Iters={iters}, Start={start_temp}, End={end_temp} → Score: {score:.2f}{improvement} (Runtime: {runtime:.1f}s)"
+            print(config_line)
+            summary_log.write(config_line + "\n")
+    
+    print(f"\nAll benchmark results saved to: {benchmark_dir}/")
+    print(f"Summary saved to: {summary_log_path}")
+    
+    return best_schedule
