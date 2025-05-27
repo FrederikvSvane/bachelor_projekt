@@ -134,11 +134,11 @@ def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, m
 
 
 def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, 
-                       high_temp_compound_prob: float = 0.2, medium_temp_compound_prob: float = 0.6, low_temp_compound_prob: float = 0.8,
+                       high_temp_compound_prob: float = 0.2, medium_temp_compound_prob: float = 0.7, low_temp_compound_prob: float = 0.8,
                        high_temp_threshold_pct: float = 0.5, medium_temp_threshold_pct: float = 0.15,
-                       plateau_count_min: int = 3, plateau_count_max: int = 10,
-                       ruin_percentage_min: float = 0.01, ruin_percentage_max: float = 0.05,
-                       K: int = 100,
+                       plateau_count_min: int = 6, plateau_count_max: int = 18,
+                       ruin_percentage_min: float = 0.002, ruin_percentage_max: float = 0.015,
+                       K: int = 75,
                        log_file_path: str = None) -> Schedule:
     from copy import deepcopy
     start_time = time.time()
@@ -320,6 +320,10 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
         current_iteration += 1
         current_temperature *= cooling_rate
+
+        if hard_violations == 0:
+            log_output("All hard violations resolved!")
+            return best_schedule_snapshot.restore_schedule(schedule)  # Stop if no hard violations
         
         if not best_score_improved_this_iteration:
             plateau_count += 1
@@ -361,474 +365,274 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     
     return best_schedule_snapshot.restore_schedule(schedule)
 
-def run_local_search(schedule: Schedule, log_file_path: str = None, K: int = 100) -> Schedule:
+def run_local_search(schedule: Schedule, log_file_path: str = None, K: int = 75) -> Schedule:
     iterations_per_temperature = 4000
-    max_time_seconds = 60 * 3
-    start_temp = 200
-    end_temp = 30
+    max_time_seconds = 1800
+    start_temp = 500
+    end_temp = 20
     
     optimized_schedule = simulated_annealing(
         schedule, 
-        iterations_per_temperature, 
-        max_time_seconds, 
-        start_temp, 
-        end_temp,
-        K,
+        iterations_per_temperature=iterations_per_temperature, 
+        max_time_seconds=max_time_seconds, 
+        start_temp=start_temp, 
+        end_temp=end_temp,
+        K=K,
         log_file_path=log_file_path
     )
     
     return optimized_schedule
 
 
-def run_cooling_rate_tuning(schedule: Schedule, best_config_params: tuple, num_runs_per_config: int = 3, max_time_seconds: int = 120) -> Schedule:
+def run_scaling_test(best_hyperparams: dict, num_runs_per_size: int = 5) -> None:
     """
-    Tune the K parameter that controls the cooling rate.
-    best_config_params should be (iterations, start_temp, end_temp, high_prob, med_prob, low_prob) from your previous best results.
+    Test the optimized hyperparameters on different problem sizes.
+    best_hyperparams should contain all your tuned parameters.
     """
     import copy
     import statistics
+    from src.util.data_generator import generate_test_data_parsed
     
-    # Create benchmark_tests directory if it doesn't exist
-    benchmark_dir = "benchmark_tests"
-    os.makedirs(benchmark_dir, exist_ok=True)
-    
-    # Create separate folder for K tuning
-    tuning_dir = os.path.join(benchmark_dir, "cooling_rate_tuning")
-    os.makedirs(tuning_dir, exist_ok=True)
-    
-    # Extract best configuration parameters
-    best_iters, best_start_temp, best_end_temp, best_high_prob, best_med_prob, best_low_prob = best_config_params
-    
-    # Define K values to test
-    # Format: (K_value, description)
-    k_values = [
-        (5, "Very_Fast_5"),
-        (20, "Fast_Cooling_10"),
-        (25, "Very_Fast_25"),
-        (50, "Fast_Cooling_50"),
-        (75, "Moderate_Cooling_75"),
-        (100, "Current_Baseline_100"),
-        (125, "Moderate_Cooling_125"),
-        (150, "Slow_Cooling_150"),
-        (200, "Very_Slow_200"),
-        (300, "Extremely_Slow_300"),
+    # Problem sizes to test
+    test_sizes = [
+        (500, 30, "Small_500"),      # 500 cases, 25 work days
+        (1000, 60, "Medium_1000"),   # 1000 cases, 50 work days  
+        (1500, 90, "Large_1500")     # 1500 cases, 75 work days
     ]
     
-    # Store the original schedule
-    original_schedule = copy.deepcopy(schedule)
+    # Create results directory
+    results_dir = "benchmark_tests/scaling_test"
+    os.makedirs(results_dir, exist_ok=True)
     
-    # Create summary log file
-    summary_log_path = os.path.join(tuning_dir, f"cooling_rate_tuning_summary_{int(time.time())}.log")
+    # Summary log
+    summary_log_path = os.path.join(results_dir, f"scaling_test_summary_{int(time.time())}.log")
     
-    print("Running cooling rate (K parameter) tuning:")
-    print(f"Base config: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}")
-    print(f"Move probs: High={best_high_prob}, Med={best_med_prob}, Low={best_low_prob}")
-    print(f"Number of K values: {len(k_values)}")
-    print(f"Runs per K value: {num_runs_per_config}")
-    print(f"Max time per run: {max_time_seconds} seconds")
-    print(f"Results will be saved to: {tuning_dir}/")
+    print("FINAL SCALING TEST - OPTIMIZED HYPERPARAMETERS")
+    print("=" * 80)
+    print("Testing optimized algorithm on different problem sizes:")
+    print(f"Problem sizes: {len(test_sizes)}")
+    print(f"Runs per size: {num_runs_per_size}")
+    print(f"Total tests: {len(test_sizes) * num_runs_per_size}")
+    print(f"Results will be saved to: {results_dir}/")
+    
+    print("\nOptimized Hyperparameters:")
+    for param, value in best_hyperparams.items():
+        print(f"  {param}: {value}")
     print("=" * 80)
     
     all_results = {}
-    best_overall_score = float('inf')
-    best_overall_schedule = None
-    best_overall_config = None
     
     with open(summary_log_path, 'w') as summary_log:
-        summary_log.write("COOLING RATE (K PARAMETER) TUNING\n")
-        summary_log.write(f"Base configuration: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}\n")
-        summary_log.write(f"Move probabilities: High={best_high_prob}, Med={best_med_prob}, Low={best_low_prob}\n")
-        summary_log.write(f"K values tested: {len(k_values)}\n")
-        summary_log.write(f"Runs per K value: {num_runs_per_config}\n")
-        summary_log.write(f"Max time per run: {max_time_seconds} seconds\n")
+        summary_log.write("SCALING TEST - OPTIMIZED HYPERPARAMETERS\n")
+        summary_log.write("=" * 80 + "\n")
+        summary_log.write("Optimized Hyperparameters:\n")
+        for param, value in best_hyperparams.items():
+            summary_log.write(f"  {param}: {value}\n")
         summary_log.write("=" * 80 + "\n\n")
         
-        for k_idx, (k_value, k_name) in enumerate(k_values, 1):
-            print(f"\n[{k_idx}/{len(k_values)}] Testing {k_name}: K={k_value}")
-            
-            # Calculate what the cooling rate will be for reference
-            cooling_rate = (best_end_temp / best_start_temp) ** (1 / (k_value - 1))
-            print(f"  Cooling rate: {cooling_rate:.6f}")
-            print("-" * 60)
-            
-            summary_log.write(f"K VALUE {k_idx}: {k_name}\n")
-            summary_log.write(f"K parameter: {k_value}\n")
-            summary_log.write(f"Calculated cooling rate: {cooling_rate:.6f}\n")
-            summary_log.write("-" * 60 + "\n")
-            
-            k_results = []
-            k_runtimes = []
-            
-            # Create subdirectory for this K value's runs
-            k_dir = os.path.join(tuning_dir, k_name)
-            os.makedirs(k_dir, exist_ok=True)
-            
-            for run in range(1, num_runs_per_config + 1):
-                print(f"  Run {run}/{num_runs_per_config}...", end="", flush=True)
-                random.seed(13062025)
-                
-                # Create fresh copy for this run
-                test_schedule = copy.deepcopy(original_schedule)
-                
-                # Individual run log
-                run_log_path = os.path.join(k_dir, f"run_{run}.log")
-                
-                # Run simulated annealing with modified K value
-                start_time = time.time()
-                optimized_schedule = simulated_annealing(
-                    test_schedule,
-                    best_iters,
-                    max_time_seconds,
-                    best_start_temp,
-                    best_end_temp,
-                    high_temp_compound_prob=best_high_prob,
-                    medium_temp_compound_prob=best_med_prob,
-                    low_temp_compound_prob=best_low_prob,
-                    K=k_value,  # This is the parameter we're tuning
-                    log_file_path=run_log_path
-                )
-                end_time = time.time()
-                
-                final_score = calculate_full_score(optimized_schedule)[0]
-                runtime = end_time - start_time
-                
-                k_results.append(final_score)
-                k_runtimes.append(runtime)
-                
-                print(f" Score: {final_score:.0f} ({runtime:.1f}s)")
-                
-                summary_log.write(f"Run {run}: Score={final_score:.0f}, Runtime={runtime:.1f}s\n")
-                
-                # Track best overall
-                if final_score < best_overall_score:
-                    best_overall_score = final_score
-                    best_overall_schedule = copy.deepcopy(optimized_schedule)
-                    best_overall_config = f"{k_name}_run{run}"
-            
-            # Calculate statistics
-            mean_score = statistics.mean(k_results)
-            std_score = statistics.stdev(k_results) if len(k_results) > 1 else 0
-            min_score = min(k_results)
-            max_score = max(k_results)
-            mean_runtime = statistics.mean(k_runtimes)
-            
-            all_results[k_name] = {
-                'k_value': k_value,
-                'cooling_rate': cooling_rate,
-                'scores': k_results,
-                'mean_score': mean_score,
-                'std_score': std_score,
-                'min_score': min_score,
-                'max_score': max_score,
-                'mean_runtime': mean_runtime
-            }
-            
-            print(f"  → Mean: {mean_score:.0f} ± {std_score:.0f}")
-            print(f"  → Best: {min_score:.0f}")
-            
-            summary_log.write(f"Statistics: Mean={mean_score:.0f}, Std={std_score:.0f}, Min={min_score:.0f}, Max={max_score:.0f}\n")
-            summary_log.write(f"Average Runtime: {mean_runtime:.1f}s\n\n")
-        
-        # Final comparison
-        print("\n" + "=" * 80)
-        print("COOLING RATE (K PARAMETER) TUNING RESULTS:")
-        print("=" * 80)
-        
-        # Sort by mean score
-        sorted_results = sorted(all_results.items(), key=lambda x: x[1]['mean_score'])
-        
-        print(f"{'Rank':<4} {'Configuration':<20} {'K':<6} {'Cooling Rate':<12} {'Mean Score':<12} {'±Std':<10} {'Best':<12}")
-        print("-" * 85)
-        
-        summary_log.write("=" * 80 + "\n")
-        summary_log.write("FINAL RESULTS RANKING:\n")
-        summary_log.write("=" * 80 + "\n")
-        summary_log.write(f"{'Rank':<4} {'Configuration':<20} {'K':<6} {'Cooling Rate':<12} {'Mean Score':<12} {'±Std':<10} {'Best':<12}\n")
-        summary_log.write("-" * 85 + "\n")
-        
-        for rank, (k_name, results) in enumerate(sorted_results, 1):
-            result_line = f"{rank:<4} {k_name:<20} {results['k_value']:<6} {results['cooling_rate']:<12.6f} {results['mean_score']:<12.0f} ±{results['std_score']:<9.0f} {results['min_score']:<12.0f}"
-            print(result_line)
-            summary_log.write(result_line + "\n")
-        
-        # Winner analysis
-        winner_name, winner_results = sorted_results[0]
-        
-        winner_text = f"""
-{("=" * 80)}
-🏆 BEST COOLING RATE CONFIGURATION:
-{("=" * 80)}
-Configuration: {winner_name}
-K Parameter: {winner_results['k_value']}
-Cooling Rate: {winner_results['cooling_rate']:.6f}
-Temperature Steps: {winner_results['k_value']} (controls how gradually temperature decreases)
-
-Performance:
-Mean Score: {winner_results['mean_score']:.0f} ± {winner_results['std_score']:.0f}
-Best Run: {winner_results['min_score']:.0f}
-Consistency: {winner_results['std_score']/winner_results['mean_score']*100:.2f}% variation
-Average Runtime: {winner_results['mean_runtime']:.1f} seconds
-
-Interpretation:
-"""
-        if winner_results['k_value'] < 100:
-            winner_text += "Faster cooling (fewer temperature steps) works better - algorithm converges quicker\n"
-        elif winner_results['k_value'] > 100:
-            winner_text += "Slower cooling (more temperature steps) works better - more gradual exploration\n"
-        else:
-            winner_text += "Current baseline K=100 is optimal\n"
-            
-        # Compare to baseline if it exists
-        if "Current_Baseline_100" in all_results:
-            baseline = all_results["Current_Baseline_100"]
-            improvement = baseline['mean_score'] - winner_results['mean_score']
-            winner_text += f"Improvement over K=100 baseline: {improvement:.0f} points ({improvement/baseline['mean_score']*100:.2f}%)\n"
-        
-        winner_text += f"{('=' * 80)}\n"
-        
-        print(winner_text)
-        summary_log.write(winner_text + "\n")
-    
-    print(f"\nCooling rate tuning results saved to: {tuning_dir}/")
-    print(f"Summary: {summary_log_path}")
-    
-    return best_overall_schedule
-
-def run_ruin_and_recreate_tuning(schedule: Schedule, best_config_params: tuple, num_runs_per_config: int = 3, max_time_seconds: int = 120) -> Schedule:
-    """
-    Tune the Ruin and Recreate parameters: plateau thresholds and ruin percentages.
-    best_config_params should be (iterations, start_temp, end_temp, high_prob, med_prob, low_prob, K) from your previous best results.
-    """
-    import copy
-    import statistics
-    
-    # Create benchmark_tests directory if it doesn't exist
-    benchmark_dir = "benchmark_tests"
-    os.makedirs(benchmark_dir, exist_ok=True)
-    
-    # Create separate folder for R&R tuning
-    tuning_dir = os.path.join(benchmark_dir, "ruin_recreate_tuning")
-    os.makedirs(tuning_dir, exist_ok=True)
-    
-    # Extract best configuration parameters
-    best_iters, best_start_temp, best_end_temp, best_high_prob, best_med_prob, best_low_prob, best_K = best_config_params
-    
-    # Define R&R parameter combinations to test
-    # Format: (plateau_min, plateau_max, ruin_min, ruin_max, description)
-    rr_combinations = [
-        # Current baseline (but with reasonable percentages)
-        (3, 10, 0.005, 0.02, "Current_Baseline"),  # 0.5%-2% = 5-20 meetings
-        
-        # Test plateau thresholds with reasonable ruin
-        (1, 5, 0.005, 0.02, "Impatient"),          # Early R&R, 5-20 meetings
-        (5, 15, 0.005, 0.02, "Patient"),           # Late R&R, 5-20 meetings
-        
-        # Test different ruin sizes with baseline plateau
-        (3, 10, 0.002, 0.01, "Small_Ruin"),        # 2-10 meetings (very conservative)
-        (3, 10, 0.01, 0.025, "Large_Ruin"),        # 10-25 meetings (more aggressive)
-        
-        # Combined approaches
-        (2, 6, 0.01, 0.025, "Aggressive_Both"),    # Early + larger ruin (10-25 meetings)
-        (6, 18, 0.002, 0.015, "Conservative_Both"), # Late + smaller ruin (2-15 meetings)
-        (1, 8, 0.005, 0.025, "Frequent_Variable"), # Very frequent, variable ruin (5-25 meetings)
-    ]
-    
-    # Store the original schedule
-    original_schedule = copy.deepcopy(schedule)
-    
-    # Create summary log file
-    summary_log_path = os.path.join(tuning_dir, f"ruin_recreate_tuning_summary_{int(time.time())}.log")
-    
-    print("Running Ruin and Recreate parameter tuning:")
-    print(f"Base config: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}, K={best_K}")
-    print(f"Move probs: High={best_high_prob}, Med={best_med_prob}, Low={best_low_prob}")
-    print(f"Number of R&R combinations: {len(rr_combinations)}")
-    print(f"Runs per combination: {num_runs_per_config}")
-    print(f"Max time per run: {max_time_seconds} seconds")
-    print(f"Results will be saved to: {tuning_dir}/")
-    print("=" * 90)
-    
-    all_results = {}
-    best_overall_score = float('inf')
-    best_overall_schedule = None
-    best_overall_config = None
-    
-    with open(summary_log_path, 'w') as summary_log:
-        summary_log.write("RUIN AND RECREATE PARAMETER TUNING\n")
-        summary_log.write(f"Base configuration: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}, K={best_K}\n")
-        summary_log.write(f"Move probabilities: High={best_high_prob}, Med={best_med_prob}, Low={best_low_prob}\n")
-        summary_log.write(f"R&R combinations tested: {len(rr_combinations)}\n")
-        summary_log.write(f"Runs per combination: {num_runs_per_config}\n")
-        summary_log.write(f"Max time per run: {max_time_seconds} seconds\n")
-        summary_log.write("=" * 90 + "\n\n")
-        
-        for combo_idx, (plateau_min, plateau_max, ruin_min, ruin_max, combo_name) in enumerate(rr_combinations, 1):
-            print(f"\n[{combo_idx}/{len(rr_combinations)}] Testing {combo_name}")
-            print(f"  Plateau: {plateau_min}-{plateau_max} | Ruin: {ruin_min*100:.1f}%-{ruin_max*100:.1f}%")
+        for size_idx, (n_cases, n_days, size_name) in enumerate(test_sizes, 1):
+            print(f"\n[{size_idx}/{len(test_sizes)}] Testing {size_name}: {n_cases} cases, {n_days} days")
             print("-" * 70)
             
-            summary_log.write(f"COMBINATION {combo_idx}: {combo_name}\n")
-            summary_log.write(f"Plateau thresholds: min={plateau_min}, max={plateau_max}\n")
-            summary_log.write(f"Ruin percentages: min={ruin_min:.3f}, max={ruin_max:.3f}\n")
+            summary_log.write(f"SIZE TEST {size_idx}: {size_name}\n")
+            summary_log.write(f"Cases: {n_cases}, Work days: {n_days}\n")
             summary_log.write("-" * 70 + "\n")
             
-            combo_results = []
-            combo_runtimes = []
+            size_results = []
+            size_runtimes = []
+            size_initial_scores = []
+            size_improvements = []
             
-            # Create subdirectory for this combination's runs
-            combo_dir = os.path.join(tuning_dir, combo_name)
-            os.makedirs(combo_dir, exist_ok=True)
+            # Create directory for this size
+            size_dir = os.path.join(results_dir, size_name)
+            os.makedirs(size_dir, exist_ok=True)
             
-            for run in range(1, num_runs_per_config + 1):
-                print(f"  Run {run}/{num_runs_per_config}...", end="", flush=True)
-                random.seed(13062025 + run)  # Different seed per run
+            for run in range(1, num_runs_per_size + 1):
+                print(f"  Run {run}/{num_runs_per_size}...", end="", flush=True)
                 
-                # Create fresh copy for this run
-                test_schedule = copy.deepcopy(original_schedule)
+                # Generate fresh test data for this run
+                random.seed(13062025)  # Consistent seed per run
+                parsed_data = generate_test_data_parsed(n_cases, n_days, granularity=5, min_per_work_day=390)
+                
+                # Initialize compatibility matrices
+                from src.base_model.compatibility_checks import initialize_compatibility_matricies
+                initialize_compatibility_matricies(parsed_data)
+
+                from src.construction.heuristic.linear_assignment import generate_schedule
+                initial_schedule = generate_schedule(parsed_data)
+
+                
+                # Initialize and trim schedule
+                initial_schedule.initialize_appointment_chains()
+                initial_schedule.trim_schedule_length_if_possible()
+                
+                # Calculate initial score
+                initial_score = calculate_full_score(initial_schedule)[0]
+                size_initial_scores.append(initial_score)
                 
                 # Individual run log
-                run_log_path = os.path.join(combo_dir, f"run_{run}.log")
+                run_log_path = os.path.join(size_dir, f"run_{run}.log")
                 
-                # Run simulated annealing with modified R&R parameters
+                # Run optimized simulated annealing
                 start_time = time.time()
                 optimized_schedule = simulated_annealing(
-                    test_schedule,
-                    best_iters,
-                    max_time_seconds,
-                    best_start_temp,
-                    best_end_temp,
-                    high_temp_compound_prob=best_high_prob,
-                    medium_temp_compound_prob=best_med_prob,
-                    low_temp_compound_prob=best_low_prob,
-                    K=best_K,
-                    plateau_count_min=plateau_min,
-                    plateau_count_max=plateau_max,
-                    ruin_percentage_min=ruin_min,
-                    ruin_percentage_max=ruin_max,
+                    initial_schedule,
+                    iterations_per_temperature=best_hyperparams['iterations'],
+                    max_time_seconds=best_hyperparams.get('max_time', 1800),  # 5 minutes default
+                    start_temp=best_hyperparams['start_temp'],
+                    end_temp=best_hyperparams['end_temp'],
+                    high_temp_compound_prob=best_hyperparams['high_prob'],
+                    medium_temp_compound_prob=best_hyperparams['med_prob'],
+                    low_temp_compound_prob=best_hyperparams['low_prob'],
+                    high_temp_threshold_pct=best_hyperparams.get('high_threshold', 0.6),
+                    medium_temp_threshold_pct=best_hyperparams.get('med_threshold', 0.1),
+                    plateau_count_min=best_hyperparams.get('plateau_min', 3),
+                    plateau_count_max=best_hyperparams.get('plateau_max', 10),
+                    ruin_percentage_min=best_hyperparams.get('ruin_min', 0.01),
+                    ruin_percentage_max=best_hyperparams.get('ruin_max', 0.05),
+                    K=best_hyperparams['K'],
                     log_file_path=run_log_path
                 )
                 end_time = time.time()
                 
                 final_score = calculate_full_score(optimized_schedule)[0]
                 runtime = end_time - start_time
+                improvement = initial_score - final_score
+                improvement_pct = (improvement / initial_score) * 100
                 
-                combo_results.append(final_score)
-                combo_runtimes.append(runtime)
+                size_results.append(final_score)
+                size_runtimes.append(runtime)
+                size_improvements.append(improvement)
                 
-                print(f" Score: {final_score:.0f} ({runtime:.1f}s)")
+                print(f" Initial: {initial_score:.0f} → Final: {final_score:.0f} "
+                      f"(↓{improvement:.0f}, {improvement_pct:.1f}%, {runtime:.1f}s)")
                 
-                summary_log.write(f"Run {run}: Score={final_score:.0f}, Runtime={runtime:.1f}s\n")
-                
-                # Track best overall
-                if final_score < best_overall_score:
-                    best_overall_score = final_score
-                    best_overall_schedule = copy.deepcopy(optimized_schedule)
-                    best_overall_config = f"{combo_name}_run{run}"
+                summary_log.write(f"Run {run}: Initial={initial_score:.0f}, Final={final_score:.0f}, "
+                                f"Improvement={improvement:.0f} ({improvement_pct:.1f}%), Runtime={runtime:.1f}s\n")
             
-            # Calculate statistics
-            mean_score = statistics.mean(combo_results)
-            std_score = statistics.stdev(combo_results) if len(combo_results) > 1 else 0
-            min_score = min(combo_results)
-            max_score = max(combo_results)
-            mean_runtime = statistics.mean(combo_runtimes)
+            # Calculate statistics for this size
+            mean_final = statistics.mean(size_results)
+            std_final = statistics.stdev(size_results) if len(size_results) > 1 else 0
+            mean_initial = statistics.mean(size_initial_scores)
+            mean_improvement = statistics.mean(size_improvements)
+            mean_improvement_pct = (mean_improvement / mean_initial) * 100
+            mean_runtime = statistics.mean(size_runtimes)
+            best_final = min(size_results)
             
-            all_results[combo_name] = {
-                'plateau_range': (plateau_min, plateau_max),
-                'ruin_range': (ruin_min, ruin_max),
-                'scores': combo_results,
-                'mean_score': mean_score,
-                'std_score': std_score,
-                'min_score': min_score,
-                'max_score': max_score,
-                'mean_runtime': mean_runtime
+            all_results[size_name] = {
+                'n_cases': n_cases,
+                'n_days': n_days,
+                'mean_initial': mean_initial,
+                'mean_final': mean_final,
+                'std_final': std_final,
+                'best_final': best_final,
+                'mean_improvement': mean_improvement,
+                'mean_improvement_pct': mean_improvement_pct,
+                'mean_runtime': mean_runtime,
+                'all_finals': size_results,
+                'all_improvements': size_improvements
             }
             
-            print(f"  → Mean: {mean_score:.0f} ± {std_score:.0f}")
-            print(f"  → Best: {min_score:.0f}")
+            print(f"\n  📊 {size_name} Summary:")
+            print(f"    Mean Initial Score: {mean_initial:.0f}")
+            print(f"    Mean Final Score: {mean_final:.0f} ± {std_final:.0f}")
+            print(f"    Mean Improvement: {mean_improvement:.0f} ({mean_improvement_pct:.1f}%)")
+            print(f"    Best Run: {best_final:.0f}")
+            print(f"    Average Runtime: {mean_runtime:.1f}s")
             
-            summary_log.write(f"Statistics: Mean={mean_score:.0f}, Std={std_score:.0f}, Min={min_score:.0f}, Max={max_score:.0f}\n")
-            summary_log.write(f"Average Runtime: {mean_runtime:.1f}s\n\n")
+            summary_log.write(f"\nSize Summary: Mean Initial={mean_initial:.0f}, Mean Final={mean_final:.0f}±{std_final:.0f}\n")
+            summary_log.write(f"Mean Improvement: {mean_improvement:.0f} ({mean_improvement_pct:.1f}%), Runtime: {mean_runtime:.1f}s\n\n")
         
-        # Final comparison
-        print("\n" + "=" * 90)
-        print("RUIN AND RECREATE TUNING RESULTS:")
-        print("=" * 90)
+        # Final comparison and scaling analysis
+        print("\n" + "=" * 80)
+        print("SCALING TEST RESULTS COMPARISON:")
+        print("=" * 80)
         
-        # Sort by mean score
-        sorted_results = sorted(all_results.items(), key=lambda x: x[1]['mean_score'])
+        print(f"{'Size':<15} {'Cases':<6} {'Days':<5} {'Mean Final':<12} {'±Std':<10} {'Best':<12} {'Improvement':<12} {'Runtime':<10}")
+        print("-" * 95)
         
-        print(f"{'Rank':<4} {'Configuration':<20} {'Plateau Range':<15} {'Ruin Range':<15} {'Mean Score':<12} {'±Std':<10} {'Best':<12}")
-        print("-" * 100)
+        summary_log.write("=" * 80 + "\n")
+        summary_log.write("SCALING TEST RESULTS:\n")
+        summary_log.write("=" * 80 + "\n")
+        summary_log.write(f"{'Size':<15} {'Cases':<6} {'Days':<5} {'Mean Final':<12} {'±Std':<10} {'Best':<12} {'Improvement':<12} {'Runtime':<10}\n")
+        summary_log.write("-" * 95 + "\n")
         
-        summary_log.write("=" * 90 + "\n")
-        summary_log.write("FINAL RESULTS RANKING:\n")
-        summary_log.write("=" * 90 + "\n")
-        summary_log.write(f"{'Rank':<4} {'Configuration':<20} {'Plateau Range':<15} {'Ruin Range':<15} {'Mean Score':<12} {'±Std':<10} {'Best':<12}\n")
-        summary_log.write("-" * 100 + "\n")
-        
-        for rank, (combo_name, results) in enumerate(sorted_results, 1):
-            plateau_min, plateau_max = results['plateau_range']
-            ruin_min, ruin_max = results['ruin_range']
-            plateau_str = f"{plateau_min}-{plateau_max}"
-            ruin_str = f"{ruin_min:.3f}-{ruin_max:.3f}"
-            
-            result_line = f"{rank:<4} {combo_name:<20} {plateau_str:<15} {ruin_str:<15} {results['mean_score']:<12.0f} ±{results['std_score']:<9.0f} {results['min_score']:<12.0f}"
+        for size_name, results in all_results.items():
+            result_line = (f"{size_name:<15} {results['n_cases']:<6} {results['n_days']:<5} "
+                          f"{results['mean_final']:<12.0f} ±{results['std_final']:<9.0f} "
+                          f"{results['best_final']:<12.0f} {results['mean_improvement_pct']:<12.1f}% "
+                          f"{results['mean_runtime']:<10.1f}s")
             print(result_line)
             summary_log.write(result_line + "\n")
         
-        # Winner analysis
-        winner_name, winner_results = sorted_results[0]
-        winner_plateau_min, winner_plateau_max = winner_results['plateau_range']
-        winner_ruin_min, winner_ruin_max = winner_results['ruin_range']
-        
-        winner_text = f"""
-{("=" * 90)}
-🏆 BEST RUIN AND RECREATE CONFIGURATION:
-{("=" * 90)}
-Configuration: {winner_name}
+        # Scaling analysis
+        scaling_analysis = f"""
+{("=" * 80)}
+📈 SCALING ANALYSIS:
+{("=" * 80)}
 
-RUIN AND RECREATE SETTINGS:
-Plateau Count Range: {winner_plateau_min} - {winner_plateau_max}
-  (Wait {winner_plateau_min}-{winner_plateau_max} iterations without improvement before R&R)
-Ruin Percentage Range: {winner_ruin_min:.3f} - {winner_ruin_max:.3f}
-  ({winner_ruin_min*100:.1f}% - {winner_ruin_max*100:.1f}% of meetings destroyed)
-
-PERFORMANCE:
-Mean Score: {winner_results['mean_score']:.0f} ± {winner_results['std_score']:.0f}
-Best Run: {winner_results['min_score']:.0f}
-Consistency: {winner_results['std_score']/winner_results['mean_score']*100:.2f}% variation
-Average Runtime: {winner_results['mean_runtime']:.1f} seconds
-
-INTERPRETATION:
+ALGORITHM PERFORMANCE ACROSS SCALES:
 """
         
-        # Interpret the results
-        if winner_plateau_max < 10:
-            winner_text += "More frequent R&R (less patience) works better - algorithm needs more diversification\n"
-        elif winner_plateau_min > 3:
-            winner_text += "Less frequent R&R (more patience) works better - algorithm can improve locally\n"
-        else:
-            winner_text += "Current R&R frequency is near optimal\n"
+        sizes = list(all_results.keys())
+        if len(sizes) >= 2:
+            small_runtime = all_results[sizes[0]]['mean_runtime']
+            large_runtime = all_results[sizes[-1]]['mean_runtime']
+            small_cases = all_results[sizes[0]]['n_cases']
+            large_cases = all_results[sizes[-1]]['n_cases']
             
-        if winner_ruin_max > 0.05:
-            winner_text += "Larger ruin percentages work better - more aggressive diversification needed\n"
-        elif winner_ruin_max < 0.03:
-            winner_text += "Smaller ruin percentages work better - gentle diversification is sufficient\n"
-        else:
-            winner_text += "Current ruin percentages are near optimal\n"
+            runtime_ratio = large_runtime / small_runtime
+            size_ratio = large_cases / small_cases
             
-        # Compare to baseline if it exists
-        if "Current_Baseline" in all_results:
-            baseline = all_results["Current_Baseline"]
-            improvement = baseline['mean_score'] - winner_results['mean_score']
-            winner_text += f"\nImprovement over baseline: {improvement:.0f} points ({improvement/baseline['mean_score']*100:.2f}%)\n"
+            scaling_analysis += f"""
+Runtime Scaling:
+  {sizes[0]}: {small_runtime:.1f}s ({small_cases} cases)
+  {sizes[-1]}: {large_runtime:.1f}s ({large_cases} cases)
+  Scale Factor: {size_ratio:.1f}x cases → {runtime_ratio:.1f}x runtime
+  Scaling Rate: O(n^{math.log(runtime_ratio)/math.log(size_ratio):.2f})
+
+Quality Scaling:
+"""
+            
+            for size_name, results in all_results.items():
+                scaling_analysis += f"  {size_name}: {results['mean_improvement_pct']:.1f}% average improvement\n"
+            
+            # Best configuration summary
+            scaling_analysis += f"""
+
+🏆 OPTIMIZED CONFIGURATION SUMMARY:
+Best hyperparameters consistently perform well across all scales.
+Algorithm maintains {min(r['mean_improvement_pct'] for r in all_results.values()):.1f}%-{max(r['mean_improvement_pct'] for r in all_results.values()):.1f}% improvement across problem sizes.
+{("=" * 80)}
+"""
         
-        winner_text += f"{('=' * 90)}\n"
-        
-        print(winner_text)
-        summary_log.write(winner_text + "\n")
+        print(scaling_analysis)
+        summary_log.write(scaling_analysis + "\n")
     
-    print(f"\nRuin and Recreate tuning results saved to: {tuning_dir}/")
+    print(f"\nScaling test results saved to: {results_dir}/")
     print(f"Summary: {summary_log_path}")
+
+
+# To use this, define your best hyperparameters and run:
+def run_final_scaling_test():
+    """Run the final scaling test with your optimized hyperparameters."""
     
-    return best_overall_schedule
+    # UPDATE THESE WITH YOUR ACTUAL BEST VALUES FROM TUNING
+    best_hyperparams = {
+        'method': 'heuristic',  # or 'graph' or 'ilp'
+        'iterations': 4000,     # from your first tuning
+        'start_temp': 500,      # from your first tuning  
+        'end_temp': 20,         # from your first tuning
+        'high_prob': 0.2,       # from move probability tuning
+        'med_prob': 0.7,        # from move probability tuning
+        'low_prob': 0.8,        # from move probability tuning
+        'high_threshold': 0.5,  # from threshold tuning
+        'med_threshold': 0.15,  # from threshold tuning
+        'K': 75,               # from cooling rate tuning (or your best K)
+        'plateau_min': 6,       # from R&R tuning
+        'plateau_max': 18,      # from R&R tuning
+        'ruin_min': 0.002,      # from R&R tuning
+        'ruin_max': 0.015,       # from R&R tuning
+    }
+    
+    run_scaling_test(best_hyperparams, num_runs_per_size=2)
