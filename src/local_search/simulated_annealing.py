@@ -401,7 +401,7 @@ def run_cooling_rate_tuning(schedule: Schedule, best_config_params: tuple, num_r
     # Format: (K_value, description)
     k_values = [
         (5, "Very_Fast_5"),
-        (5, "Fast_Cooling_10"),
+        (20, "Fast_Cooling_10"),
         (25, "Very_Fast_25"),
         (50, "Fast_Cooling_50"),
         (75, "Moderate_Cooling_75"),
