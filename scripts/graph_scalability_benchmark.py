@@ -8,7 +8,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from src.base_model.schedule import generate_schedule_using_double_flow
 from src.util.data_generator import generate_test_data_parsed 
 
-OUTPUT_CSV = "graph_sol_runtime_log.csv"
+OUTPUT_CSV = "graph_sol_runtime_log_DFS.csv"
 
 def benchmark_schedule_generation():
     n_work_days = 10

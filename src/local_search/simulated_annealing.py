@@ -131,9 +131,13 @@ def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, m
     return hard_count, medium_count, soft_count
 
 
-def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, log_file_path: str = None) -> Schedule:
+def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, log_file_path: str = None, enable_3d_visualization: bool = False) -> Schedule:
     from copy import deepcopy
+    from src.util.sa_logger import SimulatedAnnealingLogger
     start_time = time.time()
+    
+    # Initialize 3D visualization logger if enabled
+    sa_logger = SimulatedAnnealingLogger(log_every_n_iterations=50) if enable_3d_visualization else None
     
     # Open log file if path is provided
     log_file = None
@@ -289,6 +293,13 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 best_score_this_iteration = min(best_score_this_iteration, current_score) # just for printing. remove for performance
                 _add_move_to_tabu_list(move, tabu_list)
                 
+                # Log state for 3D visualization
+                if sa_logger:
+                    move_type = 'insert' if hasattr(move, 'is_insert') and move.is_insert else \
+                               'compound' if hasattr(move, 'sub_moves') and move.sub_moves else \
+                               'single'
+                    sa_logger.log_state(schedule, current_score, current_temperature, move_type, True)
+                
                 if current_score < best_score:
                     best_score = current_score
                     plateau_count = 0
@@ -298,6 +309,13 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     
             else: # reject move
                 undo_move(move, schedule)
+                
+                # Log rejected move for visualization
+                if sa_logger:
+                    move_type = 'insert' if hasattr(move, 'is_insert') and move.is_insert else \
+                               'compound' if hasattr(move, 'sub_moves') and move.sub_moves else \
+                               'single'
+                    sa_logger.log_state(schedule, current_score, current_temperature, move_type, False)
         
         #Extract the bset_score violations based on score:
         best_hard, best_medium, best_soft = extract_violations_from_score(best_score, schedule, hard_weight, medium_weight, soft_weight)
@@ -316,6 +334,10 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         if current_temperature < end_temp:
             log_output("Reheating")
             current_temperature = start_temp
+            
+            # Log reheat event
+            if sa_logger:
+                sa_logger.log_state(schedule, current_score, current_temperature, 'reheat', True, event_type='reheat')
         
         # Exit if no progress is being made
         if moves_accepted_this_iteration == 0:
@@ -337,6 +359,10 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 result = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
                 current_score = result[0]
                 tabu_list.clear()
+                
+                # Log ruin & recreate event
+                if sa_logger:
+                    sa_logger.log_state(schedule, current_score, current_temperature, 'ruin_recreate', True, event_type='ruin_recreate')
 
                 if current_score < best_score:
                     best_score = current_score
@@ -346,10 +372,15 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     # Close log file if it was opened
     if log_file:
         log_file.close()
+    
+    # Create 3D visualization if enabled
+    if sa_logger:
+        log_output("\nCreating 3D energy funnel visualization...")
+        sa_logger.create_visualization()
                     
     return best_schedule_snapshot.restore_schedule(schedule)
 
-def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
+def run_local_search(schedule: Schedule, log_file_path: str = None, enable_3d_visualization: bool = False) -> Schedule:
     iterations_per_temperature = 5000
     max_time_seconds = 60 * 2
     start_temp = 300
@@ -361,7 +392,8 @@ def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
         max_time_seconds, 
         start_temp, 
         end_temp,
-        log_file_path=log_file_path
+        log_file_path=log_file_path,
+        enable_3d_visualization=enable_3d_visualization
     )
     
     return optimized_schedule
