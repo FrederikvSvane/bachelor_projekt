@@ -35,7 +35,7 @@ def apply_ruin_and_recreate(schedule: Schedule,
     """
     # Define local log function that captures log_file through closure
     def log_output(message):
-        #print(message)  # Uncomment if you want console output too
+        print(message)  # Uncomment if you want console output too
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately

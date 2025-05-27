@@ -133,7 +133,7 @@ def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, m
     return hard_count, medium_count, soft_count
 
 
-def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, 
+def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 1800, start_temp: float = 300, end_temp: float = 1, 
                        high_temp_compound_prob: float = 0.2, medium_temp_compound_prob: float = 0.7, low_temp_compound_prob: float = 0.8,
                        high_temp_threshold_pct: float = 0.5, medium_temp_threshold_pct: float = 0.15,
                        plateau_count_min: int = 6, plateau_count_max: int = 18,
@@ -451,7 +451,7 @@ def run_scaling_test(best_hyperparams: dict, num_runs_per_size: int = 5) -> None
                 print(f"  Run {run}/{num_runs_per_size}...", end="", flush=True)
                 
                 # Generate fresh test data for this run
-                random.seed(13062025)  # Consistent seed per run
+                random.seed(13062025 + run)  # Consistent seed per run
                 parsed_data = generate_test_data_parsed(n_cases, n_days, granularity=5, min_per_work_day=390)
                 
                 # Initialize compatibility matrices
@@ -635,4 +635,4 @@ def run_final_scaling_test():
         'ruin_max': 0.015,       # from R&R tuning
     }
     
-    run_scaling_test(best_hyperparams, num_runs_per_size=2)
+    run_scaling_test(best_hyperparams, num_runs_per_size=1)
