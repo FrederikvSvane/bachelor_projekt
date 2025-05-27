@@ -35,6 +35,8 @@ def parse_arguments():
     parser.add_argument('--log', type=str, help='Path to log file for simulated annealing output')
 
     parser.add_argument('--time', type=int, help='Time for local search in seconds')
+
+    parser.add_argument('--K', type=int, default=100)
     
     return parser.parse_args()
 
@@ -105,10 +107,11 @@ def main():
         #final_schedule = run_local_search_benchmark(initial_schedule, args.log)
 
         best_params = (4000, 500, 20, 0.2, 0.7, 0.8)  # Your best config: (iterations, start_temp, end_temp)
-        final_schedule = run_cooling_rate_tuning(initial_schedule, best_params, num_runs_per_config=2, max_time_seconds=600)
+        #final_schedule = run_local_search(initial_schedule, args.log, args[-1])
+        final_schedule = run_cooling_rate_tuning(initial_schedule, best_params, num_runs_per_config=1, max_time_seconds=30)
 #        final_schedule = run_focused_benchmark(initial_schedule, 2, max_time_seconds=120)
 
-        final_score = calculate_full_score(final_schedule)
+        #final_score = calculate_full_score(final_schedule)
         #visualize(final_schedule)
         # visualize(final_schedule, view_by="room")
         print(f"Initial score: {initial_score}")

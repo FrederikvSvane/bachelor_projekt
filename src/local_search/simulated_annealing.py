@@ -359,7 +359,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     
     return best_schedule_snapshot.restore_schedule(schedule)
 
-def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
+def run_local_search(schedule: Schedule, log_file_path: str = None, K: int = 100) -> Schedule:
     iterations_per_temperature = 4000
     max_time_seconds = 60 * 3
     start_temp = 200
@@ -371,6 +371,7 @@ def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
         max_time_seconds, 
         start_temp, 
         end_temp,
+        K,
         log_file_path=log_file_path
     )
     
@@ -400,7 +401,7 @@ def run_cooling_rate_tuning(schedule: Schedule, best_config_params: tuple, num_r
     # Format: (K_value, description)
     k_values = [
         (5, "Very_Fast_5"),
-        (10, "Fast_Cooling_10"),
+        (5, "Fast_Cooling_10"),
         (25, "Very_Fast_25"),
         (50, "Fast_Cooling_50"),
         (75, "Moderate_Cooling_75"),
@@ -462,6 +463,7 @@ def run_cooling_rate_tuning(schedule: Schedule, best_config_params: tuple, num_r
             
             for run in range(1, num_runs_per_config + 1):
                 print(f"  Run {run}/{num_runs_per_config}...", end="", flush=True)
+                random.seed(13062025)
                 
                 # Create fresh copy for this run
                 test_schedule = copy.deepcopy(original_schedule)
