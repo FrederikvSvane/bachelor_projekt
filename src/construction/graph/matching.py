@@ -16,21 +16,21 @@ class AugmentingPath:
         self.flow = flow
 
 def find_augmenting_path(graph: DirectedGraph, source: int, sink: int) -> Optional[List[int]]:
-    """Find an augmenting path from source to sink using BFS."""
+    """Find an augmenting path from source to sink using DFS."""
     parent = [-1] * graph.get_num_nodes()
     visited = [False] * graph.get_num_nodes()
-    queue = deque([source])
+    stack = deque([source])
     visited[source] = True
     
-    while queue:
-        current = queue.popleft()
+    while stack:
+        current = stack.pop()  # Pop from end (LIFO) for DFS
         
         # Explore all neighbors with residual capacity
         for neighbor, edge in graph.get_adj_list()[current].items():
             if not visited[neighbor] and edge.get_capacity() > edge.get_flow():
                 parent[neighbor] = current
                 visited[neighbor] = True
-                queue.append(neighbor)
+                stack.append(neighbor)
                 
                 if neighbor == sink:
                     return parent
