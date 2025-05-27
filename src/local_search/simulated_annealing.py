@@ -136,6 +136,8 @@ def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, m
 def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, 
                        high_temp_compound_prob: float = 0.2, medium_temp_compound_prob: float = 0.6, low_temp_compound_prob: float = 0.8,
                        high_temp_threshold_pct: float = 0.5, medium_temp_threshold_pct: float = 0.15,
+                       plateau_count_min: int = 3, plateau_count_max: int = 10,
+                       ruin_percentage_min: float = 0.01, ruin_percentage_max: float = 0.05,
                        K: int = 100,
                        log_file_path: str = None) -> Schedule:
     from copy import deepcopy
@@ -183,8 +185,8 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     time_used = 0
     current_iteration = 0
     p_attempt_insert = 0.1
-    plateau_count_min, plateau_count_max = 3, 10
-    ruin_percentage_min, ruin_percentage_max = 0.01, 0.05
+    #plateau_count_min, plateau_count_max = 3, 10
+    #ruin_percentage_min, ruin_percentage_max = 0.01, 0.05
     
     log_output(f"Starting simulated annealing with parameters:")
     log_output(f"Iterations per temperature: {iterations_per_temperature}")
@@ -592,3 +594,241 @@ Interpretation:
     
     return best_overall_schedule
 
+def run_ruin_and_recreate_tuning(schedule: Schedule, best_config_params: tuple, num_runs_per_config: int = 3, max_time_seconds: int = 120) -> Schedule:
+    """
+    Tune the Ruin and Recreate parameters: plateau thresholds and ruin percentages.
+    best_config_params should be (iterations, start_temp, end_temp, high_prob, med_prob, low_prob, K) from your previous best results.
+    """
+    import copy
+    import statistics
+    
+    # Create benchmark_tests directory if it doesn't exist
+    benchmark_dir = "benchmark_tests"
+    os.makedirs(benchmark_dir, exist_ok=True)
+    
+    # Create separate folder for R&R tuning
+    tuning_dir = os.path.join(benchmark_dir, "ruin_recreate_tuning")
+    os.makedirs(tuning_dir, exist_ok=True)
+    
+    # Extract best configuration parameters
+    best_iters, best_start_temp, best_end_temp, best_high_prob, best_med_prob, best_low_prob, best_K = best_config_params
+    
+    # Define R&R parameter combinations to test
+    # Format: (plateau_min, plateau_max, ruin_min, ruin_max, description)
+    rr_combinations = [
+        # Current baseline (but with reasonable percentages)
+        (3, 10, 0.005, 0.02, "Current_Baseline"),  # 0.5%-2% = 5-20 meetings
+        
+        # Test plateau thresholds with reasonable ruin
+        (1, 5, 0.005, 0.02, "Impatient"),          # Early R&R, 5-20 meetings
+        (5, 15, 0.005, 0.02, "Patient"),           # Late R&R, 5-20 meetings
+        
+        # Test different ruin sizes with baseline plateau
+        (3, 10, 0.002, 0.01, "Small_Ruin"),        # 2-10 meetings (very conservative)
+        (3, 10, 0.01, 0.025, "Large_Ruin"),        # 10-25 meetings (more aggressive)
+        
+        # Combined approaches
+        (2, 6, 0.01, 0.025, "Aggressive_Both"),    # Early + larger ruin (10-25 meetings)
+        (6, 18, 0.002, 0.015, "Conservative_Both"), # Late + smaller ruin (2-15 meetings)
+        (1, 8, 0.005, 0.025, "Frequent_Variable"), # Very frequent, variable ruin (5-25 meetings)
+    ]
+    
+    # Store the original schedule
+    original_schedule = copy.deepcopy(schedule)
+    
+    # Create summary log file
+    summary_log_path = os.path.join(tuning_dir, f"ruin_recreate_tuning_summary_{int(time.time())}.log")
+    
+    print("Running Ruin and Recreate parameter tuning:")
+    print(f"Base config: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}, K={best_K}")
+    print(f"Move probs: High={best_high_prob}, Med={best_med_prob}, Low={best_low_prob}")
+    print(f"Number of R&R combinations: {len(rr_combinations)}")
+    print(f"Runs per combination: {num_runs_per_config}")
+    print(f"Max time per run: {max_time_seconds} seconds")
+    print(f"Results will be saved to: {tuning_dir}/")
+    print("=" * 90)
+    
+    all_results = {}
+    best_overall_score = float('inf')
+    best_overall_schedule = None
+    best_overall_config = None
+    
+    with open(summary_log_path, 'w') as summary_log:
+        summary_log.write("RUIN AND RECREATE PARAMETER TUNING\n")
+        summary_log.write(f"Base configuration: Iters={best_iters}, Start={best_start_temp}, End={best_end_temp}, K={best_K}\n")
+        summary_log.write(f"Move probabilities: High={best_high_prob}, Med={best_med_prob}, Low={best_low_prob}\n")
+        summary_log.write(f"R&R combinations tested: {len(rr_combinations)}\n")
+        summary_log.write(f"Runs per combination: {num_runs_per_config}\n")
+        summary_log.write(f"Max time per run: {max_time_seconds} seconds\n")
+        summary_log.write("=" * 90 + "\n\n")
+        
+        for combo_idx, (plateau_min, plateau_max, ruin_min, ruin_max, combo_name) in enumerate(rr_combinations, 1):
+            print(f"\n[{combo_idx}/{len(rr_combinations)}] Testing {combo_name}")
+            print(f"  Plateau: {plateau_min}-{plateau_max} | Ruin: {ruin_min*100:.1f}%-{ruin_max*100:.1f}%")
+            print("-" * 70)
+            
+            summary_log.write(f"COMBINATION {combo_idx}: {combo_name}\n")
+            summary_log.write(f"Plateau thresholds: min={plateau_min}, max={plateau_max}\n")
+            summary_log.write(f"Ruin percentages: min={ruin_min:.3f}, max={ruin_max:.3f}\n")
+            summary_log.write("-" * 70 + "\n")
+            
+            combo_results = []
+            combo_runtimes = []
+            
+            # Create subdirectory for this combination's runs
+            combo_dir = os.path.join(tuning_dir, combo_name)
+            os.makedirs(combo_dir, exist_ok=True)
+            
+            for run in range(1, num_runs_per_config + 1):
+                print(f"  Run {run}/{num_runs_per_config}...", end="", flush=True)
+                random.seed(13062025 + run)  # Different seed per run
+                
+                # Create fresh copy for this run
+                test_schedule = copy.deepcopy(original_schedule)
+                
+                # Individual run log
+                run_log_path = os.path.join(combo_dir, f"run_{run}.log")
+                
+                # Run simulated annealing with modified R&R parameters
+                start_time = time.time()
+                optimized_schedule = simulated_annealing(
+                    test_schedule,
+                    best_iters,
+                    max_time_seconds,
+                    best_start_temp,
+                    best_end_temp,
+                    high_temp_compound_prob=best_high_prob,
+                    medium_temp_compound_prob=best_med_prob,
+                    low_temp_compound_prob=best_low_prob,
+                    K=best_K,
+                    plateau_count_min=plateau_min,
+                    plateau_count_max=plateau_max,
+                    ruin_percentage_min=ruin_min,
+                    ruin_percentage_max=ruin_max,
+                    log_file_path=run_log_path
+                )
+                end_time = time.time()
+                
+                final_score = calculate_full_score(optimized_schedule)[0]
+                runtime = end_time - start_time
+                
+                combo_results.append(final_score)
+                combo_runtimes.append(runtime)
+                
+                print(f" Score: {final_score:.0f} ({runtime:.1f}s)")
+                
+                summary_log.write(f"Run {run}: Score={final_score:.0f}, Runtime={runtime:.1f}s\n")
+                
+                # Track best overall
+                if final_score < best_overall_score:
+                    best_overall_score = final_score
+                    best_overall_schedule = copy.deepcopy(optimized_schedule)
+                    best_overall_config = f"{combo_name}_run{run}"
+            
+            # Calculate statistics
+            mean_score = statistics.mean(combo_results)
+            std_score = statistics.stdev(combo_results) if len(combo_results) > 1 else 0
+            min_score = min(combo_results)
+            max_score = max(combo_results)
+            mean_runtime = statistics.mean(combo_runtimes)
+            
+            all_results[combo_name] = {
+                'plateau_range': (plateau_min, plateau_max),
+                'ruin_range': (ruin_min, ruin_max),
+                'scores': combo_results,
+                'mean_score': mean_score,
+                'std_score': std_score,
+                'min_score': min_score,
+                'max_score': max_score,
+                'mean_runtime': mean_runtime
+            }
+            
+            print(f"  → Mean: {mean_score:.0f} ± {std_score:.0f}")
+            print(f"  → Best: {min_score:.0f}")
+            
+            summary_log.write(f"Statistics: Mean={mean_score:.0f}, Std={std_score:.0f}, Min={min_score:.0f}, Max={max_score:.0f}\n")
+            summary_log.write(f"Average Runtime: {mean_runtime:.1f}s\n\n")
+        
+        # Final comparison
+        print("\n" + "=" * 90)
+        print("RUIN AND RECREATE TUNING RESULTS:")
+        print("=" * 90)
+        
+        # Sort by mean score
+        sorted_results = sorted(all_results.items(), key=lambda x: x[1]['mean_score'])
+        
+        print(f"{'Rank':<4} {'Configuration':<20} {'Plateau Range':<15} {'Ruin Range':<15} {'Mean Score':<12} {'±Std':<10} {'Best':<12}")
+        print("-" * 100)
+        
+        summary_log.write("=" * 90 + "\n")
+        summary_log.write("FINAL RESULTS RANKING:\n")
+        summary_log.write("=" * 90 + "\n")
+        summary_log.write(f"{'Rank':<4} {'Configuration':<20} {'Plateau Range':<15} {'Ruin Range':<15} {'Mean Score':<12} {'±Std':<10} {'Best':<12}\n")
+        summary_log.write("-" * 100 + "\n")
+        
+        for rank, (combo_name, results) in enumerate(sorted_results, 1):
+            plateau_min, plateau_max = results['plateau_range']
+            ruin_min, ruin_max = results['ruin_range']
+            plateau_str = f"{plateau_min}-{plateau_max}"
+            ruin_str = f"{ruin_min:.3f}-{ruin_max:.3f}"
+            
+            result_line = f"{rank:<4} {combo_name:<20} {plateau_str:<15} {ruin_str:<15} {results['mean_score']:<12.0f} ±{results['std_score']:<9.0f} {results['min_score']:<12.0f}"
+            print(result_line)
+            summary_log.write(result_line + "\n")
+        
+        # Winner analysis
+        winner_name, winner_results = sorted_results[0]
+        winner_plateau_min, winner_plateau_max = winner_results['plateau_range']
+        winner_ruin_min, winner_ruin_max = winner_results['ruin_range']
+        
+        winner_text = f"""
+{("=" * 90)}
+🏆 BEST RUIN AND RECREATE CONFIGURATION:
+{("=" * 90)}
+Configuration: {winner_name}
+
+RUIN AND RECREATE SETTINGS:
+Plateau Count Range: {winner_plateau_min} - {winner_plateau_max}
+  (Wait {winner_plateau_min}-{winner_plateau_max} iterations without improvement before R&R)
+Ruin Percentage Range: {winner_ruin_min:.3f} - {winner_ruin_max:.3f}
+  ({winner_ruin_min*100:.1f}% - {winner_ruin_max*100:.1f}% of meetings destroyed)
+
+PERFORMANCE:
+Mean Score: {winner_results['mean_score']:.0f} ± {winner_results['std_score']:.0f}
+Best Run: {winner_results['min_score']:.0f}
+Consistency: {winner_results['std_score']/winner_results['mean_score']*100:.2f}% variation
+Average Runtime: {winner_results['mean_runtime']:.1f} seconds
+
+INTERPRETATION:
+"""
+        
+        # Interpret the results
+        if winner_plateau_max < 10:
+            winner_text += "More frequent R&R (less patience) works better - algorithm needs more diversification\n"
+        elif winner_plateau_min > 3:
+            winner_text += "Less frequent R&R (more patience) works better - algorithm can improve locally\n"
+        else:
+            winner_text += "Current R&R frequency is near optimal\n"
+            
+        if winner_ruin_max > 0.05:
+            winner_text += "Larger ruin percentages work better - more aggressive diversification needed\n"
+        elif winner_ruin_max < 0.03:
+            winner_text += "Smaller ruin percentages work better - gentle diversification is sufficient\n"
+        else:
+            winner_text += "Current ruin percentages are near optimal\n"
+            
+        # Compare to baseline if it exists
+        if "Current_Baseline" in all_results:
+            baseline = all_results["Current_Baseline"]
+            improvement = baseline['mean_score'] - winner_results['mean_score']
+            winner_text += f"\nImprovement over baseline: {improvement:.0f} points ({improvement/baseline['mean_score']*100:.2f}%)\n"
+        
+        winner_text += f"{('=' * 90)}\n"
+        
+        print(winner_text)
+        summary_log.write(winner_text + "\n")
+    
+    print(f"\nRuin and Recreate tuning results saved to: {tuning_dir}/")
+    print(f"Summary: {summary_log_path}")
+    
+    return best_overall_schedule
