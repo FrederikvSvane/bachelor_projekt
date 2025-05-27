@@ -9,8 +9,6 @@ from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import calculate_full_score
 from src.local_search.simulated_annealing import run_local_search
 from src.base_model.compatibility_checks import initialize_compatibility_matricies, case_room_matrix
-from src.local_search.move import Move, do_move, undo_move
-from src.local_search.move_generator import generate_specific_delete_move, generate_compound_move
 from src.construction.heuristic.linear_assignment import generate_schedule
 
 def parse_arguments():
@@ -52,7 +50,11 @@ def main():
             
             from src.util.data_generator import generate_test_data_parsed
             n_cases, n_work_days = args.test[:2]
-            parsed_data: dict = generate_test_data_parsed(n_cases, n_work_days, granularity=5, min_per_work_day=390)
+            if args.method == 'ilp':
+                parsed_data: dict = generate_test_data_parsed(n_cases, n_work_days, granularity=30, min_per_work_day=390) # Skruer lige granuarity op for at ILP kører hurtigere
+            else:
+                parsed_data: dict = generate_test_data_parsed(n_cases, n_work_days, granularity=5, min_per_work_day=390)
+            
         
 
         initialize_compatibility_matricies(parsed_data)
@@ -70,7 +72,7 @@ def main():
         # Choose initial schedule construction method
         if args.method == 'ilp':
             print("Using ILP-based scheduling method")
-            from src.construction.ilp import generate_schedule_using_ilp
+            from src.construction.ilp.ilp_solver import generate_schedule_using_ilp
             initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data)
         elif args.method == 'graph':
             print("Using graph-based scheduling method")
@@ -83,32 +85,38 @@ def main():
         
         #_______________________
         initial_schedule.initialize_appointment_chains()
-        #initial_schedule.move_all_dayboundary_violations()
         initial_schedule.trim_schedule_length_if_possible()
-        result = calculate_full_score(initial_schedule)
-        initial_score = result[0]
-        hard_violations = result[1]
-        medm_violations = result[2]
-        soft_violations = result[3]
-        #visualize(initial_schedule)
-        #visualize(initial_schedule, view_by="room")
-        print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
-        print(f"Initial score: {initial_score}")
         
-        final_schedule = run_local_search(initial_schedule, args.log)
-        
-        final_score = calculate_full_score(final_schedule)
-        #visualize(final_schedule)
-        # visualize(final_schedule, view_by="room")
-        print(f"Initial score: {initial_score}")
-        print(f"Final score: {final_score}")
-        #___________________________________________
-
-        final_score = calculate_full_score(final_schedule)
-        #visualize(final_schedule)
-        print(f"Initial score: {initial_score}")
-        print(f"Final score: {final_score}")        
-        #_______________________
+        # If using ILP, skip local search and just visualize
+        if args.method == 'ilp':
+            result = calculate_full_score(initial_schedule)
+            score = result[0]
+            hard_violations = result[1]
+            medm_violations = result[2]
+            soft_violations = result[3]
+            print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
+            print(f"ILP Schedule score: {score}")
+            
+            # Visualize the ILP solution
+            visualize(initial_schedule)
+            # visualize(initial_schedule, view_by="room")
+            
+            final_schedule = initial_schedule
+        else:
+            # For other methods, apply local search
+            result = calculate_full_score(initial_schedule)
+            initial_score = result[0]
+            hard_violations = result[1]
+            medm_violations = result[2]
+            soft_violations = result[3]
+            print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
+            print(f"Initial score: {initial_score}")
+            
+            final_schedule = run_local_search(initial_schedule, args.log)
+            
+            final_score = calculate_full_score(final_schedule)
+            print(f"Initial score: {initial_score}")
+            print(f"Final score: {final_score}")
         
         #Write schedule to output file
         output_path = Path(args.output)
