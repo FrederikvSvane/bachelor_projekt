@@ -57,7 +57,7 @@ def _calculate_constraint_weights(schedule: Schedule) -> tuple[int, int, int]:
     return hard_weight, medium_weight, soft_weight
 
 
-def calculate_full_score(schedule: Schedule) -> int:
+def calculate_full_score(schedule: Schedule) -> list[int]:
     if hard_constraint_weight is None:
         _initialize_constraint_weights(schedule)
     # Hard
