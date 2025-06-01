@@ -9,11 +9,9 @@ from src.base_model.compatibility_checks import (case_requires_from_judge, judge
 def calculate_all_judge_capacities(meetings: list[Meeting], judges: List[Judge]) -> Dict[int, int]:
     """
     Calculate the capacities of all judges such that the sum of their weighted capacities equals the total number of cases.
-
     Args:
-        Cases: List of Case objects to distribute.
-        Judges: List of Judge objects to distribute among.
-
+        meetings: List of Meeting objects to distribute.
+        judges: List of Judge objects to distribute among.
     Returns:
         Dict[int, int]: A dictionary mapping each judge's ID to their calculated capacity.
     """
@@ -37,14 +35,14 @@ def calculate_all_judge_capacities(meetings: list[Meeting], judges: List[Judge])
             if cases_in_group:
                 sample_case = cases_in_group[0]
                 # Use one-directional compatibility checks
-                compatible = (case_requires_from_judge(sample_case, judge) and 
-                             judge_requires_from_case(judge, sample_case))
+                compatible = (case_requires_from_judge(sample_case, judge) and
+                            judge_requires_from_case(judge, sample_case))
             else:
                 compatible = False
             
             # Calculate how many judges can handle this group
-            competing_judges = sum(1 for j in judges if 
-                                 case_requires_from_judge(sample_case, j) and 
+            competing_judges = sum(1 for j in judges if
+                                 case_requires_from_judge(sample_case, j) and
                                  judge_requires_from_case(j, sample_case))
             
             # Weight is inversely proportional to number of judges that can handle this group
@@ -64,27 +62,51 @@ def calculate_all_judge_capacities(meetings: list[Meeting], judges: List[Judge])
     # Convert to integer capacities (floor values)
     int_capacities = {judge_id: int(cap) for judge_id, cap in float_capacities.items()}
     
-    # Distribute remaining cases using largest remainder method
-    total_cases = len(meetings)
-    current_sum = sum(int_capacities.values())
-    remaining = total_cases - current_sum
+    # Track fractional assignments by requirement group
+    group_fractional_cases = {}
+    for req_group, count in group_counts.items():
+        # Calculate how many cases of this type were assigned as integers
+        integer_assigned = sum(
+            int(judge_weights[j.judge_id][req_group] * count)
+            for j in judges
+        )
+        fractional_remaining = count - integer_assigned
+        if fractional_remaining > 0:
+            group_fractional_cases[req_group] = fractional_remaining
     
-    if remaining > 0:
-        # Create list with judge info including current capacity
-        judge_info = [
-            (judge.judge_id, 
-             int_capacities[judge.judge_id],
-             float_capacities[judge.judge_id] - int_capacities[judge.judge_id])
-            for judge in judges if float_capacities[judge.judge_id] > 0
-        ]
+    # Distribute remaining cases by requirement group
+    for req_group, remaining_count in group_fractional_cases.items():
+        # Get sample case to check compatibility
+        sample_case = requirement_groups[req_group][0]
         
-        for _ in range(remaining):
-            # Sort by current capacity (ascending), then by remainder (descending)
-            judge_info.sort(key=lambda x: (x[1], -x[2]))
-            judge_id, current_cap, remainder = judge_info[0]
-            int_capacities[judge_id] += 1
-            # Update the judge info for next iteration
-            judge_info[0] = (judge_id, current_cap + 1, remainder - 1.0)
+        # Get eligible judges for this requirement group
+        eligible_judges = []
+        for judge in judges:
+            # Check if judge can handle this case type
+            if judge_weights[judge.judge_id][req_group] > 0:
+                fractional_part = (float_capacities[judge.judge_id] - 
+                                 int_capacities[judge.judge_id])
+                # Only include judges with remainder > 0
+                if fractional_part > 0:
+                    eligible_judges.append({
+                        'judge_id': judge.judge_id,
+                        'current_capacity': int_capacities[judge.judge_id],
+                        'remainder': fractional_part,
+                        'weight_for_group': judge_weights[judge.judge_id][req_group]
+                    })
+        
+        # Sort eligible judges by current capacity (ascending), then remainder (descending)
+        eligible_judges.sort(key=lambda x: (x['current_capacity'], -x['remainder']))
+        
+        # Assign the remaining cases of this type to eligible judges
+        assigned = 0
+        for eligible_judge in eligible_judges:
+            if assigned < remaining_count:
+                int_capacities[eligible_judge['judge_id']] += 1
+                assigned += 1
+                # Update for potential re-sorting if needed
+                eligible_judge['current_capacity'] += 1
+                eligible_judge['remainder'] -= 1.0
     
     return int_capacities
 
@@ -95,7 +117,7 @@ def calculate_all_room_capacities(jm_pairs, rooms: list[Room]) -> dict[int, int]
     equals the total number of cases.
     
     Args:
-        cases: List of Case objects
+        jm_pairs: List of judge-meeting pairs
         rooms: List of Room objects
     
     Returns:
@@ -112,7 +134,6 @@ def calculate_all_room_capacities(jm_pairs, rooms: list[Room]) -> dict[int, int]
         if combined_req not in requirement_groups:
             requirement_groups[combined_req] = []
         requirement_groups[combined_req].append(jm_pair)
-    
     
     # Count cases per requirement group
     group_counts = {req: len(pairs_list) for req, pairs_list in requirement_groups.items()}
@@ -134,7 +155,6 @@ def calculate_all_room_capacities(jm_pairs, rooms: list[Room]) -> dict[int, int]
             competing_rooms = sum(1 for r in rooms if 
                                 case_room_compatible(sample_pair.get_meeting().case, r) and 
                                 judge_room_compatible(sample_pair.get_judge(), r))
-
             
             # Weight is inversely proportional to number of rooms that can handle this group
             weight = 1.0 / max(1, competing_rooms) if compatible else 0
@@ -153,37 +173,96 @@ def calculate_all_room_capacities(jm_pairs, rooms: list[Room]) -> dict[int, int]
     # Convert to integer capacities (floor values)
     int_capacities = {room_id: int(cap) for room_id, cap in float_capacities.items()}
     
-    # Distribute remaining cases using largest remainder method
+    # Track fractional assignments by requirement group
+    group_fractional_pairs = {}
+    for req_group, count in group_counts.items():
+        # Calculate how many pairs of this type were assigned as integers
+        # Also track the actual fractional parts to avoid floating point errors
+        total_fractional_parts = 0.0
+        integer_assigned = 0
+        
+        for r in rooms:
+            weight_contribution = room_weights[r.room_id][req_group] * count
+            int_contribution = int(weight_contribution)
+            integer_assigned += int_contribution
+            # Track the actual fractional part
+            total_fractional_parts += (weight_contribution - int_contribution)
+        
+        # Calculate the actual remaining count
+        # This ensures we assign exactly the right number, avoiding floating point issues
+        actual_remaining = count - integer_assigned
+        if actual_remaining > 0:
+            group_fractional_pairs[req_group] = actual_remaining
+    
+    # Track actual remaining capacity for each room
+    room_remaining_capacity = {}
+    for room in rooms:
+        room_remaining_capacity[room.room_id] = float_capacities[room.room_id] - int_capacities[room.room_id]
+    
+    # Distribute remaining pairs by requirement group
+    for req_group, remaining_count in group_fractional_pairs.items():
+        # Get sample pair to check compatibility
+        sample_pair = requirement_groups[req_group][0]
+        
+        # Get eligible rooms for this requirement group
+        eligible_rooms = []
+        for room in rooms:
+            # Check if room can handle this requirement group
+            if room_weights[room.room_id][req_group] > 0:
+                # Calculate the fractional part FOR THIS SPECIFIC GROUP
+                # Not the total fractional capacity of the room
+                group_float_contribution = room_weights[room.room_id][req_group] * group_counts[req_group]
+                group_int_contribution = int(group_float_contribution)
+                group_fractional_part = group_float_contribution - group_int_contribution
+                
+                # Only include rooms with fractional remainder for this group
+                # AND that still have remaining capacity (with small epsilon for floating point)
+                if group_fractional_part > 0.01 and room_remaining_capacity[room.room_id] > 0.01:
+                    eligible_rooms.append({
+                        'room_id': room.room_id,
+                        'current_capacity': int_capacities[room.room_id],
+                        'remainder': min(group_fractional_part, room_remaining_capacity[room.room_id]),
+                        'weight_for_group': room_weights[room.room_id][req_group]
+                    })
+        
+        # Sort eligible rooms by current capacity (ascending), then remainder (descending)
+        eligible_rooms.sort(key=lambda x: (x['current_capacity'], -x['remainder']))
+        
+        # Assign the remaining pairs of this type to eligible rooms
+        assigned = 0
+        for eligible_room in eligible_rooms:
+            if assigned < remaining_count and room_remaining_capacity[eligible_room['room_id']] > 0.01:
+                int_capacities[eligible_room['room_id']] += 1
+                room_remaining_capacity[eligible_room['room_id']] -= 1.0
+                assigned += 1
+    
+    # Safety check - ensure all pairs are assigned
     total_pairs = len(jm_pairs)
-    current_sum = sum(int_capacities.values())
-    remaining = total_pairs - current_sum
+    total_assigned = sum(int_capacities.values())
     
-    if remaining > 0:
-        # Create list with room info including current capacity
-        room_info = [
-            (r.room_id,
-             int_capacities[r.room_id],
-             float_capacities[r.room_id] - int_capacities[r.room_id])
-            for r in rooms if float_capacities[r.room_id] > 0
-        ]
+    # Check if we need to adjust for overcounting
+    if total_assigned > total_pairs:
+        # We've overcounted - need to remove some assignments
+        excess = total_assigned - total_pairs
         
-        # Add one case to rooms with lowest current capacity and highest remainder
-        for _ in range(remaining):
-            # Sort by current capacity (ascending), then by remainder (descending)
-            room_info.sort(key=lambda x: (x[1], -x[2]))
-            room_id, current_cap, remainder = room_info[0]
-            int_capacities[room_id] += 1
-            # Update the room info for next iteration
-            room_info[0] = (room_id, current_cap + 1, remainder - 1.0)
+        # Remove excess from rooms with highest capacity
+        rooms_by_capacity = sorted(rooms, key=lambda r: int_capacities[r.room_id], reverse=True)
+        for room in rooms_by_capacity:
+            if excess > 0 and int_capacities[room.room_id] > 0:
+                remove = min(excess, int_capacities[room.room_id])
+                int_capacities[room.room_id] -= remove
+                excess -= remove
+        
+        total_assigned = sum(int_capacities.values())
     
-    # Safety check - ensure all cases are assigned
-    if sum(int_capacities.values()) != total_pairs:
-        print(f"Warning: Room capacity calculation did not distribute all cases. " +
-              f"Assigned: {sum(int_capacities.values())}, Total: {total_pairs}")
+    if total_assigned != total_pairs:
+        print(f"Warning: Room capacity calculation did not distribute all pairs. " +
+              f"Assigned: {total_assigned}, Total: {total_pairs}")
         
-        # Find room with highest capacity and add the difference
+        # Find room with highest original float capacity and add the difference
         if rooms:
             max_room = max(rooms, key=lambda r: float_capacities[r.room_id])
-            int_capacities[max_room.room_id] += (total_pairs - sum(int_capacities.values()))
+            difference = total_pairs - total_assigned
+            int_capacities[max_room.room_id] += difference
     
     return int_capacities

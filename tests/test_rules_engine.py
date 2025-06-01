@@ -34,6 +34,7 @@ class TestRulesEngine(unittest.TestCase):
         self.schedule = generate_schedule(json)
         self.schedule.initialize_appointment_chains()
         self.schedule.move_all_dayboundary_violations()
+        self.schedule.initialize_appointment_chains()  # Re-initialize after moving appointments
         self.schedule.trim_schedule_length_if_possible()
 
         self.cases = self.schedule.get_all_cases()

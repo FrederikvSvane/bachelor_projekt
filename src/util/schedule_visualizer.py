@@ -48,7 +48,7 @@ def visualize(schedule: Schedule, view_by="judge"):
         print(f"Day {day}:")
         
         # Calculate table width based on number of entities
-        col_width = 18  # Width for each column
+        col_width = 20  # Width for each column
         
         # Print header separator
         header_line = "+" + "+".join(["-" * col_width for _ in range(len(entity_ids) + 1)]) + "+"

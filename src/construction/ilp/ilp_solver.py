@@ -1,15 +1,19 @@
 import pulp
 from typing import Dict
-from src.base_model.case import Case
-from src.base_model.judge import Judge
-from src.base_model.room import Room
 from src.base_model.appointment import Appointment
 from src.base_model.schedule import Schedule
+from src.base_model.compatibility_checks import (
+    case_judge_compatible,
+    case_room_compatible,
+    judge_room_compatible
+)
 import time
 
 def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
     """
     Generate a schedule using Integer Linear Programming approach.
+    Meetings are scheduled as contiguous blocks of time slots.
+    Uses day/timeslot structure without flattening.
     """
 
     work_days = parsed_data["work_days"]
@@ -18,15 +22,17 @@ def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
     cases = parsed_data["cases"]
     judges = parsed_data["judges"]
     rooms = parsed_data["rooms"]
+    meetings = parsed_data.get("meetings", [])
+    
+    # If meetings not provided, extract from cases
+    if not meetings:
+        meetings = []
+        for case in cases:
+            meetings.extend(case.meetings)
     
     timeslots_per_day = minutes_in_a_work_day // granularity
-    total_timeslots = work_days * timeslots_per_day
     
-    # Define flattened time slot range
-    T_f = range(1, total_timeslots + 1) # we add 1 cause its exclusive
-    print(T_f)
-    
-    # Create the ILP problem
+    # Create the ILP problem (minimize medium and soft constraint violations)
     problem = pulp.LpProblem("CourtCaseScheduling", pulp.LpMinimize)
     
     # Start timer for performance tracking
@@ -34,203 +40,255 @@ def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
     
     print("Creating decision variables...")
     
-    # Decision variables
-    # a[c][j][r][t] = 1 if case c is assigned to judge j in room r at time t
-    a = {}
-    for c in cases:
-        a[c.case_id] = {}
+    # Pre-filter compatible combinations to reduce variable count
+    compatible_assignments = []
+    for m in meetings:
         for j in judges:
-            a[c.case_id][j.judge_id] = {}
-            for r in rooms:
-                a[c.case_id][j.judge_id][r.room_id] = {}
-                for t in T_f:
-                    a[c.case_id][j.judge_id][r.room_id][t] = pulp.LpVariable(
-                        f"a_{c.case_id}_{j.judge_id}_{r.room_id}_{t}", 
-                        cat=pulp.LpBinary
-                    )
+            if case_judge_compatible(m.case, j):
+                for r in rooms:
+                    if case_room_compatible(m.case, r) and judge_room_compatible(j, r):
+                        compatible_assignments.append((m, j, r))
     
-    # Variables to track segment starts and ends
-    s = {}  # s[c][t] = 1 if case c starts a segment at time t
-    e = {}  # e[c][t] = 1 if case c ends a segment at time t
+    print(f"Found {len(compatible_assignments)} compatible (meeting, judge, room) combinations")
     
-    for c in cases:
-        s[c.case_id] = {}
-        e[c.case_id] = {}
-        for t in T_f:
-            s[c.case_id][t] = pulp.LpVariable(f"s_{c.case_id}_{t}", cat=pulp.LpBinary)
-            e[c.case_id][t] = pulp.LpVariable(f"e_{c.case_id}_{t}", cat=pulp.LpBinary)
+    # Decision variables using sparse representation
+    # x[(m_id, j_id, r_id, d, t)] = 1 if meeting m starts at day d, timeslot t with judge j in room r
+    x = {}
+    meeting_duration_slots = {}  # Cache duration calculations
+    
+    for m, j, r in compatible_assignments:
+        duration_slots = m.meeting_duration // granularity
+        meeting_duration_slots[m.meeting_id] = duration_slots
+        
+        for d in range(1, work_days + 1):
+            # Only create variables for timeslots where the meeting can fit within the day
+            max_start_slot = timeslots_per_day - duration_slots + 1
+            for t in range(1, max_start_slot + 1):
+                key = (m.meeting_id, j.judge_id, r.room_id, d, t)
+                x[key] = pulp.LpVariable(f"x_{key}", cat=pulp.LpBinary)
+    
+    # Variables for optimization objectives
+    
+    # Track the maximum day used (minimize schedule length)
+    max_day_used = pulp.LpVariable("max_day_used", lowBound=1, upBound=work_days, cat=pulp.LpInteger)
+    
+    # Binary variables: day_used[d] = 1 if any meeting is scheduled on day d
+    day_used = {}
+    for d in range(1, work_days + 1):
+        day_used[d] = pulp.LpVariable(f"day_used_{d}", cat=pulp.LpBinary)
+    
+    # Room stability variables - efficient formulation
+    # y[(j_id, r_id, d)] = 1 if judge j uses room r on day d (at least once)
+    y = {}
+    for j in judges:
+        for r in rooms:
+            for d in range(1, work_days + 1):
+                key = (j.judge_id, r.room_id, d)
+                y[key] = pulp.LpVariable(f"y_{key}", cat=pulp.LpBinary)
+    
+    
+    
     
     print(f"Variables created in {time.time() - start_time:.2f} seconds")
     start_time = time.time()
     
     print("Adding constraints...")
     
-    # Constraint 1: Each case must be scheduled for its required duration
-    for c in cases:
-        problem += (
-            pulp.lpSum(
-                a[c.case_id][j.judge_id][r.room_id][t]
-                for j in judges
-                for r in rooms
-                for t in T_f
-            ) == c.case_duration // granularity, #the amount of timeslots needed for the case
-            f"Coverage_Case_{c.case_id}"
-        )
-        print(f"Case {c.case_id} must be scheduled for {c.case_duration // granularity} timeslots")
+    # Hard constraints:
     
-    # Constraint 2: No room double-booking
+    # Constraint 1: Each meeting must be scheduled exactly once
+    for m in meetings:
+        valid_starts = [
+            x[key] for key in x.keys() 
+            if key[0] == m.meeting_id  # meeting_id is first element of tuple
+        ]
+        
+        if valid_starts:
+            problem += (
+                pulp.lpSum(valid_starts) == 1,
+                f"Schedule_Meeting_Once_{m.meeting_id}"
+            )
+    
+    # Constraint 2: No room double-booking (optimized)
+    # Pre-group variables by room and day for faster lookup
+    room_day_vars = {}
+    for key in x.keys():
+        m_id, j_id, r_id, day, start_t = key
+        if (r_id, day) not in room_day_vars:
+            room_day_vars[(r_id, day)] = []
+        room_day_vars[(r_id, day)].append((key, meeting_duration_slots[m_id]))
+    
     for r in rooms:
-        for t in T_f:
+        for d in range(1, work_days + 1):
+            room_day_key = (r.room_id, d)
+            if room_day_key not in room_day_vars:
+                continue
+                
+            for t in range(1, timeslots_per_day + 1):
+                occupancy_sum = []
+                
+                for key, duration_slots in room_day_vars[room_day_key]:
+                    _, _, _, _, start_t = key
+                    if start_t <= t <= start_t + duration_slots - 1:
+                        occupancy_sum.append(x[key])
+                
+                if occupancy_sum:
+                    problem += (
+                        pulp.lpSum(occupancy_sum) <= 1,
+                        f"No_Room_Double_Booking_{r.room_id}_{d}_{t}"
+                    )
+    
+    # Constraint 3: No judge double-booking (optimized)
+    # Pre-group variables by judge and day for faster lookup
+    judge_day_vars = {}
+    for key in x.keys():
+        m_id, j_id, r_id, day, start_t = key
+        if (j_id, day) not in judge_day_vars:
+            judge_day_vars[(j_id, day)] = []
+        judge_day_vars[(j_id, day)].append((key, meeting_duration_slots[m_id]))
+    
+    for j in judges:
+        for d in range(1, work_days + 1):
+            judge_day_key = (j.judge_id, d)
+            if judge_day_key not in judge_day_vars:
+                continue
+                
+            for t in range(1, timeslots_per_day + 1):
+                occupancy_sum = []
+                
+                for key, duration_slots in judge_day_vars[judge_day_key]:
+                    _, _, _, _, start_t = key
+                    if start_t <= t <= start_t + duration_slots - 1:
+                        occupancy_sum.append(x[key])
+                
+                if occupancy_sum:
+                    problem += (
+                        pulp.lpSum(occupancy_sum) <= 1,
+                        f"No_Judge_Double_Booking_{j.judge_id}_{d}_{t}"
+                    )
+    
+    # Constraints 4-6: Compatibility constraints are now handled by pre-filtering
+    # We only create variables for compatible combinations, so no additional constraints needed
+    
+    
+    # Constraint for schedule length optimization:
+    
+    # Link day_used to meeting assignments
+    # If any meeting is scheduled on a day, that day is used
+    for d in range(1, work_days + 1):
+        meetings_on_day = [x[key] for key in x.keys() if key[3] == d]
+        if meetings_on_day:
             problem += (
-                pulp.lpSum(
-                    a[c.case_id][j.judge_id][r.room_id][t]
-                    for c in cases
-                    for j in judges
-                ) <= 1,
-                f"No_Room_Double_Booking_{r.room_id}_{t}"
+                day_used[d] >= pulp.lpSum(meetings_on_day) / len(meetings_on_day),
+                f"Day_Used_{d}"
             )
     
-    # Constraint 3: No judge double-booking
-    for j in judges:
-        for t in T_f:
-            problem += (
-                pulp.lpSum(
-                    a[c.case_id][j.judge_id][r.room_id][t]
-                    for c in cases
-                    for r in rooms
-                ) <= 1,
-                f"No_Judge_Double_Booking_{j.judge_id}_{t}"
-            )
-    
-    # Constraint 4: Judge-Case compatibility
-    for c in cases:
-        for j in judges:
-            # Create binary parameter for compatibility
-            compatible = 1 if is_compatible(c, j) else 0
-            if compatible == 1:
-                print(f"Case {c.case_id} and Judge {j.judge_id} are compatible")
-            
-            if compatible == 0:
-                for r in rooms:
-                    for t in T_f:
-                        problem += (
-                            a[c.case_id][j.judge_id][r.room_id][t] == 0,
-                            f"Judge_Case_Compatibility_{c.case_id}_{j.judge_id}_{r.room_id}_{t}"  # Include room_id in name to avoid conflicts
-                        )
-
-    # Constraint 5: Case-Room compatibility
-    for c in cases:
-        for r in rooms:
-            # Create binary parameter for compatibility
-            compatible = 1 if is_room_compatible(c, r) else 0
-            if compatible == 1:
-                print(f"Case {c.case_id} and Room {r.room_id} are compatible")
-            
-            if compatible == 0:
-                for j in judges:
-                    for t in T_f:
-                        problem += (
-                            a[c.case_id][j.judge_id][r.room_id][t] == 0,
-                            f"Case_Room_Compatibility_{c.case_id}_{j.judge_id}_{r.room_id}_{t}"  # same
-                        )
-
-    # Constraint 6: Judge-Room compatibility
-    for j in judges:
-        for r in rooms:
-            # Create binary parameter for compatibility
-            compatible = 1 if is_judge_room_compatible(j, r) else 0
-            if compatible == 1:
-                print(f"Judge {j.judge_id} and Room {r.room_id} are compatible")
-            
-            if compatible == 0:
-                for c in cases:
-                    for t in T_f:
-                        problem += (
-                            a[c.case_id][j.judge_id][r.room_id][t] == 0,
-                            f"Judge_Room_Compatibility_{c.case_id}_{j.judge_id}_{r.room_id}_{t}"  # same
-                        )
-    
-    
-    '''
-    # Segment tracking constraints
-    
-    # For first time slot, segment starts if case is scheduled
-    for c in cases:
+    # Link max_day_used to day_used
+    # max_day_used must be at least as large as any day that is used
+    for d in range(1, work_days + 1):
         problem += (
-            s[c.case_id][1] >= pulp.lpSum(
-                a[c.case_id][j.judge_id][r.room_id][1]
-                for j in judges
-                for r in rooms
-            ),
-            f"Segment_Start_First_{c.case_id}"
+            max_day_used >= d * day_used[d],
+            f"Max_Day_Used_{d}"
         )
     
-    # For other time slots, segment starts if case is scheduled at t but not at t-1
-    for c in cases:
-        for t in range(2, total_timeslots + 1):
-            problem += (
-                s[c.case_id][t] >= pulp.lpSum(
-                    a[c.case_id][j.judge_id][r.room_id][t]
-                    for j in judges
-                    for r in rooms
-                ) - pulp.lpSum(
-                    a[c.case_id][j.judge_id][r.room_id][t-1]
-                    for j in judges
-                    for r in rooms
-                ),
-                f"Segment_Start_{c.case_id}_{t}"
-            )
+    # Room stability constraints - link y variables to x variables
+    # Pre-compute x variables grouped by judge, room, and day
+    x_by_jrd = {}
+    for key in x.keys():
+        m_id, j_id, r_id, day, start_t = key
+        jrd_key = (j_id, r_id, day)
+        if jrd_key not in x_by_jrd:
+            x_by_jrd[jrd_key] = []
+        x_by_jrd[jrd_key].append(x[key])
     
-    # For last time slot, segment ends if case is scheduled
-    for c in cases:
-        problem += (
-            e[c.case_id][total_timeslots] >= pulp.lpSum(
-                a[c.case_id][j.judge_id][r.room_id][total_timeslots]
-                for j in judges
-                for r in rooms
-            ),
-            f"Segment_End_Last_{c.case_id}"
-        )
+    # Link y variables: y[j,r,d] = 1 if judge j has any meeting in room r on day d
+    for j in judges:
+        for r in rooms:
+            for d in range(1, work_days + 1):
+                y_key = (j.judge_id, r.room_id, d)
+                jrd_key = (j.judge_id, r.room_id, d)
+                
+                if jrd_key in x_by_jrd:
+                    # y = 1 if any x variable for this judge/room/day is 1
+                    x_vars = x_by_jrd[jrd_key]
+                    problem += (
+                        y[y_key] <= pulp.lpSum(x_vars),
+                        f"Y_Upper_Bound_{y_key}"
+                    )
+                    # Force y = 1 if any meeting happens
+                    problem += (
+                        y[y_key] >= pulp.lpSum(x_vars) / len(x_vars),
+                        f"Y_Lower_Bound_{y_key}"
+                    )
+                else:
+                    # No possible meetings for this combination
+                    problem += (
+                        y[y_key] == 0,
+                        f"Y_Zero_{y_key}"
+                    )
     
-    # For other time slots, segment ends if case is scheduled at t but not at t+1
-    for c in cases:
-        for t in range(1, total_timeslots):
-            problem += (
-                e[c.case_id][t] >= pulp.lpSum(
-                    a[c.case_id][j.judge_id][r.room_id][t]
-                    for j in judges
-                    for r in rooms
-                ) - pulp.lpSum(
-                    a[c.case_id][j.judge_id][r.room_id][t+1]
-                    for j in judges
-                    for r in rooms
-                ),
-                f"Segment_End_{c.case_id}_{t}"
-            )
+    
+    
     
     print(f"Constraints added in {time.time() - start_time:.2f} seconds")
-    start_time = time.time()
     
-    # Define objective function - minimize number of segments
-    w_break = 100  # Penalty weight for breaking cases
+    # Objective function: minimize schedule length (primary), room diversity (secondary), and start time (tertiary)
+    # Add a small penalty for meetings that start later in the day to encourage early/packed scheduling
+    start_time_penalty = pulp.lpSum([
+        (start_t - 1) * x[key]  # Penalty increases with later start times
+        for key in x.keys()
+        for m_id, j_id, r_id, d, start_t in [key]
+    ])
     
-    # Sum of all segment starts (minus 1 per case, as each case needs at least one segment)
-    segment_penalty = pulp.lpSum(
-        pulp.lpSum(s[c.case_id][t] for t in T_f) - 1
-        for c in cases
-    ) * w_break
+    # Room stability penalty: sum of y variables (number of different rooms used per judge per day)
+    # The fewer rooms a judge uses per day, the better
+    room_diversity_penalty = pulp.lpSum([
+        y[key] for key in y.keys()
+    ])
     
-    # Set the objective function - minimize the segment penalty
-    problem += segment_penalty, "Minimize_Segment_Breaks"
-    '''
+    # Case-judge consistency penalty - very efficient approach
+    # Add a small penalty based on judge ID to encourage consistent judge assignment per case
+    case_judge_penalty = 0
     
-    # Solve the problem with a time limit
+    # Create a mapping of meeting to case
+    meeting_to_case = {m.meeting_id: m.case.case_id for m in meetings}
+    
+    # Create case-specific judge preferences
+    # This encourages meetings from the same case to pick the same judge
+    # by giving each judge a different penalty offset per case
+    case_judge_offset = {}
+    for c_idx, c in enumerate(cases):
+        for j_idx, j in enumerate(judges):
+            # Small unique offset per case-judge pair
+            case_judge_offset[(c.case_id, j.judge_id)] = j_idx * 0.1
+    
+    # Apply the penalty in the objective
+    for key in x.keys():
+        m_id, j_id, r_id, day, start_t = key
+        c_id = meeting_to_case[m_id]
+        if (c_id, j_id) in case_judge_offset:
+            case_judge_penalty += case_judge_offset[(c_id, j_id)] * x[key]
+    
+    # Use weight differences to ensure proper prioritization
+    # Priority: schedule length >> case-judge consistency > room stability > start time
+    schedule_length_weight = 1000000
+    case_consistency_weight = 1000
+    room_stability_weight = 10
+    start_time_weight = 1
+    
+    problem += (
+        schedule_length_weight * max_day_used + 
+        case_consistency_weight * case_judge_penalty +
+        room_stability_weight * room_diversity_penalty + 
+        start_time_weight * start_time_penalty,
+        "Minimize_Schedule_Length_Case_Consistency_Room_Diversity_And_Early_Start"
+    )
+    
+    # Solve the problem
     print("Solving the ILP model...")
     start_time = time.time()
 
-    # Set a reasonable time limit
-    
-    # Instead of hardcoding a solver, let PuLP find what's available
+    # Find available solvers
     available_solvers = pulp.listSolvers(onlyAvailable=True)
     print("Available solvers:", available_solvers)
 
@@ -238,87 +296,41 @@ def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
         problem.solve()  # PuLP will use the first available solver
     else:
         print("No solvers available!")
-    # problem.solve(pulp.GLPK_CMD(msg=True, timeLimit=60))
+        return Schedule(work_days, minutes_in_a_work_day, granularity)
 
     solution_time = time.time() - start_time
     print(f"ILP solved in {solution_time:.2f} seconds with status: {pulp.LpStatus[problem.status]}")
 
-    schedule = Schedule(work_days, minutes_in_a_work_day, granularity)
+    schedule = Schedule(work_days, minutes_in_a_work_day, granularity, judges=judges, rooms=rooms, meetings=meetings, cases=cases)
 
-    # Extract solution - properly handle any status
+    # Extract solution
     if problem.status == pulp.LpStatusOptimal:
-        print("Optimal solution found!")
-    elif problem.status == pulp.LpStatusUndefined:
-        print("Time limit reached - extracting best solution found (if any)")
+        print("Feasible solution found!")
+        
+        # Extract assignments
+        for key, var in x.items():
+            val = pulp.value(var)
+            if val is not None and val > 0.5:  # If assignment is 1
+                m_id, j_id, r_id, d, start_t = key
+                
+                # Find the corresponding objects
+                meeting = next(m for m in meetings if m.meeting_id == m_id)
+                judge = next(j for j in judges if j.judge_id == j_id)
+                room = next(r for r in rooms if r.room_id == r_id)
+                
+                duration_slots = meeting_duration_slots[m_id]
+                
+                # Create appointments for all time slots of this meeting
+                for slot_offset in range(duration_slots):
+                    appointment = Appointment(
+                        meeting=meeting,
+                        judge=judge,
+                        room=room,
+                        day=d,
+                        timeslot_in_day=start_t + slot_offset
+                    )
+                    schedule.add_meeting_to_schedule(appointment)
     else:
-        print(f"No solution found. Status: {pulp.LpStatus[problem.status]}")
-
-    # Try to extract any solution if variables have values
-    feasible_solution_found = False
-    for c in cases:
-        for j in judges:
-            for r in rooms:
-                for t in T_f:
-                    var = a[c.case_id][j.judge_id][r.room_id][t]
-                    val = pulp.value(var)
-                    if val is not None and val > 0.5:  # If assignment is 1
-                        feasible_solution_found = True
-                        # Calculate day and timeslot within day
-                        day = (t - 1) // timeslots_per_day
-                        timeslot_in_day = (t - 1) % timeslots_per_day
-                        
-                        appointment = Appointment(
-                            case=c,
-                            judge=j,
-                            room=r,
-                            day=day,
-                            timeslot_in_day=timeslot_in_day
-                        )
-                        schedule.appointments.append(appointment)
-
-    if not feasible_solution_found:
-        print("No feasible solution could be found.")
+        print(f"No feasible solution found. Status: {pulp.LpStatus[problem.status]}")
 
     return schedule
-
-def is_compatible(case: Case, judge: Judge) -> bool:
-    """Check if a case and judge are compatible"""
-    # Check if the judge has all required attributes
-    for req in case.judge_requirements:
-        if req not in judge.characteristics:
-            return False
-    
-    # Check if the case has all required attributes
-    for req in judge.case_requirements:
-        if req not in case.characteristics:
-            return False
-    
-    return True
-
-def is_room_compatible(case: Case, room: Room) -> bool:
-    """Check if a case and room are compatible"""
-    # Check if the room has all required attributes
-    for req in case.room_requirements:
-        if req not in room.characteristics:
-            return False
-    
-    # Check if the case has all required attributes
-    for req in room.case_requirements:
-        if req not in case.characteristics:
-            return False
-    
-    return True
-
-def is_judge_room_compatible(judge: Judge, room: Room) -> bool:
-    """Check if a judge and room are compatible"""
-    # Check if the room has all required attributes
-    for req in judge.room_requirements:
-        if req not in room.characteristics:
-            return False
-    
-    # Check if the judge has all required attributes
-    for req in room.judge_requirements:
-        if req not in judge.characteristics:
-            return False
-    
-    return True

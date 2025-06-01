@@ -27,8 +27,6 @@ class TestRuinAndRecreate(unittest.TestCase):
         # Create test data and initial schedule using a heuristic
         self.test_data = generate_test_data_parsed(
             n_cases=n_cases,
-            n_judges=n_judges,
-            n_rooms=n_rooms,
             work_days=n_work_days,
             granularity=granularity,
             min_per_work_day=min_per_work_day
@@ -37,6 +35,7 @@ class TestRuinAndRecreate(unittest.TestCase):
         initialize_compatibility_matricies(self.test_data)
         # Using the heuristic construction method as an example
         self.schedule = generate_schedule_using_double_flow(self.test_data)
+        self.schedule.initialize_appointment_chains()
         self.schedule.move_all_dayboundary_violations()
         self.schedule.trim_schedule_length_if_possible()
 
@@ -67,7 +66,7 @@ class TestRuinAndRecreate(unittest.TestCase):
             delete_move = generate_specific_delete_move(schedule_copy, meeting.meeting_id) 
 
             # Calculate score before delete
-            score_before = calculate_full_score(schedule_copy) 
+            score_before = calculate_full_score(schedule_copy)[0]  # Extract just the score
 
             # Calculate delta score
             delta_score = calculate_delta_score(schedule_copy, delete_move) 
@@ -76,7 +75,7 @@ class TestRuinAndRecreate(unittest.TestCase):
             do_move(delete_move, schedule_copy) 
 
             # Calculate score after delete
-            score_after = calculate_full_score(schedule_copy) 
+            score_after = calculate_full_score(schedule_copy)[0]  # Extract just the score
 
             # Calculate actual score difference
             actual_difference = score_after - score_before 
@@ -139,7 +138,7 @@ class TestRuinAndRecreate(unittest.TestCase):
             ) 
 
             # Calculate score before insert
-            score_before = calculate_full_score(schedule_copy) 
+            score_before = calculate_full_score(schedule_copy)[0]  # Extract just the score
 
             # Calculate delta score
             delta_score = calculate_delta_score(schedule_copy, insert_move) 
@@ -148,7 +147,7 @@ class TestRuinAndRecreate(unittest.TestCase):
             do_move(insert_move, schedule_copy) 
 
             # Calculate score after insert
-            score_after = calculate_full_score(schedule_copy) 
+            score_after = calculate_full_score(schedule_copy)[0]  # Extract just the score
 
             # Calculate actual score difference
             actual_difference = score_after - score_before 
