@@ -322,7 +322,12 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         current_temperature *= cooling_rate
 
         if hard_violations == 0:
+            log_output(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
+              f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
+              f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
+              f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
             log_output("All hard violations resolved!")
+            log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
             return best_schedule_snapshot.restore_schedule(schedule)  # Stop if no hard violations
         
         if not best_score_improved_this_iteration:

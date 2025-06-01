@@ -100,60 +100,59 @@ def main():
         initial_schedule.trim_schedule_length_if_possible()
         initial_schedule.initialize_appointment_chains()
 
-        log_file = None
-        if args.log:
-            try:
-                log_file = open(args.log, 'w')
-            except Exception as e:
-                print(f"Error opening log file: {e}")
+        # log_file = None
+        # if args.log:
+        #     try:
+        #         log_file = open(args.log, 'w')
+        #     except Exception as e:
+        #         print(f"Error opening log file: {e}")
 
-        if log_file:
-            log_file.write(f"graph took: {elapsed_time} seconds \n")
-            log_file.write(f"Score from graph: {calculate_full_score(initial_schedule)} \n")
-            log_file.write(f"Days: {initial_schedule.work_days}")
-            log_file.flush()  # Ensure data is written immediately
+        # if log_file:
+        #     log_file.write(f"graph took: {elapsed_time} seconds \n")
+        #     log_file.write(f"Score from graph: {calculate_full_score(initial_schedule)} \n")
+        #     log_file.write(f"Days: {initial_schedule.work_days}")
+        #     log_file.flush()  # Ensure data is written immediately
 
     
         
         #_______________________
         
         # If using ILP, skip local search and just visualize
-        # if args.method == 'ilp':
-        #     result = calculate_full_score(initial_schedule)
-        #     score = result[0]
-        #     hard_violations = result[1]
-        #     medm_violations = result[2]
-        #     soft_violations = result[3]
-        #     print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
-        #     print(f"ILP Schedule score: {score}")
+        if args.method == 'ilp':
+            result = calculate_full_score(initial_schedule)
+            score = result[0]
+            hard_violations = result[1]
+            medm_violations = result[2]
+            soft_violations = result[3]
+            print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
+            print(f"ILP Schedule score: {score}")
             
-        #     # Visualize the ILP solution
-        #     visualize(initial_schedule)
-        #     # visualize(initial_schedule, view_by="room")
+            # Visualize the ILP solution
+            visualize(initial_schedule)
+            # visualize(initial_schedule, view_by="room")
             
-        #     final_schedule = initial_schedule
-        # else:
-        #     # For other methods, apply local search
-        #     result = calculate_full_score(initial_schedule)
-        #     initial_score = result[0]
-        #     hard_violations = result[1]
-        #     medm_violations = result[2]
-        #     soft_violations = result[3]
-        #     print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
-        #     print(f"Initial score: {initial_score}")
+            final_schedule = initial_schedule
+        else:
+            # For other methods, apply local search
+            result = calculate_full_score(initial_schedule)
+            initial_score = result[0]
+            hard_violations = result[1]
+            medm_violations = result[2]
+            soft_violations = result[3]
+            print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
             
-        #     final_schedule = run_local_search(initial_schedule, args.log)
+            final_schedule = run_local_search(initial_schedule, args.log)
             
-        #     final_score = calculate_full_score(final_schedule)
-        #     print(f"Initial score: {initial_score}")
-        #     print(f"Final score: {final_score}")
+            final_score = calculate_full_score(final_schedule)
+            print(f"Initial score: {initial_score}")
+            print(f"Final score: {final_score}")
         
         #Write schedule to output file
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-#        with open(output_path, 'w') as f:
- #           json.dump(final_schedule.to_json(), f, indent=2)
-  #      print(f"Schedule written to {args.output}")
+        with open(output_path, 'w') as f:
+           json.dump(final_schedule.to_json(), f, indent=2)
+        print(f"Schedule written to {args.output}")
 
         return 0
         

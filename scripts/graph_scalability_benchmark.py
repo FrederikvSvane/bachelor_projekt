@@ -14,7 +14,7 @@ def benchmark_schedule_generation():
     n_work_days = 10
     granularity = 5
     min_per_work_day = 390
-    max_cases = 1230  # Conservative limit for 2-hour total runtime
+    max_cases = 1500  # Conservative limit for 2-hour total runtime
     step = 10
 
     with open(OUTPUT_CSV, mode='w', newline='') as file:
