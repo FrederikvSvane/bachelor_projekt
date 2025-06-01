@@ -24,6 +24,9 @@ def parse_arguments():
     parser.add_argument('--method', type=str, choices=['graph', 'ilp', 'heuristic'], default='graph',
                         help='Method to use for scheduling (default: graph)')
     
+    parser.add_argument('--ilp-params', nargs=2, type=float, metavar=('TIME_LIMIT', 'GAP_PERCENT'),
+                        help='ILP solver parameters: time_limit (seconds) gap_percent (e.g., 180 5 for 180s and 5%%)')
+    
     parser.add_argument('--output', type=str, default='output.json',
                       help='Path to output JSON file (default: output.json)')
     
@@ -73,7 +76,15 @@ def main():
         if args.method == 'ilp':
             print("Using ILP-based scheduling method")
             from src.construction.ilp.ilp_solver import generate_schedule_using_ilp
-            initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data)
+            
+            # Get ILP parameters if provided
+            if args.ilp_params:
+                time_limit = int(args.ilp_params[0])
+                gap_percent = args.ilp_params[1] / 100.0  # Convert percentage to decimal
+                print(f"ILP parameters: time_limit={time_limit}s, gap={gap_percent*100}%")
+                initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data, time_limit=time_limit, gap_rel=gap_percent)
+            else:
+                initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data)
         elif args.method == 'graph':
             print("Using graph-based scheduling method")
             initial_schedule: Schedule = generate_schedule_using_double_flow(parsed_data)
