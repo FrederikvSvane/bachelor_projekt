@@ -80,11 +80,29 @@ def main():
             from src.construction.ilp import generate_schedule_using_ilp
             initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data)
         elif args.method == 'graph':
+            # Start time for graph-based scheduling
+            import time
+            start_time = time.time()
             print("Using graph-based scheduling method")
             initial_schedule: Schedule = generate_schedule_using_double_flow(parsed_data)
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f"Graph-based scheduling completed in {elapsed_time:.2f} seconds")
         elif args.method == 'heuristic':
             print("Using heuristic-based scheduling method")
             initial_schedule: Schedule = generate_schedule(parsed_data)
+
+
+        log_file = None
+        if args.log:
+            try:
+                log_file = open(args.log, 'w')
+            except Exception as e:
+                print(f"Error opening log file: {e}")
+
+        if log_file:
+            log_file.write(f"graph took: {elapsed_time} seconds \n")
+            log_file.flush()  # Ensure data is written immediately
 
     
         
@@ -111,26 +129,25 @@ def main():
         #final_schedule = run_cooling_rate_tuning(initial_schedule, best_params, num_runs_per_config=1, max_time_seconds=30)
 #        final_schedule = run_focused_benchmark(initial_schedule, 2, max_time_seconds=120)
         #final_schedule = run_ruin_and_recreate_tuning(initial_schedule, best_params, num_runs_per_config=1, max_time_seconds=600)
-        final_schedule = run_local_search(initial_schedule, args.log)
-        #final_score = calculate_full_score(final_schedule)
+        #final_schedule = run_local_search(initial_schedule, args.log)
+        #final_score = calculate_full_score(final_schedule)[0]
         #visualize(final_schedule)
         # visualize(final_schedule, view_by="room")
         print(f"Initial score: {initial_score}")
-        print(f"Final score: {final_score}")
+        #print(f"Final score: {final_score}")
         #___________________________________________
 
-        final_score = calculate_full_score(final_schedule)
+        #final_score = calculate_full_score(final_schedule)
         #visualize(final_schedule)
-        print(f"Initial score: {initial_score}")
-        print(f"Final score: {final_score}")        
+        #print(f"Final score: {final_score}")        
         #_______________________
         
         #Write schedule to output file
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(output_path, 'w') as f:
-            json.dump(final_schedule.to_json(), f, indent=2)
-        print(f"Schedule written to {args.output}")
+#        with open(output_path, 'w') as f:
+ #           json.dump(final_schedule.to_json(), f, indent=2)
+  #      print(f"Schedule written to {args.output}")
 
         return 0
         
