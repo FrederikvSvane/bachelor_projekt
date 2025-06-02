@@ -167,6 +167,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     
 
     current_score, hard_violations, medium_violations, soft_violations = calculate_full_score(schedule)
+    initial_score = [current_score, hard_violations, medium_violations, soft_violations]
     best_score = current_score
     current_temperature = start_temp
     best_schedule_snapshot = ScheduleSnapshot(schedule)
@@ -347,6 +348,11 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
               f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
               f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
               f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
+
+        if time_used >= max_time_seconds:
+            log_output(f"Initial score {initial_score}")
+            log_output(f"Final score [{current_score}, {hard_violations}, {medium_violations}, {soft_violations}]")
+            log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
 
         
         if plateau_count >= current_plateau_limit:
