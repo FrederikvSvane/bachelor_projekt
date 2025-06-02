@@ -143,6 +143,7 @@ def main():
             
             final_schedule = run_local_search(initial_schedule, args.log)
             
+            print(f"days: {final_schedule.work_days}")
             final_score = calculate_full_score(final_schedule)
             print(f"Initial score: {initial_score}")
             print(f"Final score: {final_score}")
