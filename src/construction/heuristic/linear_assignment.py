@@ -65,7 +65,8 @@ def generate_schedule(parsed_data: dict) -> Schedule:
     for case in cases:
         meetings.extend(case.meetings)
     
-    print(f"Number of meetings: {len(meetings)}")
+    #print(f"Number of meetings: {len(meetings)}")
+    #Sum the length of all meetings and divide by 
     
     if not meetings:
         print("Warning: No meetings found in the parsed data.")
