@@ -8,14 +8,14 @@ sys.path.append(str(Path(__file__).parent.parent))
 from src.base_model.schedule import generate_schedule_using_double_flow
 from src.util.data_generator import generate_test_data_parsed 
 
-OUTPUT_CSV = "graph_sol_runtime_log.csv"
+OUTPUT_CSV = "graph_sol_runtime_log_1500_2500.csv"
 
 def benchmark_schedule_generation():
     n_work_days = 10
     granularity = 5
     min_per_work_day = 390
-    max_cases = 1500  # Conservative limit for 2-hour total runtime
-    step = 10
+    max_cases = 2500  # Conservative limit for 2-hour total runtime
+    step = 20
 
     with open(OUTPUT_CSV, mode='w', newline='') as file:
         writer = csv.writer(file)
@@ -23,7 +23,7 @@ def benchmark_schedule_generation():
 
         cumulative_runtime = 0
 
-        for n_cases in range(10, max_cases + 1, step):
+        for n_cases in range(1500, max_cases + 1, step):
             parsed_data = generate_test_data_parsed(n_cases, n_work_days, granularity, min_per_work_day)
             
             # Count total meetings

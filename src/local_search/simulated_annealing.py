@@ -360,7 +360,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             plateau_count = 0
             if r_r_success:
                 log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
-                current_score = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
+                current_score = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))[0]
                 tabu_list.clear()
 
                 if current_score < best_score:
