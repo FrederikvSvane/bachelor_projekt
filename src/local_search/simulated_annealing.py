@@ -356,19 +356,16 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
         
         if plateau_count >= current_plateau_limit:
-            best_schedule = deepcopy(best_schedule_snapshot.restore_schedule(schedule))
-            log_output("\n \n _______________________________________________________________ \n Large plateau detected! Applying Ruin and Recreate... \n _______________________________________________________________ \n")
-            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule, compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True, log_file=log_file)
+            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
             plateau_count = 0
             if r_r_success:
                 log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
-                result = calculate_full_score(best_schedule)
-                current_score = result[0]
+                current_score = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
                 tabu_list.clear()
 
                 if current_score < best_score:
                     best_score = current_score
-                    best_schedule_snapshot = ScheduleSnapshot(best_schedule)
+                    best_schedule_snapshot = ScheduleSnapshot(schedule)
                     log_output(f"New best score found after R&R: {best_score}")
     
     # Close log file if it was opened
