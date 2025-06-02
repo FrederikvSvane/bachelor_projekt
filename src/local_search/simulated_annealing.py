@@ -174,8 +174,8 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     hard_weight, medium_weight, soft_weight = _calculate_constraint_weights(schedule)
     
     full_temp_range = start_temp - end_temp
-    high_temp_threshold = full_temp_range * high_temp_threshold_pct # from 60% to 100% of the temperature range
-    medium_temp_threshold = full_temp_range * medium_temp_threshold_pct # from 10% to 60% of the temperature range
+    high_temp_threshold = full_temp_range * high_temp_threshold_pct # from 50% to 100% of the temperature range
+    medium_temp_threshold = full_temp_range * medium_temp_threshold_pct # from 15% to 50% of the temperature range
     low_temp_threshold = full_temp_range * 0 # bottom 10% of the temperature range 
      
     plateau_count = 0

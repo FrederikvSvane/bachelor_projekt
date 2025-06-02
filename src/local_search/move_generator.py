@@ -22,7 +22,8 @@ def generate_single_random_move(
     best_score: int = None
 ) -> Move:
     """Generate a random valid move with inline tabu checking."""
-    meetings: list[Meeting] = schedule.get_all_planned_meetings()
+    meetings: list[Meeting] = schedule.get_all_meetings()
+
 
     if not meetings:
         raise ValueError("No meetings found in the schedule.")
