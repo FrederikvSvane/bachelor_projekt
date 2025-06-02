@@ -1,14 +1,14 @@
 #!/bin/bash
 # Configuration
-OUTPUT_CSV="local_search_runtime_log.csv"
-MAX_CASES=2000
-STEP=50
-DAYS_PER_CASE=0.052
+OUTPUT_CSV="local_search_runtime_log_2000_3000.csv"
+MAX_CASES=3000
+STEP=20
+DAYS_PER_CASE=0.061
 # Create CSV header
 echo "n_cases,n_work_days,runtime_seconds,cumulative_runtime,days_used,initial_hard_violations" > "$OUTPUT_CSV"
 cumulative_runtime=0
 # Loop through case counts
-for ((n_cases=10; n_cases<=MAX_CASES; n_cases+=STEP)); do
+for ((n_cases=2000; n_cases<=MAX_CASES; n_cases+=STEP)); do
     # Calculate work days using the same formula
     n_work_days=$(echo "$n_cases * $DAYS_PER_CASE + 3.21" | bc -l | cut -d. -f1)
     if [ "$n_work_days" -lt 1 ]; then
@@ -35,7 +35,7 @@ for ((n_cases=10; n_cases<=MAX_CASES; n_cases+=STEP)); do
         
         # Try to extract days from output (adjust pattern as needed)
         if grep -q "days:" "$temp_output"; then
-            days_used=$(grep "days:" "$temp_output" | grep -o "[1-9]\+" | head -1)
+            days_used=$(grep "days:" "$temp_output" | grep -o "[0-9]\+" | head -1)
         fi
         
         # Try to extract initial hard violations (adjust pattern as needed)
