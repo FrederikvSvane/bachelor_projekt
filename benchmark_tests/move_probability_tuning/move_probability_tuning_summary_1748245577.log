@@ -1,0 +1,10 @@
+MOVE PROBABILITY TUNING
+Base configuration: Iters=4000, Start=200, End=30
+Probability combinations tested: 15
+Runs per combination: 2
+Max time per run: 600 seconds
+================================================================================
+
+COMBINATION 1: Current_Baseline
+Probabilities: High=0.2, Medium=0.6, Low=0.8
+------------------------------------------------------------

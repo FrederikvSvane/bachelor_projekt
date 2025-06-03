@@ -1,0 +1,34 @@
+ISOLATED COOLING RATE TUNING
+Base command: python -m src.main --method=heuristic 1000 50
+================================================================================
+
+K=5, Run=1: FAILED, Runtime=0.1s
+K=5 Summary: NO SUCCESSFUL RUNS
+
+K=10, Run=1: FAILED, Runtime=0.1s
+K=10 Summary: NO SUCCESSFUL RUNS
+
+K=20, Run=1: FAILED, Runtime=0.1s
+K=20 Summary: NO SUCCESSFUL RUNS
+
+K=30, Run=1: FAILED, Runtime=0.1s
+K=30 Summary: NO SUCCESSFUL RUNS
+
+K=50, Run=1: FAILED, Runtime=0.1s
+K=50 Summary: NO SUCCESSFUL RUNS
+
+K=75, Run=1: FAILED, Runtime=0.1s
+K=75 Summary: NO SUCCESSFUL RUNS
+
+K=100, Run=1: FAILED, Runtime=0.1s
+K=100 Summary: NO SUCCESSFUL RUNS
+
+K=125, Run=1: FAILED, Runtime=0.1s
+K=125 Summary: NO SUCCESSFUL RUNS
+
+K=150, Run=1: FAILED, Runtime=0.1s
+K=150 Summary: NO SUCCESSFUL RUNS
+
+K=200, Run=1: FAILED, Runtime=0.1s
+K=200 Summary: NO SUCCESSFUL RUNS
+

@@ -1,0 +1,31 @@
+SYSTEMATIC GRID SEARCH TUNING
+Base configuration: Iters=4000, Start=500, End=20
+Move probability sets: 6
+Threshold sets: 6
+Total configurations: 36
+Runs per configuration: 1
+Max time per run: 300 seconds
+==========================================================================================
+
+MOVE PROBABILITY SETS:
+1. Baseline: High=0.2, Med=0.6, Low=0.8
+2. Balanced: High=0.3, Med=0.5, Low=0.7
+3. LowHigh: High=0.1, Med=0.6, Low=0.8
+4. MediumHigh: High=0.2, Med=0.7, Low=0.8
+5. Progressive: High=0.4, Med=0.6, Low=0.9
+6. Aggressive: High=0.5, Med=0.7, Low=0.9
+
+THRESHOLD SETS:
+1. Current: High=0.6, Med=0.1
+2. EarlyMedium: High=0.5, Med=0.15
+3. LateSwitches: High=0.7, Med=0.2
+4. EarlySwitches: High=0.4, Med=0.05
+5. Conservative: High=0.8, Med=0.3
+6. VeryConservative: High=0.9, Med=0.4
+
+==========================================================================================
+
+CONFIGURATION 1: Baseline_Current
+Move Probabilities: High=0.2, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.6, Med=0.1
+----------------------------------------------------------------------

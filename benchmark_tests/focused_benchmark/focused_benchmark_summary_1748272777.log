@@ -1,0 +1,9 @@
+FOCUSED BENCHMARK - TOP 5 CONFIGURATIONS
+Runs per configuration: 2
+Max time per run: 120 seconds
+Results directory: benchmark_tests/focused_benchmark
+================================================================================
+
+CONFIGURATION 1: Config1_2000_200_20
+Parameters: Iters=2000, Start=200, End=20
+------------------------------------------------------------
