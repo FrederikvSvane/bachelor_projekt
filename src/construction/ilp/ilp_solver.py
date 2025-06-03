@@ -246,28 +246,52 @@ def generate_schedule_using_ilp(parsed_data: Dict, time_limit: int = 60, gap_rel
         y[key] for key in y.keys()
     ])
     
-    # Case-judge consistency penalty - very efficient approach
-    # Add a small penalty based on judge ID to encourage consistent judge assignment per case
-    case_judge_penalty = 0
+    # Case-judge consistency penalty - optimized binary penalty model
+    # Only create w variables for case-judge pairs that can actually occur
+    w = {}
+    possible_cj = set()
     
     # Create a mapping of meeting to case
     meeting_to_case = {m.meeting_id: m.case.case_id for m in meetings}
     
-    # Create case-specific judge preferences
-    # This encourages meetings from the same case to pick the same judge
-    # by giving each judge a different penalty offset per case
-    case_judge_offset = {}
-    for c_idx, c in enumerate(cases):
-        for j_idx, j in enumerate(judges):
-            # Small unique offset per case-judge pair
-            case_judge_offset[(c.case_id, j.judge_id)] = j_idx * 0.001  # Reduced from 0.1 to 0.001
+    # First pass: identify which case-judge pairs are possible
+    for m, j, r in compatible_assignments:
+        c_id = meeting_to_case[m.meeting_id]
+        possible_cj.add((c_id, j.judge_id))
     
-    # Apply the penalty in the objective
+    # Only create w variables for possible combinations
+    for c_id, j_id in possible_cj:
+        w[(c_id, j_id)] = pulp.LpVariable(
+            f"w_{c_id}_{j_id}", 
+            cat=pulp.LpBinary
+        )
+    
+    # Pre-group x variables by case and judge for efficient constraint generation
+    x_by_cj = {}
     for key in x.keys():
         m_id, j_id, r_id, day, start_t = key
         c_id = meeting_to_case[m_id]
-        if (c_id, j_id) in case_judge_offset:
-            case_judge_penalty += case_judge_offset[(c_id, j_id)] * x[key]
+        if (c_id, j_id) not in x_by_cj:
+            x_by_cj[(c_id, j_id)] = []
+        x_by_cj[(c_id, j_id)].append(x[key])
+    
+    # Add aggregated constraints: w_cj >= any x for meetings in case c with judge j
+    for (c_id, j_id), x_vars in x_by_cj.items():
+        if (c_id, j_id) in w and x_vars:
+            # Single constraint per case-judge pair instead of per meeting
+            problem += (
+                w[(c_id, j_id)] >= pulp.lpSum(x_vars) / len(x_vars),
+                f"Case_Judge_Link_{c_id}_{j_id}"
+            )
+    
+    # Case-judge consistency penalty: sum over cases of (number of judges - 1)
+    # Zero penalty if case handled by single judge, penalty if split across multiple judges
+    case_judge_penalty = pulp.lpSum([
+        pulp.lpSum([w[(c.case_id, j.judge_id)] 
+                   for j in judges 
+                   if (c.case_id, j.judge_id) in w]) - 1
+        for c in cases
+    ])
     
     # Use weight differences to ensure proper prioritization
     # Priority: schedule length >> case-judge consistency > room stability > start time
@@ -336,6 +360,9 @@ def generate_schedule_using_ilp(parsed_data: Dict, time_limit: int = 60, gap_rel
                 meeting = next(m for m in meetings if m.meeting_id == m_id)
                 judge = next(j for j in judges if j.judge_id == j_id)
                 room = next(r for r in rooms if r.room_id == r_id)
+                
+                meeting.judge = judge
+                meeting.room = room
                 
                 duration_slots = meeting_duration_slots[m_id]
                 
