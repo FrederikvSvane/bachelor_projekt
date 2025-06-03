@@ -9,11 +9,16 @@ from src.base_model.compatibility_checks import (
 )
 import time
 
-def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
+def generate_schedule_using_ilp(parsed_data: Dict, time_limit: int = 60, gap_rel: float = 0.005) -> Schedule:
     """
     Generate a schedule using Integer Linear Programming approach.
     Meetings are scheduled as contiguous blocks of time slots.
     Uses day/timeslot structure without flattening.
+    
+    Args:
+        parsed_data: Dictionary containing the scheduling data
+        time_limit: Maximum time in seconds for the solver (default: 60)
+        gap_rel: Relative optimality gap for early termination (default: 0.005 = 0.5%)
     """
 
     work_days = parsed_data["work_days"]
@@ -79,12 +84,16 @@ def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
     
     # Room stability variables - efficient formulation
     # y[(j_id, r_id, d)] = 1 if judge j uses room r on day d (at least once)
+    # Only create y variables for combinations that can actually occur
     y = {}
-    for j in judges:
-        for r in rooms:
-            for d in range(1, work_days + 1):
-                key = (j.judge_id, r.room_id, d)
-                y[key] = pulp.LpVariable(f"y_{key}", cat=pulp.LpBinary)
+    possible_jrd = set()
+    for m, j, r in compatible_assignments:
+        for d in range(1, work_days + 1):
+            possible_jrd.add((j.judge_id, r.room_id, d))
+    
+    for j_id, r_id, d in possible_jrd:
+        key = (j_id, r_id, d)
+        y[key] = pulp.LpVariable(f"y_{key}", cat=pulp.LpBinary)
     
     
     
@@ -202,30 +211,21 @@ def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
         x_by_jrd[jrd_key].append(x[key])
     
     # Link y variables: y[j,r,d] = 1 if judge j has any meeting in room r on day d
-    for j in judges:
-        for r in rooms:
-            for d in range(1, work_days + 1):
-                y_key = (j.judge_id, r.room_id, d)
-                jrd_key = (j.judge_id, r.room_id, d)
-                
-                if jrd_key in x_by_jrd:
-                    # y = 1 if any x variable for this judge/room/day is 1
-                    x_vars = x_by_jrd[jrd_key]
-                    problem += (
-                        y[y_key] <= pulp.lpSum(x_vars),
-                        f"Y_Upper_Bound_{y_key}"
-                    )
-                    # Force y = 1 if any meeting happens
-                    problem += (
-                        y[y_key] >= pulp.lpSum(x_vars) / len(x_vars),
-                        f"Y_Lower_Bound_{y_key}"
-                    )
-                else:
-                    # No possible meetings for this combination
-                    problem += (
-                        y[y_key] == 0,
-                        f"Y_Zero_{y_key}"
-                    )
+    for y_key in y.keys():
+        jrd_key = y_key  # They're the same format
+        
+        if jrd_key in x_by_jrd:
+            # y = 1 if any x variable for this judge/room/day is 1
+            x_vars = x_by_jrd[jrd_key]
+            problem += (
+                y[y_key] <= pulp.lpSum(x_vars),
+                f"Y_Upper_Bound_{y_key}"
+            )
+            # Force y = 1 if any meeting happens
+            problem += (
+                y[y_key] >= pulp.lpSum(x_vars) / len(x_vars),
+                f"Y_Lower_Bound_{y_key}"
+            )
     
     
     
@@ -260,7 +260,7 @@ def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
     for c_idx, c in enumerate(cases):
         for j_idx, j in enumerate(judges):
             # Small unique offset per case-judge pair
-            case_judge_offset[(c.case_id, j.judge_id)] = j_idx * 0.1
+            case_judge_offset[(c.case_id, j.judge_id)] = j_idx * 0.001  # Reduced from 0.1 to 0.001
     
     # Apply the penalty in the objective
     for key in x.keys():
@@ -292,7 +292,26 @@ def generate_schedule_using_ilp(parsed_data: Dict) -> Schedule:
     available_solvers = pulp.listSolvers(onlyAvailable=True)
     print("Available solvers:", available_solvers)
 
-    if available_solvers:
+    # Configure solver with optimality gap and node limit
+    solver = None
+    if 'COIN_CMD' in available_solvers or 'PULP_CBC_CMD' in available_solvers:
+        # Use CBC solver with specific parameters
+        solver = pulp.PULP_CBC_CMD(
+            gapRel=gap_rel,
+            timeLimit=time_limit,
+            msg=1  # Show solver output
+        )
+        print(f"Using CBC solver with gap tolerance {gap_rel*100}% and time limit {time_limit}s")
+    elif 'GLPK_CMD' in available_solvers:
+        solver = pulp.GLPK_CMD(
+            timeLimit=time_limit,
+            msg=1
+        )
+        print(f"Using GLPK solver with time limit {time_limit}s")
+    
+    if solver:
+        problem.solve(solver)
+    elif available_solvers:
         problem.solve()  # PuLP will use the first available solver
     else:
         print("No solvers available!")
