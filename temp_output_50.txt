@@ -1,0 +1,37 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 167, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 144, in main
+    final_schedule = run_local_search(initial_schedule, args.log)
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 383, in run_local_search
+    optimized_schedule = simulated_annealing(
+        schedule,
+    ...<5 lines>...
+        log_file_path=log_file_path
+    )
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 287, in simulated_annealing
+    delta = calculate_delta_score(schedule, move)
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine.py", line 105, in calculate_delta_score
+    hard_violations += nr1_overbooked_room_in_timeslot_delta(schedule, move)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine.py", line 168, in nr1_overbooked_room_in_timeslot_delta
+    violations_after += count_room_overbooking_for_day_timeslot(schedule, day, timeslot)
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine_helpers.py", line 220, in count_room_overbooking_for_day_timeslot
+    return sum(1 for count in room_usage.values() if count > 1)
+                              ~~~~~~~~~~~~~~~~~^^
+KeyboardInterrupt
+All case IDs are present in case_room_matrix.
+Using heuristic-based scheduling method
+Hard violations: 188, Medium violations: 3287, Soft violations: 82
+Starting simulated annealing with parameters:
+Iterations per temperature: 4000
+Max time: inf seconds
+Start temperature: 500
+End temperature: 20
+Move probabilities - High: 0.2, Medium: 0.7, Low: 0.8
+Initial score: 1880328700082
+Initial violations - Hard: 188, Medium: 3287, Soft: 82

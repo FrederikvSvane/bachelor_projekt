@@ -1,0 +1,133 @@
+COOLING RATE (K PARAMETER) TUNING
+Base configuration: Iters=4000, Start=500, End=20
+Move probabilities: High=0.2, Med=0.7, Low=0.8
+K values tested: 10
+Runs per K value: 2
+Max time per run: 600 seconds
+================================================================================
+
+K VALUE 1: Very_Fast_5
+K parameter: 5
+Calculated cooling rate: 0.447214
+------------------------------------------------------------
+Run 1: Score=156013658001267, Runtime=606.0s
+Run 2: Score=61013407001326, Runtime=687.3s
+Statistics: Mean=108513532501296, Std=67175321696482, Min=61013407001326, Max=156013658001267
+Average Runtime: 646.7s
+
+K VALUE 2: Fast_Cooling_10
+K parameter: 10
+Calculated cooling rate: 0.699316
+------------------------------------------------------------
+Run 1: Score=420013935001169, Runtime=603.4s
+Run 2: Score=402013817001304, Runtime=807.2s
+Statistics: Mean=411013876001236, Std=12728005499863, Min=402013817001304, Max=420013935001169
+Average Runtime: 705.3s
+
+K VALUE 3: Very_Fast_25
+K parameter: 25
+Calculated cooling rate: 0.874485
+------------------------------------------------------------
+Run 1: Score=234013671001298, Runtime=606.9s
+Run 2: Score=363013707001209, Runtime=607.6s
+Statistics: Mean=298513689001254, Std=91216800228846, Min=234013671001298, Max=363013707001209
+Average Runtime: 607.2s
+
+K VALUE 4: Fast_Cooling_50
+K parameter: 50
+Calculated cooling rate: 0.936420
+------------------------------------------------------------
+Run 1: Score=282013917001284, Runtime=622.5s
+Run 2: Score=402014037001275, Runtime=611.8s
+Statistics: Mean=342013977001280, Std=84852898595193, Min=282013917001284, Max=402014037001275
+Average Runtime: 617.1s
+
+K VALUE 5: Moderate_Cooling_75
+K parameter: 75
+Calculated cooling rate: 0.957434
+------------------------------------------------------------
+Run 1: Score=246013831001175, Runtime=607.9s
+Run 2: Score=323013710001185, Runtime=677.0s
+Statistics: Mean=284513770501180, Std=54447136591451, Min=246013831001175, Max=323013710001185
+Average Runtime: 642.4s
+
+K VALUE 6: Current_Baseline_100
+K parameter: 100
+Calculated cooling rate: 0.968009
+------------------------------------------------------------
+Run 1: Score=494013954001206, Runtime=605.6s
+Run 2: Score=289014157001322, Runtime=629.1s
+Statistics: Mean=391514055501264, Std=144956746600484, Min=289014157001322, Max=494013954001206
+Average Runtime: 617.4s
+
+K VALUE 7: Moderate_Cooling_125
+K parameter: 125
+Calculated cooling rate: 0.974375
+------------------------------------------------------------
+Run 1: Score=403013721001213, Runtime=605.0s
+Run 2: Score=390013989001245, Runtime=603.2s
+Statistics: Mean=396513855001229, Std=9192198650785, Min=390013989001245, Max=403013721001213
+Average Runtime: 604.1s
+
+K VALUE 8: Slow_Cooling_150
+K parameter: 150
+Calculated cooling rate: 0.978628
+------------------------------------------------------------
+Run 1: Score=384013929001275, Runtime=604.5s
+Run 2: Score=336013575001266, Runtime=606.1s
+Statistics: Mean=360013752001270, Std=33941375812761, Min=336013575001266, Max=384013929001275
+Average Runtime: 605.3s
+
+K VALUE 9: Very_Slow_200
+K parameter: 200
+Calculated cooling rate: 0.983955
+------------------------------------------------------------
+Run 1: Score=156013671001191, Runtime=606.6s
+Run 2: Score=372013965001256, Runtime=614.6s
+Statistics: Mean=264013818001224, Std=152735272625734, Min=156013671001191, Max=372013965001256
+Average Runtime: 610.6s
+
+K VALUE 10: Extremely_Slow_300
+K parameter: 300
+Calculated cooling rate: 0.989292
+------------------------------------------------------------
+Run 1: Score=270013797001201, Runtime=629.6s
+Run 2: Score=416013767001242, Runtime=605.8s
+Statistics: Mean=343013782001222, Std=103237568840062, Min=270013797001201, Max=416013767001242
+Average Runtime: 617.7s
+
+================================================================================
+FINAL RESULTS RANKING:
+================================================================================
+Rank Configuration        K      Cooling Rate Mean Score   ±Std       Best        
+-------------------------------------------------------------------------------------
+1    Very_Fast_5          5      0.447214     108513532501296 ±67175321696482 61013407001326
+2    Very_Slow_200        200    0.983955     264013818001224 ±152735272625734 156013671001191
+3    Moderate_Cooling_75  75     0.957434     284513770501180 ±54447136591451 246013831001175
+4    Very_Fast_25         25     0.874485     298513689001254 ±91216800228846 234013671001298
+5    Fast_Cooling_50      50     0.936420     342013977001280 ±84852898595193 282013917001284
+6    Extremely_Slow_300   300    0.989292     343013782001222 ±103237568840062 270013797001201
+7    Slow_Cooling_150     150    0.978628     360013752001270 ±33941375812761 336013575001266
+8    Current_Baseline_100 100    0.968009     391514055501264 ±144956746600484 289014157001322
+9    Moderate_Cooling_125 125    0.974375     396513855001229 ±9192198650785 390013989001245
+10   Fast_Cooling_10      10     0.699316     411013876001236 ±12728005499863 402013817001304
+
+================================================================================
+🏆 BEST COOLING RATE CONFIGURATION:
+================================================================================
+Configuration: Very_Fast_5
+K Parameter: 5
+Cooling Rate: 0.447214
+Temperature Steps: 5 (controls how gradually temperature decreases)
+
+Performance:
+Mean Score: 108513532501296 ± 67175321696482
+Best Run: 61013407001326
+Consistency: 61.91% variation
+Average Runtime: 646.7 seconds
+
+Interpretation:
+Faster cooling (fewer temperature steps) works better - algorithm converges quicker
+Improvement over K=100 baseline: 283000522999968 points (72.28%)
+================================================================================
+

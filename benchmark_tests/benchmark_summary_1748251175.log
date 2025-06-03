@@ -1,0 +1,784 @@
+BENCHMARK CONFIGURATION:
+Iterations per temperature: [1000, 2000, 3000, 4000, 5000]
+Max time: 120 seconds
+Start temperatures: [200, 300, 400, 500, 600]
+End temperatures: [1, 10, 20, 30, 40]
+Total combinations: 125
+================================================================================
+
+[1/125] Configuration: iters=1000, start_temp=200, end_temp=1
+Individual log file: local_search_benchmark_1000_200_1.log
+Final score: 567014177001168
+Runtime: 121.1 seconds
+----------------------------------------
+[2/125] Configuration: iters=1000, start_temp=200, end_temp=10
+Individual log file: local_search_benchmark_1000_200_10.log
+Final score: 750014431001208
+Runtime: 151.0 seconds
+----------------------------------------
+[3/125] Configuration: iters=1000, start_temp=200, end_temp=20
+Individual log file: local_search_benchmark_1000_200_20.log
+Final score: 647014297001184
+Runtime: 121.4 seconds
+----------------------------------------
+[4/125] Configuration: iters=1000, start_temp=200, end_temp=30
+Individual log file: local_search_benchmark_1000_200_30.log
+Final score: 638014142001151
+Runtime: 121.3 seconds
+----------------------------------------
+[5/125] Configuration: iters=1000, start_temp=200, end_temp=40
+Individual log file: local_search_benchmark_1000_200_40.log
+Final score: 800014798001251
+Runtime: 183.5 seconds
+----------------------------------------
+[6/125] Configuration: iters=1000, start_temp=300, end_temp=1
+Individual log file: local_search_benchmark_1000_300_1.log
+Final score: 599014197001172
+Runtime: 121.0 seconds
+----------------------------------------
+[7/125] Configuration: iters=1000, start_temp=300, end_temp=10
+Individual log file: local_search_benchmark_1000_300_10.log
+Final score: 844014318001173
+Runtime: 121.1 seconds
+----------------------------------------
+[8/125] Configuration: iters=1000, start_temp=300, end_temp=20
+Individual log file: local_search_benchmark_1000_300_20.log
+Final score: 603014002001164
+Runtime: 121.4 seconds
+----------------------------------------
+[9/125] Configuration: iters=1000, start_temp=300, end_temp=30
+Individual log file: local_search_benchmark_1000_300_30.log
+Final score: 740014558001158
+Runtime: 162.1 seconds
+----------------------------------------
+[10/125] Configuration: iters=1000, start_temp=300, end_temp=40
+Individual log file: local_search_benchmark_1000_300_40.log
+Final score: 672014116001186
+Runtime: 121.7 seconds
+----------------------------------------
+[11/125] Configuration: iters=1000, start_temp=400, end_temp=1
+Individual log file: local_search_benchmark_1000_400_1.log
+Final score: 600014056001163
+Runtime: 121.3 seconds
+----------------------------------------
+[12/125] Configuration: iters=1000, start_temp=400, end_temp=10
+Individual log file: local_search_benchmark_1000_400_10.log
+Final score: 728014230001184
+Runtime: 121.5 seconds
+----------------------------------------
+[13/125] Configuration: iters=1000, start_temp=400, end_temp=20
+Individual log file: local_search_benchmark_1000_400_20.log
+Final score: 562014162001237
+Runtime: 121.1 seconds
+----------------------------------------
+[14/125] Configuration: iters=1000, start_temp=400, end_temp=30
+Individual log file: local_search_benchmark_1000_400_30.log
+Final score: 866014327001192
+Runtime: 121.8 seconds
+----------------------------------------
+[15/125] Configuration: iters=1000, start_temp=400, end_temp=40
+Individual log file: local_search_benchmark_1000_400_40.log
+Final score: 538014055001171
+Runtime: 121.1 seconds
+----------------------------------------
+[16/125] Configuration: iters=1000, start_temp=500, end_temp=1
+Individual log file: local_search_benchmark_1000_500_1.log
+Final score: 652014721001141
+Runtime: 121.1 seconds
+----------------------------------------
+[17/125] Configuration: iters=1000, start_temp=500, end_temp=10
+Individual log file: local_search_benchmark_1000_500_10.log
+Final score: 527014139001169
+Runtime: 121.7 seconds
+----------------------------------------
+[18/125] Configuration: iters=1000, start_temp=500, end_temp=20
+Individual log file: local_search_benchmark_1000_500_20.log
+Final score: 619014193001159
+Runtime: 121.3 seconds
+----------------------------------------
+[19/125] Configuration: iters=1000, start_temp=500, end_temp=30
+Individual log file: local_search_benchmark_1000_500_30.log
+Final score: 961014803001163
+Runtime: 159.7 seconds
+----------------------------------------
+[20/125] Configuration: iters=1000, start_temp=500, end_temp=40
+Individual log file: local_search_benchmark_1000_500_40.log
+Final score: 772014159001211
+Runtime: 121.0 seconds
+----------------------------------------
+[21/125] Configuration: iters=1000, start_temp=600, end_temp=1
+Individual log file: local_search_benchmark_1000_600_1.log
+Final score: 845014631001132
+Runtime: 121.7 seconds
+----------------------------------------
+[22/125] Configuration: iters=1000, start_temp=600, end_temp=10
+Individual log file: local_search_benchmark_1000_600_10.log
+Final score: 786014020001187
+Runtime: 121.0 seconds
+----------------------------------------
+[23/125] Configuration: iters=1000, start_temp=600, end_temp=20
+Individual log file: local_search_benchmark_1000_600_20.log
+Final score: 430013782001155
+Runtime: 121.5 seconds
+----------------------------------------
+[24/125] Configuration: iters=1000, start_temp=600, end_temp=30
+Individual log file: local_search_benchmark_1000_600_30.log
+Final score: 692014908001205
+Runtime: 121.0 seconds
+----------------------------------------
+[25/125] Configuration: iters=1000, start_temp=600, end_temp=40
+Individual log file: local_search_benchmark_1000_600_40.log
+Final score: 609014390001203
+Runtime: 220.4 seconds
+----------------------------------------
+[26/125] Configuration: iters=2000, start_temp=200, end_temp=1
+Individual log file: local_search_benchmark_2000_200_1.log
+Final score: 935014559001118
+Runtime: 122.8 seconds
+----------------------------------------
+[27/125] Configuration: iters=2000, start_temp=200, end_temp=10
+Individual log file: local_search_benchmark_2000_200_10.log
+Final score: 547014415001224
+Runtime: 122.4 seconds
+----------------------------------------
+[28/125] Configuration: iters=2000, start_temp=200, end_temp=20
+Individual log file: local_search_benchmark_2000_200_20.log
+Final score: 316013817001194
+Runtime: 122.0 seconds
+----------------------------------------
+[29/125] Configuration: iters=2000, start_temp=200, end_temp=30
+Individual log file: local_search_benchmark_2000_200_30.log
+Final score: 615014386001183
+Runtime: 122.7 seconds
+----------------------------------------
+[30/125] Configuration: iters=2000, start_temp=200, end_temp=40
+Individual log file: local_search_benchmark_2000_200_40.log
+Final score: 496013980001171
+Runtime: 123.0 seconds
+----------------------------------------
+[31/125] Configuration: iters=2000, start_temp=300, end_temp=1
+Individual log file: local_search_benchmark_2000_300_1.log
+Final score: 628014038001188
+Runtime: 123.5 seconds
+----------------------------------------
+[32/125] Configuration: iters=2000, start_temp=300, end_temp=10
+Individual log file: local_search_benchmark_2000_300_10.log
+Final score: 730014261001238
+Runtime: 123.2 seconds
+----------------------------------------
+[33/125] Configuration: iters=2000, start_temp=300, end_temp=20
+Individual log file: local_search_benchmark_2000_300_20.log
+Final score: 576014073001198
+Runtime: 123.4 seconds
+----------------------------------------
+[34/125] Configuration: iters=2000, start_temp=300, end_temp=30
+Individual log file: local_search_benchmark_2000_300_30.log
+Final score: 566013945001159
+Runtime: 123.2 seconds
+----------------------------------------
+[35/125] Configuration: iters=2000, start_temp=300, end_temp=40
+Individual log file: local_search_benchmark_2000_300_40.log
+Final score: 769014391001237
+Runtime: 122.5 seconds
+----------------------------------------
+[36/125] Configuration: iters=2000, start_temp=400, end_temp=1
+Individual log file: local_search_benchmark_2000_400_1.log
+Final score: 657014539001164
+Runtime: 122.0 seconds
+----------------------------------------
+[37/125] Configuration: iters=2000, start_temp=400, end_temp=10
+Individual log file: local_search_benchmark_2000_400_10.log
+Final score: 614014336001171
+Runtime: 123.2 seconds
+----------------------------------------
+[38/125] Configuration: iters=2000, start_temp=400, end_temp=20
+Individual log file: local_search_benchmark_2000_400_20.log
+Final score: 508013975001205
+Runtime: 123.2 seconds
+----------------------------------------
+[39/125] Configuration: iters=2000, start_temp=400, end_temp=30
+Individual log file: local_search_benchmark_2000_400_30.log
+Final score: 660014125001197
+Runtime: 122.9 seconds
+----------------------------------------
+[40/125] Configuration: iters=2000, start_temp=400, end_temp=40
+Individual log file: local_search_benchmark_2000_400_40.log
+Final score: 715014491001205
+Runtime: 122.9 seconds
+----------------------------------------
+[41/125] Configuration: iters=2000, start_temp=500, end_temp=1
+Individual log file: local_search_benchmark_2000_500_1.log
+Final score: 649014135001180
+Runtime: 122.2 seconds
+----------------------------------------
+[42/125] Configuration: iters=2000, start_temp=500, end_temp=10
+Individual log file: local_search_benchmark_2000_500_10.log
+Final score: 554013865001215
+Runtime: 122.1 seconds
+----------------------------------------
+[43/125] Configuration: iters=2000, start_temp=500, end_temp=20
+Individual log file: local_search_benchmark_2000_500_20.log
+Final score: 721014344001181
+Runtime: 123.3 seconds
+----------------------------------------
+[44/125] Configuration: iters=2000, start_temp=500, end_temp=30
+Individual log file: local_search_benchmark_2000_500_30.log
+Final score: 740014223001263
+Runtime: 123.3 seconds
+----------------------------------------
+[45/125] Configuration: iters=2000, start_temp=500, end_temp=40
+Individual log file: local_search_benchmark_2000_500_40.log
+Final score: 609013887001235
+Runtime: 122.3 seconds
+----------------------------------------
+[46/125] Configuration: iters=2000, start_temp=600, end_temp=1
+Individual log file: local_search_benchmark_2000_600_1.log
+Final score: 728014265001229
+Runtime: 123.1 seconds
+----------------------------------------
+[47/125] Configuration: iters=2000, start_temp=600, end_temp=10
+Individual log file: local_search_benchmark_2000_600_10.log
+Final score: 828014309001181
+Runtime: 123.4 seconds
+----------------------------------------
+[48/125] Configuration: iters=2000, start_temp=600, end_temp=20
+Individual log file: local_search_benchmark_2000_600_20.log
+Final score: 677014382001286
+Runtime: 122.5 seconds
+----------------------------------------
+[49/125] Configuration: iters=2000, start_temp=600, end_temp=30
+Individual log file: local_search_benchmark_2000_600_30.log
+Final score: 828014612001227
+Runtime: 122.4 seconds
+----------------------------------------
+[50/125] Configuration: iters=2000, start_temp=600, end_temp=40
+Individual log file: local_search_benchmark_2000_600_40.log
+Final score: 786014482001191
+Runtime: 123.1 seconds
+----------------------------------------
+[51/125] Configuration: iters=3000, start_temp=200, end_temp=1
+Individual log file: local_search_benchmark_3000_200_1.log
+Final score: 670014415001228
+Runtime: 123.4 seconds
+----------------------------------------
+[52/125] Configuration: iters=3000, start_temp=200, end_temp=10
+Individual log file: local_search_benchmark_3000_200_10.log
+Final score: 683014161001253
+Runtime: 122.9 seconds
+----------------------------------------
+[53/125] Configuration: iters=3000, start_temp=200, end_temp=20
+Individual log file: local_search_benchmark_3000_200_20.log
+Final score: 483013725001222
+Runtime: 124.0 seconds
+----------------------------------------
+[54/125] Configuration: iters=3000, start_temp=200, end_temp=30
+Individual log file: local_search_benchmark_3000_200_30.log
+Final score: 566014467001233
+Runtime: 123.7 seconds
+----------------------------------------
+[55/125] Configuration: iters=3000, start_temp=200, end_temp=40
+Individual log file: local_search_benchmark_3000_200_40.log
+Final score: 656014333001199
+Runtime: 122.7 seconds
+----------------------------------------
+[56/125] Configuration: iters=3000, start_temp=300, end_temp=1
+Individual log file: local_search_benchmark_3000_300_1.log
+Final score: 701014399001224
+Runtime: 124.5 seconds
+----------------------------------------
+[57/125] Configuration: iters=3000, start_temp=300, end_temp=10
+Individual log file: local_search_benchmark_3000_300_10.log
+Final score: 727014186001247
+Runtime: 124.9 seconds
+----------------------------------------
+[58/125] Configuration: iters=3000, start_temp=300, end_temp=20
+Individual log file: local_search_benchmark_3000_300_20.log
+Final score: 376013661001231
+Runtime: 123.7 seconds
+----------------------------------------
+[59/125] Configuration: iters=3000, start_temp=300, end_temp=30
+Individual log file: local_search_benchmark_3000_300_30.log
+Final score: 878014424001197
+Runtime: 123.9 seconds
+----------------------------------------
+[60/125] Configuration: iters=3000, start_temp=300, end_temp=40
+Individual log file: local_search_benchmark_3000_300_40.log
+Final score: 897014663001196
+Runtime: 124.9 seconds
+----------------------------------------
+[61/125] Configuration: iters=3000, start_temp=400, end_temp=1
+Individual log file: local_search_benchmark_3000_400_1.log
+Final score: 699014337001268
+Runtime: 125.6 seconds
+----------------------------------------
+[62/125] Configuration: iters=3000, start_temp=400, end_temp=10
+Individual log file: local_search_benchmark_3000_400_10.log
+Final score: 488014310001215
+Runtime: 125.2 seconds
+----------------------------------------
+[63/125] Configuration: iters=3000, start_temp=400, end_temp=20
+Individual log file: local_search_benchmark_3000_400_20.log
+Final score: 652014601001224
+Runtime: 122.9 seconds
+----------------------------------------
+[64/125] Configuration: iters=3000, start_temp=400, end_temp=30
+Individual log file: local_search_benchmark_3000_400_30.log
+Final score: 638014353001189
+Runtime: 123.8 seconds
+----------------------------------------
+[65/125] Configuration: iters=3000, start_temp=400, end_temp=40
+Individual log file: local_search_benchmark_3000_400_40.log
+Final score: 703014160001281
+Runtime: 124.0 seconds
+----------------------------------------
+[66/125] Configuration: iters=3000, start_temp=500, end_temp=1
+Individual log file: local_search_benchmark_3000_500_1.log
+Final score: 798014529001188
+Runtime: 125.6 seconds
+----------------------------------------
+[67/125] Configuration: iters=3000, start_temp=500, end_temp=10
+Individual log file: local_search_benchmark_3000_500_10.log
+Final score: 775014685001259
+Runtime: 125.2 seconds
+----------------------------------------
+[68/125] Configuration: iters=3000, start_temp=500, end_temp=20
+Individual log file: local_search_benchmark_3000_500_20.log
+Final score: 543013915001160
+Runtime: 125.0 seconds
+----------------------------------------
+[69/125] Configuration: iters=3000, start_temp=500, end_temp=30
+Individual log file: local_search_benchmark_3000_500_30.log
+Final score: 503014273001244
+Runtime: 124.1 seconds
+----------------------------------------
+[70/125] Configuration: iters=3000, start_temp=500, end_temp=40
+Individual log file: local_search_benchmark_3000_500_40.log
+Final score: 701014491001217
+Runtime: 125.1 seconds
+----------------------------------------
+[71/125] Configuration: iters=3000, start_temp=600, end_temp=1
+Individual log file: local_search_benchmark_3000_600_1.log
+Final score: 460013876001201
+Runtime: 124.9 seconds
+----------------------------------------
+[72/125] Configuration: iters=3000, start_temp=600, end_temp=10
+Individual log file: local_search_benchmark_3000_600_10.log
+Final score: 591013988001327
+Runtime: 123.5 seconds
+----------------------------------------
+[73/125] Configuration: iters=3000, start_temp=600, end_temp=20
+Individual log file: local_search_benchmark_3000_600_20.log
+Final score: 652014261001257
+Runtime: 122.7 seconds
+----------------------------------------
+[74/125] Configuration: iters=3000, start_temp=600, end_temp=30
+Individual log file: local_search_benchmark_3000_600_30.log
+Final score: 540014397001246
+Runtime: 122.8 seconds
+----------------------------------------
+[75/125] Configuration: iters=3000, start_temp=600, end_temp=40
+Individual log file: local_search_benchmark_3000_600_40.log
+Final score: 557013909001263
+Runtime: 124.6 seconds
+----------------------------------------
+[76/125] Configuration: iters=4000, start_temp=200, end_temp=1
+Individual log file: local_search_benchmark_4000_200_1.log
+Final score: 681014343001180
+Runtime: 125.4 seconds
+----------------------------------------
+[77/125] Configuration: iters=4000, start_temp=200, end_temp=10
+Individual log file: local_search_benchmark_4000_200_10.log
+Final score: 679014474001271
+Runtime: 126.0 seconds
+----------------------------------------
+[78/125] Configuration: iters=4000, start_temp=200, end_temp=20
+Individual log file: local_search_benchmark_4000_200_20.log
+Final score: 493013908001248
+Runtime: 126.8 seconds
+----------------------------------------
+[79/125] Configuration: iters=4000, start_temp=200, end_temp=30
+Individual log file: local_search_benchmark_4000_200_30.log
+Final score: 749014613001204
+Runtime: 125.8 seconds
+----------------------------------------
+[80/125] Configuration: iters=4000, start_temp=200, end_temp=40
+Individual log file: local_search_benchmark_4000_200_40.log
+Final score: 613013902001196
+Runtime: 124.4 seconds
+----------------------------------------
+[81/125] Configuration: iters=4000, start_temp=300, end_temp=1
+Individual log file: local_search_benchmark_4000_300_1.log
+Final score: 677014103001303
+Runtime: 126.4 seconds
+----------------------------------------
+[82/125] Configuration: iters=4000, start_temp=300, end_temp=10
+Individual log file: local_search_benchmark_4000_300_10.log
+Final score: 641014350001239
+Runtime: 124.9 seconds
+----------------------------------------
+[83/125] Configuration: iters=4000, start_temp=300, end_temp=20
+Individual log file: local_search_benchmark_4000_300_20.log
+Final score: 682014219001203
+Runtime: 123.7 seconds
+----------------------------------------
+[84/125] Configuration: iters=4000, start_temp=300, end_temp=30
+Individual log file: local_search_benchmark_4000_300_30.log
+Final score: 538013950001259
+Runtime: 127.0 seconds
+----------------------------------------
+[85/125] Configuration: iters=4000, start_temp=300, end_temp=40
+Individual log file: local_search_benchmark_4000_300_40.log
+Final score: 621014253001253
+Runtime: 125.3 seconds
+----------------------------------------
+[86/125] Configuration: iters=4000, start_temp=400, end_temp=1
+Individual log file: local_search_benchmark_4000_400_1.log
+Final score: 683013874001227
+Runtime: 126.6 seconds
+----------------------------------------
+[87/125] Configuration: iters=4000, start_temp=400, end_temp=10
+Individual log file: local_search_benchmark_4000_400_10.log
+Final score: 523014046001251
+Runtime: 125.3 seconds
+----------------------------------------
+[88/125] Configuration: iters=4000, start_temp=400, end_temp=20
+Individual log file: local_search_benchmark_4000_400_20.log
+Final score: 538014068001251
+Runtime: 126.4 seconds
+----------------------------------------
+[89/125] Configuration: iters=4000, start_temp=400, end_temp=30
+Individual log file: local_search_benchmark_4000_400_30.log
+Final score: 555013998001184
+Runtime: 126.6 seconds
+----------------------------------------
+[90/125] Configuration: iters=4000, start_temp=400, end_temp=40
+Individual log file: local_search_benchmark_4000_400_40.log
+Final score: 651014469001196
+Runtime: 126.7 seconds
+----------------------------------------
+[91/125] Configuration: iters=4000, start_temp=500, end_temp=1
+Individual log file: local_search_benchmark_4000_500_1.log
+Final score: 613014466001214
+Runtime: 126.7 seconds
+----------------------------------------
+[92/125] Configuration: iters=4000, start_temp=500, end_temp=10
+Individual log file: local_search_benchmark_4000_500_10.log
+Final score: 707014174001209
+Runtime: 126.8 seconds
+----------------------------------------
+[93/125] Configuration: iters=4000, start_temp=500, end_temp=20
+Individual log file: local_search_benchmark_4000_500_20.log
+Final score: 342013563001231
+Runtime: 124.5 seconds
+----------------------------------------
+[94/125] Configuration: iters=4000, start_temp=500, end_temp=30
+Individual log file: local_search_benchmark_4000_500_30.log
+Final score: 669014403001363
+Runtime: 124.8 seconds
+----------------------------------------
+[95/125] Configuration: iters=4000, start_temp=500, end_temp=40
+Individual log file: local_search_benchmark_4000_500_40.log
+Final score: 670014336001322
+Runtime: 124.4 seconds
+----------------------------------------
+[96/125] Configuration: iters=4000, start_temp=600, end_temp=1
+Individual log file: local_search_benchmark_4000_600_1.log
+Final score: 651014002001250
+Runtime: 124.4 seconds
+----------------------------------------
+[97/125] Configuration: iters=4000, start_temp=600, end_temp=10
+Individual log file: local_search_benchmark_4000_600_10.log
+Final score: 832014180001274
+Runtime: 123.7 seconds
+----------------------------------------
+[98/125] Configuration: iters=4000, start_temp=600, end_temp=20
+Individual log file: local_search_benchmark_4000_600_20.log
+Final score: 815014182001210
+Runtime: 123.9 seconds
+----------------------------------------
+[99/125] Configuration: iters=4000, start_temp=600, end_temp=30
+Individual log file: local_search_benchmark_4000_600_30.log
+Final score: 751014414001268
+Runtime: 125.0 seconds
+----------------------------------------
+[100/125] Configuration: iters=4000, start_temp=600, end_temp=40
+Individual log file: local_search_benchmark_4000_600_40.log
+Final score: 630014166001281
+Runtime: 124.0 seconds
+----------------------------------------
+[101/125] Configuration: iters=5000, start_temp=200, end_temp=1
+Individual log file: local_search_benchmark_5000_200_1.log
+Final score: 790014352001255
+Runtime: 127.9 seconds
+----------------------------------------
+[102/125] Configuration: iters=5000, start_temp=200, end_temp=10
+Individual log file: local_search_benchmark_5000_200_10.log
+Final score: 597014080001176
+Runtime: 125.0 seconds
+----------------------------------------
+[103/125] Configuration: iters=5000, start_temp=200, end_temp=20
+Individual log file: local_search_benchmark_5000_200_20.log
+Final score: 741014639001292
+Runtime: 125.5 seconds
+----------------------------------------
+[104/125] Configuration: iters=5000, start_temp=200, end_temp=30
+Individual log file: local_search_benchmark_5000_200_30.log
+Final score: 645014217001219
+Runtime: 126.1 seconds
+----------------------------------------
+[105/125] Configuration: iters=5000, start_temp=200, end_temp=40
+Individual log file: local_search_benchmark_5000_200_40.log
+Final score: 724014427001276
+Runtime: 126.6 seconds
+----------------------------------------
+[106/125] Configuration: iters=5000, start_temp=300, end_temp=1
+Individual log file: local_search_benchmark_5000_300_1.log
+Final score: 756014317001249
+Runtime: 125.0 seconds
+----------------------------------------
+[107/125] Configuration: iters=5000, start_temp=300, end_temp=10
+Individual log file: local_search_benchmark_5000_300_10.log
+Final score: 803014565001319
+Runtime: 127.9 seconds
+----------------------------------------
+[108/125] Configuration: iters=5000, start_temp=300, end_temp=20
+Individual log file: local_search_benchmark_5000_300_20.log
+Final score: 425014013001266
+Runtime: 125.5 seconds
+----------------------------------------
+[109/125] Configuration: iters=5000, start_temp=300, end_temp=30
+Individual log file: local_search_benchmark_5000_300_30.log
+Final score: 593014101001261
+Runtime: 124.5 seconds
+----------------------------------------
+[110/125] Configuration: iters=5000, start_temp=300, end_temp=40
+Individual log file: local_search_benchmark_5000_300_40.log
+Final score: 470013929001313
+Runtime: 125.0 seconds
+----------------------------------------
+[111/125] Configuration: iters=5000, start_temp=400, end_temp=1
+Individual log file: local_search_benchmark_5000_400_1.log
+Final score: 644014460001306
+Runtime: 125.0 seconds
+----------------------------------------
+[112/125] Configuration: iters=5000, start_temp=400, end_temp=10
+Individual log file: local_search_benchmark_5000_400_10.log
+Final score: 516014214001221
+Runtime: 127.5 seconds
+----------------------------------------
+[113/125] Configuration: iters=5000, start_temp=400, end_temp=20
+Individual log file: local_search_benchmark_5000_400_20.log
+Final score: 785014567001255
+Runtime: 128.2 seconds
+----------------------------------------
+[114/125] Configuration: iters=5000, start_temp=400, end_temp=30
+Individual log file: local_search_benchmark_5000_400_30.log
+Final score: 601014036001258
+Runtime: 125.0 seconds
+----------------------------------------
+[115/125] Configuration: iters=5000, start_temp=400, end_temp=40
+Individual log file: local_search_benchmark_5000_400_40.log
+Final score: 419014071001225
+Runtime: 126.8 seconds
+----------------------------------------
+[116/125] Configuration: iters=5000, start_temp=500, end_temp=1
+Individual log file: local_search_benchmark_5000_500_1.log
+Final score: 833014516001290
+Runtime: 125.6 seconds
+----------------------------------------
+[117/125] Configuration: iters=5000, start_temp=500, end_temp=10
+Individual log file: local_search_benchmark_5000_500_10.log
+Final score: 348013713001278
+Runtime: 124.6 seconds
+----------------------------------------
+[118/125] Configuration: iters=5000, start_temp=500, end_temp=20
+Individual log file: local_search_benchmark_5000_500_20.log
+Final score: 561014352001265
+Runtime: 128.0 seconds
+----------------------------------------
+[119/125] Configuration: iters=5000, start_temp=500, end_temp=30
+Individual log file: local_search_benchmark_5000_500_30.log
+Final score: 433014201001217
+Runtime: 126.8 seconds
+----------------------------------------
+[120/125] Configuration: iters=5000, start_temp=500, end_temp=40
+Individual log file: local_search_benchmark_5000_500_40.log
+Final score: 552014052001253
+Runtime: 128.1 seconds
+----------------------------------------
+[121/125] Configuration: iters=5000, start_temp=600, end_temp=1
+Individual log file: local_search_benchmark_5000_600_1.log
+Final score: 657014279001273
+Runtime: 127.2 seconds
+----------------------------------------
+[122/125] Configuration: iters=5000, start_temp=600, end_temp=10
+Individual log file: local_search_benchmark_5000_600_10.log
+Final score: 534013703001347
+Runtime: 126.0 seconds
+----------------------------------------
+[123/125] Configuration: iters=5000, start_temp=600, end_temp=20
+Individual log file: local_search_benchmark_5000_600_20.log
+Final score: 744014235001216
+Runtime: 126.8 seconds
+----------------------------------------
+[124/125] Configuration: iters=5000, start_temp=600, end_temp=30
+Individual log file: local_search_benchmark_5000_600_30.log
+Final score: 685014364001295
+Runtime: 125.2 seconds
+----------------------------------------
+[125/125] Configuration: iters=5000, start_temp=600, end_temp=40
+Individual log file: local_search_benchmark_5000_600_40.log
+Final score: 516014127001298
+Runtime: 126.6 seconds
+----------------------------------------
+
+================================================================================
+BENCHMARK RESULTS SUMMARY:
+================================================================================
+
+All results (sorted by score, best first):
+Rank Iterations Start Temp End Temp Final Score  Runtime   
+----------------------------------------------------------------------
+1    2000       200        20       316013817001194.00 122.0     s
+2    4000       500        20       342013563001231.00 124.5     s
+3    5000       500        10       348013713001278.00 124.6     s
+4    3000       300        20       376013661001231.00 123.7     s
+5    5000       400        40       419014071001225.00 126.8     s
+6    5000       300        20       425014013001266.00 125.5     s
+7    1000       600        20       430013782001155.00 121.5     s
+8    5000       500        30       433014201001217.00 126.8     s
+9    3000       600        1        460013876001201.00 124.9     s
+10   5000       300        40       470013929001313.00 125.0     s
+11   3000       200        20       483013725001222.00 124.0     s
+12   3000       400        10       488014310001215.00 125.2     s
+13   4000       200        20       493013908001248.00 126.8     s
+14   2000       200        40       496013980001171.00 123.0     s
+15   3000       500        30       503014273001244.00 124.1     s
+16   2000       400        20       508013975001205.00 123.2     s
+17   5000       600        40       516014127001298.00 126.6     s
+18   5000       400        10       516014214001221.00 127.5     s
+19   4000       400        10       523014046001251.00 125.3     s
+20   1000       500        10       527014139001169.00 121.7     s
+21   5000       600        10       534013703001347.00 126.0     s
+22   4000       300        30       538013950001259.00 127.0     s
+23   1000       400        40       538014055001171.00 121.1     s
+24   4000       400        20       538014068001251.00 126.4     s
+25   3000       600        30       540014397001246.00 122.8     s
+26   3000       500        20       543013915001160.00 125.0     s
+27   2000       200        10       547014415001224.00 122.4     s
+28   5000       500        40       552014052001253.00 128.1     s
+29   2000       500        10       554013865001215.00 122.1     s
+30   4000       400        30       555013998001184.00 126.6     s
+31   3000       600        40       557013909001263.00 124.6     s
+32   5000       500        20       561014352001265.00 128.0     s
+33   1000       400        20       562014162001237.00 121.1     s
+34   2000       300        30       566013945001159.00 123.2     s
+35   3000       200        30       566014467001233.00 123.7     s
+36   1000       200        1        567014177001168.00 121.1     s
+37   2000       300        20       576014073001198.00 123.4     s
+38   3000       600        10       591013988001327.00 123.5     s
+39   5000       300        30       593014101001261.00 124.5     s
+40   5000       200        10       597014080001176.00 125.0     s
+41   1000       300        1        599014197001172.00 121.0     s
+42   1000       400        1        600014056001163.00 121.3     s
+43   5000       400        30       601014036001258.00 125.0     s
+44   1000       300        20       603014002001164.00 121.4     s
+45   2000       500        40       609013887001235.00 122.3     s
+46   1000       600        40       609014390001203.00 220.4     s
+47   4000       200        40       613013902001196.00 124.4     s
+48   4000       500        1        613014466001214.00 126.7     s
+49   2000       400        10       614014336001171.00 123.2     s
+50   2000       200        30       615014386001183.00 122.7     s
+51   1000       500        20       619014193001159.00 121.3     s
+52   4000       300        40       621014253001253.00 125.3     s
+53   2000       300        1        628014038001188.00 123.5     s
+54   4000       600        40       630014166001281.00 124.0     s
+55   1000       200        30       638014142001151.00 121.3     s
+56   3000       400        30       638014353001189.00 123.8     s
+57   4000       300        10       641014350001239.00 124.9     s
+58   5000       400        1        644014460001306.00 125.0     s
+59   5000       200        30       645014217001219.00 126.1     s
+60   1000       200        20       647014297001184.00 121.4     s
+61   2000       500        1        649014135001180.00 122.2     s
+62   4000       600        1        651014002001250.00 124.4     s
+63   4000       400        40       651014469001196.00 126.7     s
+64   3000       600        20       652014261001257.00 122.7     s
+65   3000       400        20       652014601001224.00 122.9     s
+66   1000       500        1        652014721001141.00 121.1     s
+67   3000       200        40       656014333001199.00 122.7     s
+68   5000       600        1        657014279001273.00 127.2     s
+69   2000       400        1        657014539001164.00 122.0     s
+70   2000       400        30       660014125001197.00 122.9     s
+71   4000       500        30       669014403001363.00 124.8     s
+72   4000       500        40       670014336001322.00 124.4     s
+73   3000       200        1        670014415001228.00 123.4     s
+74   1000       300        40       672014116001186.00 121.7     s
+75   4000       300        1        677014103001303.00 126.4     s
+76   2000       600        20       677014382001286.00 122.5     s
+77   4000       200        10       679014474001271.00 126.0     s
+78   4000       200        1        681014343001180.00 125.4     s
+79   4000       300        20       682014219001203.00 123.7     s
+80   4000       400        1        683013874001227.00 126.6     s
+81   3000       200        10       683014161001253.00 122.9     s
+82   5000       600        30       685014364001295.00 125.2     s
+83   1000       600        30       692014908001205.00 121.0     s
+84   3000       400        1        699014337001268.00 125.6     s
+85   3000       300        1        701014399001224.00 124.5     s
+86   3000       500        40       701014491001217.00 125.1     s
+87   3000       400        40       703014160001281.00 124.0     s
+88   4000       500        10       707014174001209.00 126.8     s
+89   2000       400        40       715014491001205.00 122.9     s
+90   2000       500        20       721014344001181.00 123.3     s
+91   5000       200        40       724014427001276.00 126.6     s
+92   3000       300        10       727014186001247.00 124.9     s
+93   1000       400        10       728014230001184.00 121.5     s
+94   2000       600        1        728014265001229.00 123.1     s
+95   2000       300        10       730014261001238.00 123.2     s
+96   2000       500        30       740014223001263.00 123.3     s
+97   1000       300        30       740014558001158.00 162.1     s
+98   5000       200        20       741014639001292.00 125.5     s
+99   5000       600        20       744014235001216.00 126.8     s
+100  4000       200        30       749014613001204.00 125.8     s
+101  1000       200        10       750014431001208.00 151.0     s
+102  4000       600        30       751014414001268.00 125.0     s
+103  5000       300        1        756014317001249.00 125.0     s
+104  2000       300        40       769014391001237.00 122.5     s
+105  1000       500        40       772014159001211.00 121.0     s
+106  3000       500        10       775014685001259.00 125.2     s
+107  5000       400        20       785014567001255.00 128.2     s
+108  1000       600        10       786014020001187.00 121.0     s
+109  2000       600        40       786014482001191.00 123.1     s
+110  5000       200        1        790014352001255.00 127.9     s
+111  3000       500        1        798014529001188.00 125.6     s
+112  1000       200        40       800014798001251.00 183.5     s
+113  5000       300        10       803014565001319.00 127.9     s
+114  4000       600        20       815014182001210.00 123.9     s
+115  2000       600        10       828014309001181.00 123.4     s
+116  2000       600        30       828014612001227.00 122.4     s
+117  4000       600        10       832014180001274.00 123.7     s
+118  5000       500        1        833014516001290.00 125.6     s
+119  1000       300        10       844014318001173.00 121.1     s
+120  1000       600        1        845014631001132.00 121.7     s
+121  1000       400        30       866014327001192.00 121.8     s
+122  3000       300        30       878014424001197.00 123.9     s
+123  3000       300        40       897014663001196.00 124.9     s
+124  2000       200        1        935014559001118.00 122.8     s
+125  1000       500        30       961014803001163.00 159.7     s
+
+================================================================================
+🏆 BEST CONFIGURATION FOUND:
+================================================================================
+Iterations per temperature: 2000
+Start temperature: 200
+End temperature: 20
+Final score: 316013817001194.00
+Runtime: 122.0 seconds
+================================================================================
+
+
+Top 5 configurations:
+1. Iters=2000, Start=200, End=20 → Score: 316013817001194.00 (Runtime: 122.0s)
+2. Iters=4000, Start=500, End=20 → Score: 342013563001231.00 (+25999746000037.00) (Runtime: 124.5s)
+3. Iters=5000, Start=500, End=10 → Score: 348013713001278.00 (+31999896000084.00) (Runtime: 124.6s)
+4. Iters=3000, Start=300, End=20 → Score: 376013661001231.00 (+59999844000037.00) (Runtime: 123.7s)
+5. Iters=5000, Start=400, End=40 → Score: 419014071001225.00 (+103000254000031.00) (Runtime: 126.8s)

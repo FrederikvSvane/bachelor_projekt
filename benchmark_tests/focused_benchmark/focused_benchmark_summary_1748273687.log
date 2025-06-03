@@ -1,0 +1,76 @@
+FOCUSED BENCHMARK - TOP 5 CONFIGURATIONS
+Runs per configuration: 1
+Max time per run: 600 seconds
+Results directory: benchmark_tests/focused_benchmark
+================================================================================
+
+CONFIGURATION 1: Config1_2000_200_20
+Parameters: Iters=2000, Start=200, End=20
+------------------------------------------------------------
+Run 1: Score=222013554001247, Runtime=609.7s, Log: benchmark_tests/focused_benchmark/Config1_2000_200_20/run_1.log
+Statistics: Mean=222013554001247, Std=0, Min=222013554001247, Max=222013554001247
+Average Runtime: 609.7s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config1_2000_200_20/
+
+CONFIGURATION 2: Config2_4000_500_20
+Parameters: Iters=4000, Start=500, End=20
+------------------------------------------------------------
+Run 1: Score=156013665001344, Runtime=643.5s, Log: benchmark_tests/focused_benchmark/Config2_4000_500_20/run_1.log
+Statistics: Mean=156013665001344, Std=0, Min=156013665001344, Max=156013665001344
+Average Runtime: 643.5s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config2_4000_500_20/
+
+CONFIGURATION 3: Config3_5000_500_10
+Parameters: Iters=5000, Start=500, End=10
+------------------------------------------------------------
+Run 1: Score=279013608001213, Runtime=608.4s, Log: benchmark_tests/focused_benchmark/Config3_5000_500_10/run_1.log
+Statistics: Mean=279013608001213, Std=0, Min=279013608001213, Max=279013608001213
+Average Runtime: 608.4s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config3_5000_500_10/
+
+CONFIGURATION 4: Config4_3000_300_20
+Parameters: Iters=3000, Start=300, End=20
+------------------------------------------------------------
+Run 1: Score=352014003001455, Runtime=628.4s, Log: benchmark_tests/focused_benchmark/Config4_3000_300_20/run_1.log
+Statistics: Mean=352014003001455, Std=0, Min=352014003001455, Max=352014003001455
+Average Runtime: 628.4s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config4_3000_300_20/
+
+CONFIGURATION 5: Config5_5000_400_40
+Parameters: Iters=5000, Start=400, End=40
+------------------------------------------------------------
+Run 1: Score=312013809001227, Runtime=605.7s, Log: benchmark_tests/focused_benchmark/Config5_5000_400_40/run_1.log
+Statistics: Mean=312013809001227, Std=0, Min=312013809001227, Max=312013809001227
+Average Runtime: 605.7s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config5_5000_400_40/
+
+================================================================================
+FINAL COMPARISON RESULTS:
+================================================================================
+Rank Configuration        Mean Score      ±Std         Best            Worst           Avg Time  
+----------------------------------------------------------------------------------------------------
+1    Config2_4000_500_20  156013665001344 ±0           156013665001344 156013665001344 643.5     s
+2    Config1_2000_200_20  222013554001247 ±0           222013554001247 222013554001247 609.7     s
+3    Config3_5000_500_10  279013608001213 ±0           279013608001213 279013608001213 608.4     s
+4    Config5_5000_400_40  312013809001227 ±0           312013809001227 312013809001227 605.7     s
+5    Config4_3000_300_20  352014003001455 ±0           352014003001455 352014003001455 628.4     s
+
+================================================================================
+🏆 WINNER: Config2_4000_500_20
+================================================================================
+Parameters: Iters=4000, Start=500, End=20
+Mean Score: 156013665001344 ± 0
+Best Run Score: 156013665001344
+Consistency: 0.00% variation
+Average Runtime: 643.5 seconds
+================================================================================
+
+
+FOLDER STRUCTURE:
+Main directory: benchmark_tests/focused_benchmark/
+Summary log: benchmark_tests/focused_benchmark/focused_benchmark_summary_1748273687.log
+Config logs: benchmark_tests/focused_benchmark/Config2_4000_500_20/
+Config logs: benchmark_tests/focused_benchmark/Config1_2000_200_20/
+Config logs: benchmark_tests/focused_benchmark/Config3_5000_500_10/
+Config logs: benchmark_tests/focused_benchmark/Config5_5000_400_40/
+Config logs: benchmark_tests/focused_benchmark/Config4_3000_300_20/

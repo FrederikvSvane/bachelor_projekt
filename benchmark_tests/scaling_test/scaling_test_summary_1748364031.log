@@ -1,0 +1,78 @@
+SCALING TEST - OPTIMIZED HYPERPARAMETERS
+================================================================================
+Optimized Hyperparameters:
+  method: heuristic
+  iterations: 4000
+  start_temp: 500
+  end_temp: 20
+  high_prob: 0.2
+  med_prob: 0.7
+  low_prob: 0.8
+  high_threshold: 0.5
+  med_threshold: 0.15
+  K: 75
+  plateau_min: 6
+  plateau_max: 18
+  ruin_min: 0.002
+  ruin_max: 0.015
+================================================================================
+
+SIZE TEST 1: Small_500
+Cases: 500, Work days: 30
+----------------------------------------------------------------------
+Run 1: Initial=54831371300694, Final=999800607, Improvement=54830371500087 (100.0%), Runtime=280.0s
+Run 2: Initial=54831371300694, Final=999800607, Improvement=54830371500087 (100.0%), Runtime=281.4s
+
+Size Summary: Mean Initial=54831371300694, Mean Final=999800607±0
+Mean Improvement: 54830371500087 (100.0%), Runtime: 280.7s
+
+SIZE TEST 2: Medium_1000
+Cases: 1000, Work days: 60
+----------------------------------------------------------------------
+Run 1: Initial=105822780701466, Final=712097401190, Improvement=105110683300276 (99.3%), Runtime=193.7s
+Run 2: Initial=105822780701466, Final=712097401190, Improvement=105110683300276 (99.3%), Runtime=194.5s
+
+Size Summary: Mean Initial=105822780701466, Mean Final=712097401190±0
+Mean Improvement: 105110683300276 (99.3%), Runtime: 194.1s
+
+SIZE TEST 3: Large_1500
+Cases: 1500, Work days: 90
+----------------------------------------------------------------------
+Run 1: Initial=169273983502196, Final=962941401743, Improvement=168311042100453 (99.4%), Runtime=166.8s
+Run 2: Initial=169273983502196, Final=962941401743, Improvement=168311042100453 (99.4%), Runtime=165.8s
+
+Size Summary: Mean Initial=169273983502196, Mean Final=962941401743±0
+Mean Improvement: 168311042100453 (99.4%), Runtime: 166.3s
+
+================================================================================
+SCALING TEST RESULTS:
+================================================================================
+Size            Cases  Days  Mean Final   ±Std       Best         Improvement  Runtime   
+-----------------------------------------------------------------------------------------------
+Small_500       500    30    999800607    ±0         999800607    100.0       % 280.7     s
+Medium_1000     1000   60    712097401190 ±0         712097401190 99.3        % 194.1     s
+Large_1500      1500   90    962941401743 ±0         962941401743 99.4        % 166.3     s
+
+================================================================================
+📈 SCALING ANALYSIS:
+================================================================================
+
+ALGORITHM PERFORMANCE ACROSS SCALES:
+
+Runtime Scaling:
+  Small_500: 280.7s (500 cases)
+  Large_1500: 166.3s (1500 cases)
+  Scale Factor: 3.0x cases → 0.6x runtime
+  Scaling Rate: O(n^-0.48)
+
+Quality Scaling:
+  Small_500: 100.0% average improvement
+  Medium_1000: 99.3% average improvement
+  Large_1500: 99.4% average improvement
+
+
+🏆 OPTIMIZED CONFIGURATION SUMMARY:
+Best hyperparameters consistently perform well across all scales.
+Algorithm maintains 99.3%-100.0% improvement across problem sizes.
+================================================================================
+
