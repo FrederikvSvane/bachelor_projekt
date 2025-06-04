@@ -1,0 +1,20 @@
+COOLING RATE (K PARAMETER) TUNING
+Base configuration: Iters=4000, Start=500, End=20
+Move probabilities: High=0.2, Med=0.7, Low=0.8
+K values tested: 10
+Runs per K value: 1
+Max time per run: 30 seconds
+================================================================================
+
+K VALUE 1: Very_Fast_5
+K parameter: 5
+Calculated cooling rate: 0.447214
+------------------------------------------------------------
+Run 1: Score=1550015324001269, Runtime=37.2s
+Statistics: Mean=1550015324001269, Std=0, Min=1550015324001269, Max=1550015324001269
+Average Runtime: 37.2s
+
+K VALUE 2: Fast_Cooling_10
+K parameter: 20
+Calculated cooling rate: 0.844159
+------------------------------------------------------------

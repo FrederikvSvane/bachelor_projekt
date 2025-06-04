@@ -1,0 +1,10 @@
+BENCHMARK CONFIGURATION:
+Iterations per temperature: [1000, 2000, 3000, 4000, 5000]
+Max time: 300 seconds
+Start temperatures: [200, 300, 400, 500, 600]
+End temperatures: [1, 10, 20, 30, 40]
+Total combinations: 125
+================================================================================
+
+[1/125] Configuration: iters=1000, start_temp=200, end_temp=1
+Individual log file: local_search_benchmark_1000_200_1.log

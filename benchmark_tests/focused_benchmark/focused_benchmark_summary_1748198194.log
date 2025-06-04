@@ -1,0 +1,81 @@
+FOCUSED BENCHMARK - TOP 5 CONFIGURATIONS
+Runs per configuration: 2
+Max time per run: 600 seconds
+Results directory: benchmark_tests/focused_benchmark
+================================================================================
+
+CONFIGURATION 1: Config1_2000_400_40
+Parameters: Iters=2000, Start=400, End=40
+------------------------------------------------------------
+Run 1: Score=408013986001229, Runtime=614.3s, Log: benchmark_tests/focused_benchmark/Config1_2000_400_40/run_1.log
+Run 2: Score=307013629001251, Runtime=604.4s, Log: benchmark_tests/focused_benchmark/Config1_2000_400_40/run_2.log
+Statistics: Mean=357513807501240, Std=71418037336947, Min=307013629001251, Max=408013986001229
+Average Runtime: 609.4s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config1_2000_400_40/
+
+CONFIGURATION 2: Config2_4000_200_30
+Parameters: Iters=4000, Start=200, End=30
+------------------------------------------------------------
+Run 1: Score=222013611001305, Runtime=627.2s, Log: benchmark_tests/focused_benchmark/Config2_4000_200_30/run_1.log
+Run 2: Score=54013239001318, Runtime=615.6s, Log: benchmark_tests/focused_benchmark/Config2_4000_200_30/run_2.log
+Statistics: Mean=138013425001312, Std=118794202283053, Min=54013239001318, Max=222013611001305
+Average Runtime: 621.4s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config2_4000_200_30/
+
+CONFIGURATION 3: Config3_2000_200_1
+Parameters: Iters=2000, Start=200, End=1
+------------------------------------------------------------
+Run 1: Score=319013967001096, Runtime=637.1s, Log: benchmark_tests/focused_benchmark/Config3_2000_200_1/run_1.log
+Run 2: Score=78013395001160, Runtime=610.6s, Log: benchmark_tests/focused_benchmark/Config3_2000_200_1/run_2.log
+Statistics: Mean=198513681001128, Std=170413138730992, Min=78013395001160, Max=319013967001096
+Average Runtime: 623.9s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config3_2000_200_1/
+
+CONFIGURATION 4: Config4_5000_200_30
+Parameters: Iters=5000, Start=200, End=30
+------------------------------------------------------------
+Run 1: Score=288013512001183, Runtime=627.9s, Log: benchmark_tests/focused_benchmark/Config4_5000_200_30/run_1.log
+Run 2: Score=597014220001189, Runtime=609.2s, Log: benchmark_tests/focused_benchmark/Config4_5000_200_30/run_2.log
+Statistics: Mean=442513866001186, Std=218496496018248, Min=288013512001183, Max=597014220001189
+Average Runtime: 618.6s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config4_5000_200_30/
+
+CONFIGURATION 5: Config5_3000_400_20
+Parameters: Iters=3000, Start=400, End=20
+------------------------------------------------------------
+Run 1: Score=264013950001258, Runtime=603.6s, Log: benchmark_tests/focused_benchmark/Config5_3000_400_20/run_1.log
+Run 2: Score=110013515001273, Runtime=625.6s, Log: benchmark_tests/focused_benchmark/Config5_3000_400_20/run_2.log
+Statistics: Mean=187013732501266, Std=108894751894168, Min=110013515001273, Max=264013950001258
+Average Runtime: 614.6s
+Individual run logs saved in: benchmark_tests/focused_benchmark/Config5_3000_400_20/
+
+================================================================================
+FINAL COMPARISON RESULTS:
+================================================================================
+Rank Configuration        Mean Score      ±Std         Best            Worst           Avg Time  
+----------------------------------------------------------------------------------------------------
+1    Config2_4000_200_30  138013425001312 ±118794202283053 54013239001318  222013611001305 621.4     s
+2    Config5_3000_400_20  187013732501266 ±108894751894168 110013515001273 264013950001258 614.6     s
+3    Config3_2000_200_1   198513681001128 ±170413138730992 78013395001160  319013967001096 623.9     s
+4    Config1_2000_400_40  357513807501240 ±71418037336947 307013629001251 408013986001229 609.4     s
+5    Config4_5000_200_30  442513866001186 ±218496496018248 288013512001183 597014220001189 618.6     s
+
+================================================================================
+🏆 WINNER: Config2_4000_200_30
+================================================================================
+Parameters: Iters=4000, Start=200, End=30
+Mean Score: 138013425001312 ± 118794202283053
+Best Run Score: 54013239001318
+Consistency: 86.07% variation
+Average Runtime: 621.4 seconds
+================================================================================
+
+
+FOLDER STRUCTURE:
+Main directory: benchmark_tests/focused_benchmark/
+Summary log: benchmark_tests/focused_benchmark/focused_benchmark_summary_1748198194.log
+Config logs: benchmark_tests/focused_benchmark/Config2_4000_200_30/
+Config logs: benchmark_tests/focused_benchmark/Config5_3000_400_20/
+Config logs: benchmark_tests/focused_benchmark/Config3_2000_200_1/
+Config logs: benchmark_tests/focused_benchmark/Config1_2000_400_40/
+Config logs: benchmark_tests/focused_benchmark/Config4_5000_200_30/

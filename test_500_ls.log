@@ -1,0 +1,18 @@
+Starting simulated annealing with parameters:
+Iterations per temperature: 4000
+Max time: 30 seconds
+Start temperature: 500
+End temperature: 20
+Move probabilities - High: 0.2, Medium: 0.7, Low: 0.8
+Initial score: 54121345800704
+Initial violations - Hard: 5412, Medium: 13458, Soft: 704
+Iteration: 1, Time: 0.1s/30s, Temp: 478.72, Accepted: 1326/4000, Score: 11941130000716, Best: 11941130000716, (Hard: 1194, Medium: 11300, Soft: 716), 
+Iteration: 2, Time: 6.9s/30s, Temp: 458.34, Accepted: 937/4000, Score: 6111100900666, Best: 6111100900666, (Hard: 611, Medium: 11009, Soft: 666), 
+Iteration: 3, Time: 12.0s/30s, Temp: 438.83, Accepted: 834/4000, Score: 4661083500665, Best: 4661083500664, (Hard: 466, Medium: 10835, Soft: 664), 
+Iteration: 4, Time: 16.9s/30s, Temp: 420.15, Accepted: 807/4000, Score: 3501073800657, Best: 3501073800656, (Hard: 350, Medium: 10738, Soft: 656), 
+Iteration: 5, Time: 21.6s/30s, Temp: 402.27, Accepted: 789/4000, Score: 3061065200660, Best: 3061065200652, (Hard: 306, Medium: 10652, Soft: 652), 
+Iteration: 6, Time: 26.3s/30s, Temp: 385.14, Accepted: 788/4000, Score: 2971065200656, Best: 2971065200621, (Hard: 297, Medium: 10652, Soft: 621), 
+Iteration: 7, Time: 31.0s/30s, Temp: 368.75, Accepted: 775/4000, Score: 2941053800631, Best: 2941053800628, (Hard: 294, Medium: 10538, Soft: 628), 
+Initial score [54121345800704, 5412, 13458, 704]
+Final score [2941053800631, 294, 10538, 628]
+Days: 30, Total meetings: 546

@@ -1,0 +1,393 @@
+SYSTEMATIC GRID SEARCH TUNING
+Base configuration: Iters=4000, Start=500, End=20
+Move probability sets: 6
+Threshold sets: 6
+Total configurations: 36
+Runs per configuration: 1
+Max time per run: 300 seconds
+==========================================================================================
+
+MOVE PROBABILITY SETS:
+1. Baseline: High=0.2, Med=0.6, Low=0.8
+2. Balanced: High=0.3, Med=0.5, Low=0.7
+3. LowHigh: High=0.1, Med=0.6, Low=0.8
+4. MediumHigh: High=0.2, Med=0.7, Low=0.8
+5. Progressive: High=0.4, Med=0.6, Low=0.9
+6. Aggressive: High=0.5, Med=0.7, Low=0.9
+
+THRESHOLD SETS:
+1. Current: High=0.6, Med=0.1
+2. EarlyMedium: High=0.5, Med=0.15
+3. LateSwitches: High=0.7, Med=0.2
+4. EarlySwitches: High=0.4, Med=0.05
+5. Conservative: High=0.8, Med=0.3
+6. VeryConservative: High=0.9, Med=0.4
+
+==========================================================================================
+
+CONFIGURATION 1: Baseline_Current
+Move Probabilities: High=0.2, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.6, Med=0.1
+----------------------------------------------------------------------
+Run 1: Score=288013773001310, Runtime=305.4s
+Statistics: Mean=288013773001310, Std=0, Min=288013773001310, Max=288013773001310
+Average Runtime: 305.4s
+
+CONFIGURATION 2: Baseline_EarlyMedium
+Move Probabilities: High=0.2, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.5, Med=0.15
+----------------------------------------------------------------------
+Run 1: Score=484014189001186, Runtime=307.1s
+Statistics: Mean=484014189001186, Std=0, Min=484014189001186, Max=484014189001186
+Average Runtime: 307.1s
+
+CONFIGURATION 3: Baseline_LateSwitches
+Move Probabilities: High=0.2, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.7, Med=0.2
+----------------------------------------------------------------------
+Run 1: Score=489013959001247, Runtime=304.8s
+Statistics: Mean=489013959001247, Std=0, Min=489013959001247, Max=489013959001247
+Average Runtime: 304.8s
+
+CONFIGURATION 4: Baseline_EarlySwitches
+Move Probabilities: High=0.2, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.4, Med=0.05
+----------------------------------------------------------------------
+Run 1: Score=618013986001287, Runtime=305.8s
+Statistics: Mean=618013986001287, Std=0, Min=618013986001287, Max=618013986001287
+Average Runtime: 305.8s
+
+CONFIGURATION 5: Baseline_Conservative
+Move Probabilities: High=0.2, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.8, Med=0.3
+----------------------------------------------------------------------
+Run 1: Score=572014180001214, Runtime=307.8s
+Statistics: Mean=572014180001214, Std=0, Min=572014180001214, Max=572014180001214
+Average Runtime: 307.8s
+
+CONFIGURATION 6: Baseline_VeryConservative
+Move Probabilities: High=0.2, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.9, Med=0.4
+----------------------------------------------------------------------
+Run 1: Score=467014011001154, Runtime=306.3s
+Statistics: Mean=467014011001154, Std=0, Min=467014011001154, Max=467014011001154
+Average Runtime: 306.3s
+
+CONFIGURATION 7: Balanced_Current
+Move Probabilities: High=0.3, Med=0.5, Low=0.7
+Temperature Thresholds: High=0.6, Med=0.1
+----------------------------------------------------------------------
+Run 1: Score=689014642001289, Runtime=305.7s
+Statistics: Mean=689014642001289, Std=0, Min=689014642001289, Max=689014642001289
+Average Runtime: 305.7s
+
+CONFIGURATION 8: Balanced_EarlyMedium
+Move Probabilities: High=0.3, Med=0.5, Low=0.7
+Temperature Thresholds: High=0.5, Med=0.15
+----------------------------------------------------------------------
+Run 1: Score=557014023001288, Runtime=307.4s
+Statistics: Mean=557014023001288, Std=0, Min=557014023001288, Max=557014023001288
+Average Runtime: 307.4s
+
+CONFIGURATION 9: Balanced_LateSwitches
+Move Probabilities: High=0.3, Med=0.5, Low=0.7
+Temperature Thresholds: High=0.7, Med=0.2
+----------------------------------------------------------------------
+Run 1: Score=444014069001226, Runtime=305.4s
+Statistics: Mean=444014069001226, Std=0, Min=444014069001226, Max=444014069001226
+Average Runtime: 305.4s
+
+CONFIGURATION 10: Balanced_EarlySwitches
+Move Probabilities: High=0.3, Med=0.5, Low=0.7
+Temperature Thresholds: High=0.4, Med=0.05
+----------------------------------------------------------------------
+Run 1: Score=484014007001214, Runtime=306.6s
+Statistics: Mean=484014007001214, Std=0, Min=484014007001214, Max=484014007001214
+Average Runtime: 306.6s
+
+CONFIGURATION 11: Balanced_Conservative
+Move Probabilities: High=0.3, Med=0.5, Low=0.7
+Temperature Thresholds: High=0.8, Med=0.3
+----------------------------------------------------------------------
+Run 1: Score=577014228001190, Runtime=304.7s
+Statistics: Mean=577014228001190, Std=0, Min=577014228001190, Max=577014228001190
+Average Runtime: 304.7s
+
+CONFIGURATION 12: Balanced_VeryConservative
+Move Probabilities: High=0.3, Med=0.5, Low=0.7
+Temperature Thresholds: High=0.9, Med=0.4
+----------------------------------------------------------------------
+Run 1: Score=308013526001215, Runtime=305.4s
+Statistics: Mean=308013526001215, Std=0, Min=308013526001215, Max=308013526001215
+Average Runtime: 305.4s
+
+CONFIGURATION 13: LowHigh_Current
+Move Probabilities: High=0.1, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.6, Med=0.1
+----------------------------------------------------------------------
+Run 1: Score=386014030001189, Runtime=304.2s
+Statistics: Mean=386014030001189, Std=0, Min=386014030001189, Max=386014030001189
+Average Runtime: 304.2s
+
+CONFIGURATION 14: LowHigh_EarlyMedium
+Move Probabilities: High=0.1, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.5, Med=0.15
+----------------------------------------------------------------------
+Run 1: Score=414013671001215, Runtime=304.7s
+Statistics: Mean=414013671001215, Std=0, Min=414013671001215, Max=414013671001215
+Average Runtime: 304.7s
+
+CONFIGURATION 15: LowHigh_LateSwitches
+Move Probabilities: High=0.1, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.7, Med=0.2
+----------------------------------------------------------------------
+Run 1: Score=542014130001196, Runtime=347.1s
+Statistics: Mean=542014130001196, Std=0, Min=542014130001196, Max=542014130001196
+Average Runtime: 347.1s
+
+CONFIGURATION 16: LowHigh_EarlySwitches
+Move Probabilities: High=0.1, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.4, Med=0.05
+----------------------------------------------------------------------
+Run 1: Score=514013879001308, Runtime=305.6s
+Statistics: Mean=514013879001308, Std=0, Min=514013879001308, Max=514013879001308
+Average Runtime: 305.6s
+
+CONFIGURATION 17: LowHigh_Conservative
+Move Probabilities: High=0.1, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.8, Med=0.3
+----------------------------------------------------------------------
+Run 1: Score=551014145001227, Runtime=305.4s
+Statistics: Mean=551014145001227, Std=0, Min=551014145001227, Max=551014145001227
+Average Runtime: 305.4s
+
+CONFIGURATION 18: LowHigh_VeryConservative
+Move Probabilities: High=0.1, Med=0.6, Low=0.8
+Temperature Thresholds: High=0.9, Med=0.4
+----------------------------------------------------------------------
+Run 1: Score=493014109001232, Runtime=306.4s
+Statistics: Mean=493014109001232, Std=0, Min=493014109001232, Max=493014109001232
+Average Runtime: 306.4s
+
+CONFIGURATION 19: MediumHigh_Current
+Move Probabilities: High=0.2, Med=0.7, Low=0.8
+Temperature Thresholds: High=0.6, Med=0.1
+----------------------------------------------------------------------
+Run 1: Score=432014449001155, Runtime=304.2s
+Statistics: Mean=432014449001155, Std=0, Min=432014449001155, Max=432014449001155
+Average Runtime: 304.2s
+
+CONFIGURATION 20: MediumHigh_EarlyMedium
+Move Probabilities: High=0.2, Med=0.7, Low=0.8
+Temperature Thresholds: High=0.5, Med=0.15
+----------------------------------------------------------------------
+Run 1: Score=253013725001185, Runtime=541.1s
+Statistics: Mean=253013725001185, Std=0, Min=253013725001185, Max=253013725001185
+Average Runtime: 541.1s
+
+CONFIGURATION 21: MediumHigh_LateSwitches
+Move Probabilities: High=0.2, Med=0.7, Low=0.8
+Temperature Thresholds: High=0.7, Med=0.2
+----------------------------------------------------------------------
+Run 1: Score=414014013001196, Runtime=305.0s
+Statistics: Mean=414014013001196, Std=0, Min=414014013001196, Max=414014013001196
+Average Runtime: 305.0s
+
+CONFIGURATION 22: MediumHigh_EarlySwitches
+Move Probabilities: High=0.2, Med=0.7, Low=0.8
+Temperature Thresholds: High=0.4, Med=0.05
+----------------------------------------------------------------------
+Run 1: Score=444014243001328, Runtime=316.8s
+Statistics: Mean=444014243001328, Std=0, Min=444014243001328, Max=444014243001328
+Average Runtime: 316.8s
+
+CONFIGURATION 23: MediumHigh_Conservative
+Move Probabilities: High=0.2, Med=0.7, Low=0.8
+Temperature Thresholds: High=0.8, Med=0.3
+----------------------------------------------------------------------
+Run 1: Score=322013959001183, Runtime=304.7s
+Statistics: Mean=322013959001183, Std=0, Min=322013959001183, Max=322013959001183
+Average Runtime: 304.7s
+
+CONFIGURATION 24: MediumHigh_VeryConservative
+Move Probabilities: High=0.2, Med=0.7, Low=0.8
+Temperature Thresholds: High=0.9, Med=0.4
+----------------------------------------------------------------------
+Run 1: Score=611014248001262, Runtime=307.6s
+Statistics: Mean=611014248001262, Std=0, Min=611014248001262, Max=611014248001262
+Average Runtime: 307.6s
+
+CONFIGURATION 25: Progressive_Current
+Move Probabilities: High=0.4, Med=0.6, Low=0.9
+Temperature Thresholds: High=0.6, Med=0.1
+----------------------------------------------------------------------
+Run 1: Score=360013868001213, Runtime=307.1s
+Statistics: Mean=360013868001213, Std=0, Min=360013868001213, Max=360013868001213
+Average Runtime: 307.1s
+
+CONFIGURATION 26: Progressive_EarlyMedium
+Move Probabilities: High=0.4, Med=0.6, Low=0.9
+Temperature Thresholds: High=0.5, Med=0.15
+----------------------------------------------------------------------
+Run 1: Score=506013997001231, Runtime=307.8s
+Statistics: Mean=506013997001231, Std=0, Min=506013997001231, Max=506013997001231
+Average Runtime: 307.8s
+
+CONFIGURATION 27: Progressive_LateSwitches
+Move Probabilities: High=0.4, Med=0.6, Low=0.9
+Temperature Thresholds: High=0.7, Med=0.2
+----------------------------------------------------------------------
+Run 1: Score=488013815001258, Runtime=308.1s
+Statistics: Mean=488013815001258, Std=0, Min=488013815001258, Max=488013815001258
+Average Runtime: 308.1s
+
+CONFIGURATION 28: Progressive_EarlySwitches
+Move Probabilities: High=0.4, Med=0.6, Low=0.9
+Temperature Thresholds: High=0.4, Med=0.05
+----------------------------------------------------------------------
+Run 1: Score=420014169001253, Runtime=304.9s
+Statistics: Mean=420014169001253, Std=0, Min=420014169001253, Max=420014169001253
+Average Runtime: 304.9s
+
+CONFIGURATION 29: Progressive_Conservative
+Move Probabilities: High=0.4, Med=0.6, Low=0.9
+Temperature Thresholds: High=0.8, Med=0.3
+----------------------------------------------------------------------
+Run 1: Score=486014106001174, Runtime=306.9s
+Statistics: Mean=486014106001174, Std=0, Min=486014106001174, Max=486014106001174
+Average Runtime: 306.9s
+
+CONFIGURATION 30: Progressive_VeryConservative
+Move Probabilities: High=0.4, Med=0.6, Low=0.9
+Temperature Thresholds: High=0.9, Med=0.4
+----------------------------------------------------------------------
+Run 1: Score=317013885001224, Runtime=306.7s
+Statistics: Mean=317013885001224, Std=0, Min=317013885001224, Max=317013885001224
+Average Runtime: 306.7s
+
+CONFIGURATION 31: Aggressive_Current
+Move Probabilities: High=0.5, Med=0.7, Low=0.9
+Temperature Thresholds: High=0.6, Med=0.1
+----------------------------------------------------------------------
+Run 1: Score=419014107001284, Runtime=305.3s
+Statistics: Mean=419014107001284, Std=0, Min=419014107001284, Max=419014107001284
+Average Runtime: 305.3s
+
+CONFIGURATION 32: Aggressive_EarlyMedium
+Move Probabilities: High=0.5, Med=0.7, Low=0.9
+Temperature Thresholds: High=0.5, Med=0.15
+----------------------------------------------------------------------
+Run 1: Score=301013582001173, Runtime=307.5s
+Statistics: Mean=301013582001173, Std=0, Min=301013582001173, Max=301013582001173
+Average Runtime: 307.5s
+
+CONFIGURATION 33: Aggressive_LateSwitches
+Move Probabilities: High=0.5, Med=0.7, Low=0.9
+Temperature Thresholds: High=0.7, Med=0.2
+----------------------------------------------------------------------
+Run 1: Score=567014254001271, Runtime=306.2s
+Statistics: Mean=567014254001271, Std=0, Min=567014254001271, Max=567014254001271
+Average Runtime: 306.2s
+
+CONFIGURATION 34: Aggressive_EarlySwitches
+Move Probabilities: High=0.5, Med=0.7, Low=0.9
+Temperature Thresholds: High=0.4, Med=0.05
+----------------------------------------------------------------------
+Run 1: Score=273013632001190, Runtime=305.6s
+Statistics: Mean=273013632001190, Std=0, Min=273013632001190, Max=273013632001190
+Average Runtime: 305.6s
+
+CONFIGURATION 35: Aggressive_Conservative
+Move Probabilities: High=0.5, Med=0.7, Low=0.9
+Temperature Thresholds: High=0.8, Med=0.3
+----------------------------------------------------------------------
+Run 1: Score=485014151001211, Runtime=306.2s
+Statistics: Mean=485014151001211, Std=0, Min=485014151001211, Max=485014151001211
+Average Runtime: 306.2s
+
+CONFIGURATION 36: Aggressive_VeryConservative
+Move Probabilities: High=0.5, Med=0.7, Low=0.9
+Temperature Thresholds: High=0.9, Med=0.4
+----------------------------------------------------------------------
+Run 1: Score=303014223001151, Runtime=305.9s
+Statistics: Mean=303014223001151, Std=0, Min=303014223001151, Max=303014223001151
+Average Runtime: 305.9s
+
+====================================================================================================
+FINAL RESULTS RANKING:
+====================================================================================================
+Rank Configuration        Move Set     Thresh Set   Mean Score   ±Std       Best      
+----------------------------------------------------------------------------------------------------
+1    MediumHigh_EarlyMedium MediumHigh   EarlyMedium  253013725001185 ±0         253013725001185
+2    Aggressive_EarlySwitches Aggressive   EarlySwitches 273013632001190 ±0         273013632001190
+3    Baseline_Current     Baseline     Current      288013773001310 ±0         288013773001310
+4    Aggressive_EarlyMedium Aggressive   EarlyMedium  301013582001173 ±0         301013582001173
+5    Aggressive_VeryConservative Aggressive   VeryConservative 303014223001151 ±0         303014223001151
+6    Balanced_VeryConservative Balanced     VeryConservative 308013526001215 ±0         308013526001215
+7    Progressive_VeryConservative Progressive  VeryConservative 317013885001224 ±0         317013885001224
+8    MediumHigh_Conservative MediumHigh   Conservative 322013959001183 ±0         322013959001183
+9    Progressive_Current  Progressive  Current      360013868001213 ±0         360013868001213
+10   LowHigh_Current      LowHigh      Current      386014030001189 ±0         386014030001189
+11   LowHigh_EarlyMedium  LowHigh      EarlyMedium  414013671001215 ±0         414013671001215
+12   MediumHigh_LateSwitches MediumHigh   LateSwitches 414014013001196 ±0         414014013001196
+13   Aggressive_Current   Aggressive   Current      419014107001284 ±0         419014107001284
+14   Progressive_EarlySwitches Progressive  EarlySwitches 420014169001253 ±0         420014169001253
+15   MediumHigh_Current   MediumHigh   Current      432014449001155 ±0         432014449001155
+16   Balanced_LateSwitches Balanced     LateSwitches 444014069001226 ±0         444014069001226
+17   MediumHigh_EarlySwitches MediumHigh   EarlySwitches 444014243001328 ±0         444014243001328
+18   Baseline_VeryConservative Baseline     VeryConservative 467014011001154 ±0         467014011001154
+19   Balanced_EarlySwitches Balanced     EarlySwitches 484014007001214 ±0         484014007001214
+20   Baseline_EarlyMedium Baseline     EarlyMedium  484014189001186 ±0         484014189001186
+21   Aggressive_Conservative Aggressive   Conservative 485014151001211 ±0         485014151001211
+22   Progressive_Conservative Progressive  Conservative 486014106001174 ±0         486014106001174
+23   Progressive_LateSwitches Progressive  LateSwitches 488013815001258 ±0         488013815001258
+24   Baseline_LateSwitches Baseline     LateSwitches 489013959001247 ±0         489013959001247
+25   LowHigh_VeryConservative LowHigh      VeryConservative 493014109001232 ±0         493014109001232
+26   Progressive_EarlyMedium Progressive  EarlyMedium  506013997001231 ±0         506013997001231
+27   LowHigh_EarlySwitches LowHigh      EarlySwitches 514013879001308 ±0         514013879001308
+28   LowHigh_LateSwitches LowHigh      LateSwitches 542014130001196 ±0         542014130001196
+29   LowHigh_Conservative LowHigh      Conservative 551014145001227 ±0         551014145001227
+30   Balanced_EarlyMedium Balanced     EarlyMedium  557014023001288 ±0         557014023001288
+31   Aggressive_LateSwitches Aggressive   LateSwitches 567014254001271 ±0         567014254001271
+32   Baseline_Conservative Baseline     Conservative 572014180001214 ±0         572014180001214
+33   Balanced_Conservative Balanced     Conservative 577014228001190 ±0         577014228001190
+34   MediumHigh_VeryConservative MediumHigh   VeryConservative 611014248001262 ±0         611014248001262
+35   Baseline_EarlySwitches Baseline     EarlySwitches 618013986001287 ±0         618013986001287
+36   Balanced_Current     Balanced     Current      689014642001289 ±0         689014642001289
+
+====================================================================================================
+🏆 BEST GRID SEARCH CONFIGURATION:
+====================================================================================================
+Configuration: MediumHigh_EarlyMedium
+Move Probability Set: MediumHigh
+Threshold Set: EarlyMedium
+
+DETAILED SETTINGS:
+Move Probabilities: High=0.2, Med=0.7, Low=0.8
+Temperature Thresholds: High=0.5, Med=0.15
+
+PERFORMANCE:
+Mean Score: 253013725001185 ± 0
+Best Run: 253013725001185
+Consistency: 0.00% variation
+Average Runtime: 541.1 seconds
+
+ANALYSIS BY COMPONENT:
+Best Move Probability Sets (by average performance):
+1. Aggressive: 391347324834547 average
+2. MediumHigh: 412680772834552 average
+3. Progressive: 429513973334559 average
+4. LowHigh: 483347327334561 average
+5. Baseline: 486347349667900 average
+6. Balanced: 509847415834570 average
+
+Best Threshold Sets (by average performance):
+1. VeryConservative: 416514000334540 average
+2. EarlyMedium: 419180531167880 average
+3. Current: 429014144834573 average
+4. EarlySwitches: 458847319334597 average
+5. LateSwitches: 490680706667899 average
+6. Conservative: 498847461501200 average
+
+====================================================================================================
+

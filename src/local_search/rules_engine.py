@@ -57,7 +57,7 @@ def _calculate_constraint_weights(schedule: Schedule) -> tuple[int, int, int]:
     return hard_weight, medium_weight, soft_weight
 
 
-def calculate_full_score(schedule: Schedule) -> int:
+def calculate_full_score(schedule: Schedule) -> list[int]:
     if hard_constraint_weight is None:
         _initialize_constraint_weights(schedule)
     # Hard
@@ -711,6 +711,8 @@ def nr31_distance_between_meetings_full(schedule: Schedule):
     judges = schedule.get_all_judges()
     for judge in judges:
         violations += calculate_gaps_between_appointments(schedule, judge.judge_id)
+    
+    violations += schedule.work_days - 1  # Add one violation for each day without meetings
         
     return (offset + step * violations)
 
@@ -728,6 +730,8 @@ def nr31_distance_between_meetings_delta(schedule: Schedule, move: Move):
     affected_pairs = get_affected_judge_day_pairs(schedule, move)
     for day, judge in affected_pairs:
         before_violations += calculate_gaps_between_appointments(schedule, judge, day)  
+    
+    before_violations += schedule.work_days - 1  # Add one violation for each day without meetings
         
     do_move(move, schedule)
     
@@ -739,6 +743,9 @@ def nr31_distance_between_meetings_delta(schedule: Schedule, move: Move):
     after_violations = 0
     for day, judge in affected_pairs:
         after_violations += calculate_gaps_between_appointments(schedule, judge, day)
+
+    after_violations += schedule.work_days - 1  # Add one violation for each day without meetings
+    
     undo_move(move, schedule)
     
     return (offset + step * (after_violations - before_violations))

@@ -1,0 +1,4 @@
+ISOLATED COOLING RATE TUNING
+Base command: python -m src.main --method=heuristic 1000 50
+================================================================================
+

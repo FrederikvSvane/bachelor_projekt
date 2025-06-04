@@ -1,0 +1,93 @@
+COOLING RATE (K PARAMETER) TUNING
+Base configuration: Iters=4000, Start=200, End=30
+Move probabilities: High=0.3, Med=0.5, Low=0.7
+K values tested: 6
+Runs per K value: 2
+Max time per run: 600 seconds
+================================================================================
+
+K VALUE 1: Very_Fast_25
+K parameter: 25
+Calculated cooling rate: 0.923997
+------------------------------------------------------------
+Run 1: Score=11013244001276, Runtime=603.5s
+Run 2: Score=234013557001308, Runtime=637.4s
+Statistics: Mean=122513400501292, Std=157685033529045, Min=11013244001276, Max=234013557001308
+Average Runtime: 620.5s
+
+K VALUE 2: Fast_Cooling_50
+K parameter: 50
+Calculated cooling rate: 0.962023
+------------------------------------------------------------
+Run 1: Score=156013611001294, Runtime=621.2s
+Run 2: Score=246013719001287, Runtime=605.3s
+Statistics: Mean=201013665001290, Std=63639686674317, Min=156013611001294, Max=246013719001287
+Average Runtime: 613.2s
+
+K VALUE 3: Current_Baseline_100
+K parameter: 100
+Calculated cooling rate: 0.981020
+------------------------------------------------------------
+Run 1: Score=215013451001226, Runtime=604.3s
+Run 2: Score=234013527001434, Runtime=605.8s
+Statistics: Mean=224513489001330, Std=13435082582807, Min=215013451001226, Max=234013527001434
+Average Runtime: 605.0s
+
+K VALUE 4: Slow_Cooling_150
+K parameter: 150
+Calculated cooling rate: 0.987348
+------------------------------------------------------------
+Run 1: Score=90013419001287, Runtime=605.7s
+Run 2: Score=229013581001205, Runtime=644.6s
+Statistics: Mean=159513500001246, Std=98287957136171, Min=90013419001287, Max=229013581001205
+Average Runtime: 625.2s
+
+K VALUE 5: Very_Slow_200
+K parameter: 200
+Calculated cooling rate: 0.990512
+------------------------------------------------------------
+Run 1: Score=231013585001215, Runtime=603.7s
+Run 2: Score=216013670001188, Runtime=606.3s
+Statistics: Mean=223513627501202, Std=10606541613741, Min=216013670001188, Max=231013585001215
+Average Runtime: 605.0s
+
+K VALUE 6: Extremely_Slow_300
+K parameter: 300
+Calculated cooling rate: 0.993675
+------------------------------------------------------------
+Run 1: Score=94013391001437, Runtime=635.5s
+Run 2: Score=132013359001178, Runtime=603.8s
+Statistics: Mean=113013375001308, Std=26870035057489, Min=94013391001437, Max=132013359001178
+Average Runtime: 619.6s
+
+================================================================================
+FINAL RESULTS RANKING:
+================================================================================
+Rank Configuration        K      Cooling Rate Mean Score   ±Std       Best        
+-------------------------------------------------------------------------------------
+1    Extremely_Slow_300   300    0.993675     113013375001308 ±26870035057489 94013391001437
+2    Very_Fast_25         25     0.923997     122513400501292 ±157685033529045 11013244001276
+3    Slow_Cooling_150     150    0.987348     159513500001246 ±98287957136171 90013419001287
+4    Fast_Cooling_50      50     0.962023     201013665001290 ±63639686674317 156013611001294
+5    Very_Slow_200        200    0.990512     223513627501202 ±10606541613741 216013670001188
+6    Current_Baseline_100 100    0.981020     224513489001330 ±13435082582807 215013451001226
+
+================================================================================
+🏆 BEST COOLING RATE CONFIGURATION:
+================================================================================
+Configuration: Extremely_Slow_300
+K Parameter: 300
+Cooling Rate: 0.993675
+Temperature Steps: 300 (controls how gradually temperature decreases)
+
+Performance:
+Mean Score: 113013375001308 ± 26870035057489
+Best Run: 94013391001437
+Consistency: 23.78% variation
+Average Runtime: 619.6 seconds
+
+Interpretation:
+Slower cooling (more temperature steps) works better - more gradual exploration
+Improvement over K=100 baseline: 111500114000022 points (49.66%)
+================================================================================
+

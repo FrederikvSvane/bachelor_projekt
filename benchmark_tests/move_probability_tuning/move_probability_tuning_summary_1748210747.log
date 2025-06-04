@@ -1,0 +1,185 @@
+MOVE PROBABILITY TUNING
+Base configuration: Iters=4000, Start=200, End=30
+Probability combinations tested: 15
+Runs per combination: 2
+Max time per run: 600 seconds
+================================================================================
+
+COMBINATION 1: Current_Baseline
+Probabilities: High=0.2, Medium=0.6, Low=0.8
+------------------------------------------------------------
+Run 1: Score=250013758001305, Runtime=647.5s
+Run 2: Score=228013581001251, Runtime=603.7s
+Statistics: Mean=239013669501278, Std=15556474344042, Min=228013581001251, Max=250013758001305
+Average Runtime: 625.6s
+
+COMBINATION 2: HighExplore_1
+Probabilities: High=0.4, Medium=0.6, Low=0.8
+------------------------------------------------------------
+Run 1: Score=210013658001338, Runtime=613.5s
+Run 2: Score=108013365001239, Runtime=603.3s
+Statistics: Mean=159013511501288, Std=72125098863385, Min=108013365001239, Max=210013658001338
+Average Runtime: 608.4s
+
+COMBINATION 3: HighExplore_2
+Probabilities: High=0.5, Medium=0.6, Low=0.8
+------------------------------------------------------------
+Run 1: Score=228013719001296, Runtime=624.8s
+Run 2: Score=390013794001218, Runtime=605.7s
+Statistics: Mean=309013756501257, Std=114551351585174, Min=228013719001296, Max=390013794001218
+Average Runtime: 615.3s
+
+COMBINATION 4: LowHigh_1
+Probabilities: High=0.1, Medium=0.6, Low=0.8
+------------------------------------------------------------
+Run 1: Score=162013695001223, Runtime=606.0s
+Run 2: Score=353013986001197, Runtime=605.0s
+Statistics: Mean=257513840501210, Std=135057600974686, Min=162013695001223, Max=353013986001197
+Average Runtime: 605.5s
+
+COMBINATION 5: LowHigh_2
+Probabilities: High=0.15, Medium=0.6, Low=0.8
+------------------------------------------------------------
+Run 1: Score=264013965001280, Runtime=608.9s
+Run 2: Score=342013743001282, Runtime=605.8s
+Statistics: Mean=303013854001281, Std=55154171954847, Min=264013965001280, Max=342013743001282
+Average Runtime: 607.4s
+
+COMBINATION 6: MediumLow_1
+Probabilities: High=0.2, Medium=0.5, Low=0.8
+------------------------------------------------------------
+Run 1: Score=422013773001208, Runtime=656.9s
+Run 2: Score=114013347001255, Runtime=603.3s
+Statistics: Mean=268013560001232, Std=217789189832912, Min=114013347001255, Max=422013773001208
+Average Runtime: 630.1s
+
+COMBINATION 7: MediumHigh_1
+Probabilities: High=0.2, Medium=0.7, Low=0.8
+------------------------------------------------------------
+Run 1: Score=74013377001355, Runtime=615.6s
+Run 2: Score=108013347001243, Runtime=605.4s
+Statistics: Mean=91013362001299, Std=24041609347060, Min=74013377001355, Max=108013347001243
+Average Runtime: 610.5s
+
+COMBINATION 8: LowHigh_3
+Probabilities: High=0.2, Medium=0.6, Low=0.9
+------------------------------------------------------------
+Run 1: Score=355013755001332, Runtime=616.0s
+Run 2: Score=240013722001200, Runtime=622.0s
+Statistics: Mean=297513738501266, Std=81317303171070, Min=240013722001200, Max=355013755001332
+Average Runtime: 619.0s
+
+COMBINATION 9: LowLow_1
+Probabilities: High=0.2, Medium=0.6, Low=0.7
+------------------------------------------------------------
+Run 1: Score=311013824001300, Runtime=764.3s
+Run 2: Score=121013389001332, Runtime=603.7s
+Statistics: Mean=216013606501316, Std=134350596016871, Min=121013389001332, Max=311013824001300
+Average Runtime: 684.0s
+
+COMBINATION 10: Balanced_1
+Probabilities: High=0.3, Medium=0.5, Low=0.7
+------------------------------------------------------------
+Run 1: Score=13239001225, Runtime=607.2s
+Run 2: Score=170013308001283, Runtime=606.2s
+Statistics: Mean=85013273501254, Std=120208201592122, Min=13239001225, Max=170013308001283
+Average Runtime: 606.7s
+
+COMBINATION 11: Balanced_2
+Probabilities: High=0.3, Medium=0.6, Low=0.7
+------------------------------------------------------------
+Run 1: Score=213013638001320, Runtime=609.9s
+Run 2: Score=152013449001219, Runtime=604.1s
+Statistics: Mean=182513543501270, Std=43133647295632, Min=152013449001219, Max=213013638001320
+Average Runtime: 607.0s
+
+COMBINATION 12: Gradual_1
+Probabilities: High=0.2, Medium=0.4, Low=0.6
+------------------------------------------------------------
+Run 1: Score=294013893001297, Runtime=652.1s
+Run 2: Score=210013479001305, Runtime=615.7s
+Statistics: Mean=252013686001301, Std=59397262361872, Min=210013479001305, Max=294013893001297
+Average Runtime: 633.9s
+
+COMBINATION 13: Gradual_2
+Probabilities: High=0.3, Medium=0.5, Low=0.8
+------------------------------------------------------------
+Run 1: Score=384014159001242, Runtime=643.6s
+Run 2: Score=156013659001204, Runtime=604.8s
+Statistics: Mean=270013909001223, Std=161220699663950, Min=156013659001204, Max=384014159001242
+Average Runtime: 624.2s
+
+COMBINATION 14: Aggressive_1
+Probabilities: High=0.6, Medium=0.7, Low=0.9
+------------------------------------------------------------
+Run 1: Score=264014002001273, Runtime=606.4s
+Run 2: Score=342013866001172, Runtime=633.6s
+Statistics: Mean=303013934001222, Std=55154232765957, Min=264014002001273, Max=342013866001172
+Average Runtime: 620.0s
+
+COMBINATION 15: Aggressive_2
+Probabilities: High=0.5, Medium=0.8, Low=0.9
+------------------------------------------------------------
+Run 1: Score=253013638001273, Runtime=605.1s
+Run 2: Score=40013240001238, Runtime=606.8s
+Statistics: Mean=146513439001256, Std=150614025821258, Min=40013240001238, Max=253013638001273
+Average Runtime: 605.9s
+
+================================================================================
+FINAL RESULTS RANKING:
+================================================================================
+Rank Configuration      High   Med    Low    Mean Score   ±Std       Best        
+-------------------------------------------------------------------------------------
+1    Balanced_1         0.3    0.5    0.7    85013273501254 ±120208201592122 13239001225 
+2    MediumHigh_1       0.2    0.7    0.8    91013362001299 ±24041609347060 74013377001355
+3    Aggressive_2       0.5    0.8    0.9    146513439001256 ±150614025821258 40013240001238
+4    HighExplore_1      0.4    0.6    0.8    159013511501288 ±72125098863385 108013365001239
+5    Balanced_2         0.3    0.6    0.7    182513543501270 ±43133647295632 152013449001219
+6    LowLow_1           0.2    0.6    0.7    216013606501316 ±134350596016871 121013389001332
+7    Current_Baseline   0.2    0.6    0.8    239013669501278 ±15556474344042 228013581001251
+8    Gradual_1          0.2    0.4    0.6    252013686001301 ±59397262361872 210013479001305
+9    LowHigh_1          0.1    0.6    0.8    257513840501210 ±135057600974686 162013695001223
+10   MediumLow_1        0.2    0.5    0.8    268013560001232 ±217789189832912 114013347001255
+11   Gradual_2          0.3    0.5    0.8    270013909001223 ±161220699663950 156013659001204
+12   LowHigh_3          0.2    0.6    0.9    297513738501266 ±81317303171070 240013722001200
+13   LowHigh_2          0.15   0.6    0.8    303013854001281 ±55154171954847 264013965001280
+14   Aggressive_1       0.6    0.7    0.9    303013934001222 ±55154232765957 264014002001273
+15   HighExplore_2      0.5    0.6    0.8    309013756501257 ±114551351585174 228013719001296
+
+================================================================================
+🏆 BEST MOVE PROBABILITY CONFIGURATION:
+================================================================================
+Configuration: Balanced_1
+High Temperature Compound Probability: 0.3 (30% compound, 70% single)
+Medium Temperature Compound Probability: 0.5 (50% compound, 50% single)
+Low Temperature Compound Probability: 0.7 (70% compound, 30% single)
+
+Performance:
+Mean Score: 85013273501254 ± 120208201592122
+Best Run: 13239001225
+Consistency: 141.40% variation
+Average Runtime: 606.7 seconds
+
+Compared to baseline:
+Improvement over baseline: 154000396000024 points (64.43%)
+================================================================================
+
+
+FOLDER STRUCTURE:
+Main directory: benchmark_tests/move_probability_tuning/
+Summary log: benchmark_tests/move_probability_tuning/move_probability_tuning_summary_1748210747.log
+Config logs: benchmark_tests/move_probability_tuning/Balanced_1/
+Config logs: benchmark_tests/move_probability_tuning/MediumHigh_1/
+Config logs: benchmark_tests/move_probability_tuning/Aggressive_2/
+Config logs: benchmark_tests/move_probability_tuning/HighExplore_1/
+Config logs: benchmark_tests/move_probability_tuning/Balanced_2/
+Config logs: benchmark_tests/move_probability_tuning/LowLow_1/
+Config logs: benchmark_tests/move_probability_tuning/Current_Baseline/
+Config logs: benchmark_tests/move_probability_tuning/Gradual_1/
+Config logs: benchmark_tests/move_probability_tuning/LowHigh_1/
+Config logs: benchmark_tests/move_probability_tuning/MediumLow_1/
+Config logs: benchmark_tests/move_probability_tuning/Gradual_2/
+Config logs: benchmark_tests/move_probability_tuning/LowHigh_3/
+Config logs: benchmark_tests/move_probability_tuning/LowHigh_2/
+Config logs: benchmark_tests/move_probability_tuning/Aggressive_1/
+Config logs: benchmark_tests/move_probability_tuning/HighExplore_2/
