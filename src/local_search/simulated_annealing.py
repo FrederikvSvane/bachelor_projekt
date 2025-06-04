@@ -153,7 +153,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     
     # Custom log function to write to both console and file
     def log_output(message):
-        #print(message)
+        print(message)
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately
@@ -322,14 +322,26 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         current_iteration += 1
         current_temperature *= cooling_rate
 
-        if hard_violations == 0:
-            log_output(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
-              f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
-              f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
-              f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
-            log_output("All hard violations resolved!")
-            log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
-            return best_schedule_snapshot.restore_schedule(schedule)  # Stop if no hard violations
+        #if hard_violations == 0:
+        #    log_output(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
+        #      f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
+        #      f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
+        #      f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
+        #    log_output("All hard violations resolved!")
+        #    log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
+        #    return best_schedule_snapshot.restore_schedule(schedule)  # Stop if no hard violations
+
+        # if medium_violations == 0:
+        #     visualize(best_schedule_snapshot)
+
+        # if hard_violations == 0 and medium_violations == 0 and soft_violations == 0:
+        #     # log_output(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
+        #     #   f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
+        #     #   f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
+        #     #   f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
+        #     # log_output("All violations resolved!")
+        #     # log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
+        #     return best_schedule_snapshot#.restore_schedule(schedule)
         
         if not best_score_improved_this_iteration:
             plateau_count += 1
@@ -356,7 +368,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
         
         if plateau_count >= current_plateau_limit:
-            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
+            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot, compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
             plateau_count = 0
             if r_r_success:
                 log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")

@@ -146,6 +146,7 @@ def main():
         else:
             # For other methods, apply local search
             result = calculate_full_score(initial_schedule)
+            visualize(initial_schedule)
             initial_score = result[0]
             hard_violations = result[1]
             medm_violations = result[2]
@@ -153,6 +154,7 @@ def main():
             print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
             
             final_schedule = run_local_search(initial_schedule, args.log)
+            visualize(final_schedule)
             
             print(f"days: {final_schedule.work_days}")
             final_score = calculate_full_score(final_schedule)

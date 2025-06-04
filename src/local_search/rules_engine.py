@@ -75,7 +75,7 @@ def calculate_full_score(schedule: Schedule) -> list[int]:
     # Soft
     soft_violations = 0
     soft_violations += nr19_case_has_specific_judge_full(schedule)
-    soft_violations += nr20_max_weekly_coverage_full(schedule)
+    #soft_violations += nr20_max_weekly_coverage_full(schedule)
     soft_violations += nr21_all_meetings_planned_for_case_full(schedule)
     soft_violations += nr29_room_stability_per_day_full(schedule)
     soft_violations += nr31_distance_between_meetings_full(schedule)
@@ -711,6 +711,8 @@ def nr31_distance_between_meetings_full(schedule: Schedule):
     judges = schedule.get_all_judges()
     for judge in judges:
         violations += calculate_gaps_between_appointments(schedule, judge.judge_id)
+    
+    violations += schedule.work_days - 1  # Add one violation for each day without meetings
         
     return (offset + step * violations)
 
@@ -728,6 +730,8 @@ def nr31_distance_between_meetings_delta(schedule: Schedule, move: Move):
     affected_pairs = get_affected_judge_day_pairs(schedule, move)
     for day, judge in affected_pairs:
         before_violations += calculate_gaps_between_appointments(schedule, judge, day)  
+    
+    before_violations += schedule.work_days - 1  # Add one violation for each day without meetings
         
     do_move(move, schedule)
     
@@ -739,6 +743,9 @@ def nr31_distance_between_meetings_delta(schedule: Schedule, move: Move):
     after_violations = 0
     for day, judge in affected_pairs:
         after_violations += calculate_gaps_between_appointments(schedule, judge, day)
+
+    after_violations += schedule.work_days - 1  # Add one violation for each day without meetings
+    
     undo_move(move, schedule)
     
     return (offset + step * (after_violations - before_violations))
