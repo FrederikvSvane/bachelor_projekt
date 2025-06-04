@@ -75,7 +75,7 @@ def calculate_full_score(schedule: Schedule) -> list[int]:
     # Soft
     soft_violations = 0
     soft_violations += nr19_case_has_specific_judge_full(schedule)
-    soft_violations += nr20_max_weekly_coverage_full(schedule)
+    #soft_violations += nr20_max_weekly_coverage_full(schedule)
     soft_violations += nr21_all_meetings_planned_for_case_full(schedule)
     soft_violations += nr29_room_stability_per_day_full(schedule)
     soft_violations += nr31_distance_between_meetings_full(schedule)
