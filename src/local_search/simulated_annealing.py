@@ -368,7 +368,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
         
         if plateau_count >= current_plateau_limit:
-            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot, compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
+            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
             plateau_count = 0
             if r_r_success:
                 log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
