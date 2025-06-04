@@ -153,7 +153,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     
     # Custom log function to write to both console and file
     def log_output(message):
-        #print(message)
+        print(message)
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately
@@ -170,7 +170,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     initial_score = [current_score, hard_violations, medium_violations, soft_violations]
     best_score = current_score
     current_temperature = start_temp
-    best_schedule_snapshot = ScheduleSnapshot(schedule)
+    best_schedule_snapshot = deepcopy(schedule)#ScheduleSnapshot(schedule)
 
     hard_weight, medium_weight, soft_weight = _calculate_constraint_weights(schedule)
     
@@ -230,7 +230,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 # Update best score if this is a new best
                 if current_score < best_score:
                     best_score = current_score
-                    best_schedule_snapshot = ScheduleSnapshot(schedule)
+                    best_schedule_snapshot = deepcopy(schedule)#ScheduleSnapshot(schedule)
                     best_score_improved_this_iteration = True
                     # log_output(f"New best score found from contracting: {best_score}")
                     
@@ -302,7 +302,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                 if current_score < best_score:
                     best_score = current_score
                     plateau_count = 0
-                    best_schedule_snapshot = ScheduleSnapshot(schedule)
+                    best_schedule_snapshot = deepcopy(schedule)#ScheduleSnapshot(schedule)
                     best_score_improved_this_iteration = True
 
                     
@@ -322,14 +322,26 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
         current_iteration += 1
         current_temperature *= cooling_rate
 
-        if hard_violations == 0:
-            log_output(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
-              f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
-              f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
-              f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
-            log_output("All hard violations resolved!")
-            log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
-            return best_schedule_snapshot.restore_schedule(schedule)  # Stop if no hard violations
+        #if hard_violations == 0:
+        #    log_output(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
+        #      f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
+        #      f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
+        #      f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
+        #    log_output("All hard violations resolved!")
+        #    log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
+        #    return best_schedule_snapshot.restore_schedule(schedule)  # Stop if no hard violations
+
+        if medium_violations == 0:
+            visualize(best_schedule_snapshot)
+
+        if hard_violations == 0 and medium_violations == 0 and soft_violations == 0:
+            # log_output(f"Iteration: {current_iteration}, Time: {time_used:.1f}s/{max_time_seconds}s, Temp: {current_temperature:.2f}, "
+            #   f"Accepted: {moves_accepted_this_iteration}/{moves_explored_this_iteration}, Score: {current_score}, Best: {best_score}, "
+            #   f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
+            #   f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
+            # log_output("All violations resolved!")
+            # log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
+            return best_schedule_snapshot#.restore_schedule(schedule)
         
         if not best_score_improved_this_iteration:
             plateau_count += 1
@@ -355,24 +367,24 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
 
         
-        if plateau_count >= current_plateau_limit:
-            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
-            plateau_count = 0
-            if r_r_success:
-                log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
-                current_score = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))[0]
-                tabu_list.clear()
+        # if plateau_count >= current_plateau_limit:
+        #     r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot, compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
+        #     plateau_count = 0
+        #     if r_r_success:
+        #         log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
+        #         current_score = calculate_full_score(best_schedule_snapshot)[0]#.restore_schedule(schedule))[0]
+        #         tabu_list.clear()
 
-                if current_score < best_score:
-                    best_score = current_score
-                    best_schedule_snapshot = ScheduleSnapshot(schedule)
-                    log_output(f"New best score found after R&R: {best_score}")
+        #         if current_score < best_score:
+        #             best_score = current_score
+        #             best_schedule_snapshot = deepcopy(schedule)#ScheduleSnapshot(schedule)
+        #             log_output(f"New best score found after R&R: {best_score}")
     
     # Close log file if it was opened
     if log_file:
         log_file.close()
                     
-    return best_schedule_snapshot.restore_schedule(schedule)
+    return best_schedule_snapshot#.restore_schedule(schedule)
 
 def run_local_search(schedule: Schedule, log_file_path: str = None, K: int = 75) -> Schedule:
     iterations_per_temperature = 4000
