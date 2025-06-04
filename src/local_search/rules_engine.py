@@ -70,8 +70,7 @@ def calculate_full_score(schedule: Schedule) -> list[int]:
 
     # Medium
     medm_violations = 0
-    #medm_violations += nr18_unused_timegrain_full(schedule)
-    medm_violations += nr31_distance_between_meetings_full(schedule)
+    medm_violations += nr18_unused_timegrain_full(schedule)
 
     # Soft
     soft_violations = 0
@@ -79,6 +78,7 @@ def calculate_full_score(schedule: Schedule) -> list[int]:
     soft_violations += nr20_max_weekly_coverage_full(schedule)
     soft_violations += nr21_all_meetings_planned_for_case_full(schedule)
     soft_violations += nr29_room_stability_per_day_full(schedule)
+    soft_violations += nr31_distance_between_meetings_full(schedule)
 
     full_score = hard_violations * hard_constraint_weight + medm_violations * medium_constraint_weight + soft_violations * soft_constraint_weight
     
@@ -110,8 +110,7 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
 
     # Medium rules
     medm_violations = 0
-    #medm_violations += nr18_unused_timegrain_delta(schedule, move)
-    medm_violations += nr31_distance_between_meetings_delta(schedule, move)
+    medm_violations += nr18_unused_timegrain_delta(schedule, move)
 
     # Soft rules
     soft_violations = 0  
@@ -119,6 +118,7 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
     soft_violations += nr20_max_weekly_coverage_delta(schedule, move)
     soft_violations += nr21_all_meetings_planned_for_case_delta(schedule, move)
     soft_violations += nr29_room_stability_per_day_delta(schedule, move)
+    soft_violations += nr31_distance_between_meetings_delta(schedule, move)
 
     delta_score = hard_constraint_weight * hard_violations + medium_constraint_weight * medm_violations + soft_constraint_weight * soft_violations
 
