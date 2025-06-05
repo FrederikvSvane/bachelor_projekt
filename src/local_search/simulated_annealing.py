@@ -139,6 +139,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                        plateau_count_min: int = 6, plateau_count_max: int = 18,
                        ruin_percentage_min: float = 0.002, ruin_percentage_max: float = 0.015,
                        K: int = 75,
+                       tabu_tenure: int = 20,
                        log_file_path: str = None) -> Schedule:
     from copy import deepcopy
     start_time = time.time()
@@ -182,7 +183,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     plateau_count = 0
     cooling_rate = _calculate_cooling_rate(K, start_temp, end_temp)  # Initial cooling rate # K is 100
     
-    tabu_list = deque(maxlen=20)
+    tabu_list = deque(maxlen=tabu_tenure)
     time_used = 0
     current_iteration = 0
     p_attempt_insert = 0.1
@@ -388,7 +389,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
 def run_local_search(schedule: Schedule, log_file_path: str = None, K: int = 75) -> Schedule:
     iterations_per_temperature = 4000
-    max_time_seconds = float('inf')
+    max_time_seconds = 120
     start_temp = 500
     end_temp = 20
     
@@ -405,74 +406,80 @@ def run_local_search(schedule: Schedule, log_file_path: str = None, K: int = 75)
     return optimized_schedule
 
 
-def run_scaling_test(best_hyperparams: dict, num_runs_per_size: int = 5) -> None:
+def run_tabu_tenure_benchmark(base_hyperparams: dict, num_runs_per_tenure: int = 1) -> None:
     """
-    Test the optimized hyperparameters on different problem sizes.
-    best_hyperparams should contain all your tuned parameters.
+    Benchmark different tabu tenure values to find the optimal setting.
+    base_hyperparams should contain all your other tuned parameters except tabu_tenure.
     """
     import copy
     import statistics
     from src.util.data_generator import generate_test_data_parsed
     
-    # Problem sizes to test
-    test_sizes = [
-        (500, 30, "Small_500"),      # 500 cases, 25 work days
-        (1000, 60, "Medium_1000"),   # 1000 cases, 50 work days  
-        (1500, 90, "Large_1500")     # 1500 cases, 75 work days
-    ]
+    # Tabu tenure values to test
+    tenure_values = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+    
+    # Fixed problem size for consistent comparison
+    n_cases = 1000
+    n_days = 60
+    test_name = f"TabuTenure_{n_cases}cases_{n_days}days"
     
     # Create results directory
-    results_dir = "benchmark_tests/scaling_test"
+    results_dir = f"benchmark_tests/tabu_tenure_test"
     os.makedirs(results_dir, exist_ok=True)
     
     # Summary log
-    summary_log_path = os.path.join(results_dir, f"scaling_test_summary_{int(time.time())}.log")
+    summary_log_path = os.path.join(results_dir, f"tabu_tenure_benchmark_{int(time.time())}.log")
     
-    print("FINAL SCALING TEST - OPTIMIZED HYPERPARAMETERS")
+    print("TABU TENURE BENCHMARK")
     print("=" * 80)
-    print("Testing optimized algorithm on different problem sizes:")
-    print(f"Problem sizes: {len(test_sizes)}")
-    print(f"Runs per size: {num_runs_per_size}")
-    print(f"Total tests: {len(test_sizes) * num_runs_per_size}")
+    print("Testing different tabu tenure values:")
+    print(f"Problem size: {n_cases} cases, {n_days} days")
+    print(f"Tenure values: {tenure_values}")
+    print(f"Runs per tenure: {num_runs_per_tenure}")
+    print(f"Total tests: {len(tenure_values) * num_runs_per_tenure}")
     print(f"Results will be saved to: {results_dir}/")
     
-    print("\nOptimized Hyperparameters:")
-    for param, value in best_hyperparams.items():
-        print(f"  {param}: {value}")
+    print("\nBase Hyperparameters (excluding tabu_tenure):")
+    for param, value in base_hyperparams.items():
+        if param != 'tabu_tenure':
+            print(f"  {param}: {value}")
     print("=" * 80)
     
     all_results = {}
     
     with open(summary_log_path, 'w') as summary_log:
-        summary_log.write("SCALING TEST - OPTIMIZED HYPERPARAMETERS\n")
+        summary_log.write("TABU TENURE BENCHMARK\n")
         summary_log.write("=" * 80 + "\n")
-        summary_log.write("Optimized Hyperparameters:\n")
-        for param, value in best_hyperparams.items():
-            summary_log.write(f"  {param}: {value}\n")
+        summary_log.write(f"Problem size: {n_cases} cases, {n_days} days\n")
+        summary_log.write(f"Runs per tenure: {num_runs_per_tenure}\n")
+        summary_log.write("Base Hyperparameters:\n")
+        for param, value in base_hyperparams.items():
+            if param != 'tabu_tenure':
+                summary_log.write(f"  {param}: {value}\n")
         summary_log.write("=" * 80 + "\n\n")
         
-        for size_idx, (n_cases, n_days, size_name) in enumerate(test_sizes, 1):
-            print(f"\n[{size_idx}/{len(test_sizes)}] Testing {size_name}: {n_cases} cases, {n_days} days")
+        for tenure_idx, tenure_value in enumerate(tenure_values, 1):
+            print(f"\n[{tenure_idx}/{len(tenure_values)}] Testing Tabu Tenure: {tenure_value}")
             print("-" * 70)
             
-            summary_log.write(f"SIZE TEST {size_idx}: {size_name}\n")
-            summary_log.write(f"Cases: {n_cases}, Work days: {n_days}\n")
-            summary_log.write("-" * 70 + "\n")
+            summary_log.write(f"TENURE TEST {tenure_idx}: {tenure_value}\n")
+            summary_log.write("-" * 50 + "\n")
             
-            size_results = []
-            size_runtimes = []
-            size_initial_scores = []
-            size_improvements = []
+            tenure_results = []
+            tenure_runtimes = []
+            tenure_initial_scores = []
+            tenure_improvements = []
+            tenure_moves_accepted = []
             
-            # Create directory for this size
-            size_dir = os.path.join(results_dir, size_name)
-            os.makedirs(size_dir, exist_ok=True)
+            # Create directory for this tenure value
+            tenure_dir = os.path.join(results_dir, f"tenure_{tenure_value}")
+            os.makedirs(tenure_dir, exist_ok=True)
             
-            for run in range(1, num_runs_per_size + 1):
-                print(f"  Run {run}/{num_runs_per_size}...", end="", flush=True)
+            for run in range(1, num_runs_per_tenure + 1):
+                print(f"  Run {run}/{num_runs_per_tenure}...", end="", flush=True)
                 
-                # Generate fresh test data for this run
-                random.seed(13062025 + run)  # Consistent seed per run
+                # Generate fresh test data for this run (same seed for fair comparison)
+                random.seed(13062025 + run)  # Consistent seed per run across all tenures
                 parsed_data = generate_test_data_parsed(n_cases, n_days, granularity=5, min_per_work_day=390)
                 
                 # Initialize compatibility matrices
@@ -481,7 +488,6 @@ def run_scaling_test(best_hyperparams: dict, num_runs_per_size: int = 5) -> None
 
                 from src.construction.heuristic.linear_assignment import generate_schedule
                 initial_schedule = generate_schedule(parsed_data)
-
                 
                 # Initialize and trim schedule
                 initial_schedule.initialize_appointment_chains()
@@ -489,29 +495,30 @@ def run_scaling_test(best_hyperparams: dict, num_runs_per_size: int = 5) -> None
                 
                 # Calculate initial score
                 initial_score = calculate_full_score(initial_schedule)[0]
-                size_initial_scores.append(initial_score)
+                tenure_initial_scores.append(initial_score)
                 
                 # Individual run log
-                run_log_path = os.path.join(size_dir, f"run_{run}.log")
+                run_log_path = os.path.join(tenure_dir, f"run_{run}.log")
                 
-                # Run optimized simulated annealing
+                # Run simulated annealing with current tenure value
                 start_time = time.time()
                 optimized_schedule = simulated_annealing(
                     initial_schedule,
-                    iterations_per_temperature=best_hyperparams['iterations'],
-                    max_time_seconds=best_hyperparams.get('max_time', 1800),  # 5 minutes default
-                    start_temp=best_hyperparams['start_temp'],
-                    end_temp=best_hyperparams['end_temp'],
-                    high_temp_compound_prob=best_hyperparams['high_prob'],
-                    medium_temp_compound_prob=best_hyperparams['med_prob'],
-                    low_temp_compound_prob=best_hyperparams['low_prob'],
-                    high_temp_threshold_pct=best_hyperparams.get('high_threshold', 0.6),
-                    medium_temp_threshold_pct=best_hyperparams.get('med_threshold', 0.1),
-                    plateau_count_min=best_hyperparams.get('plateau_min', 3),
-                    plateau_count_max=best_hyperparams.get('plateau_max', 10),
-                    ruin_percentage_min=best_hyperparams.get('ruin_min', 0.01),
-                    ruin_percentage_max=best_hyperparams.get('ruin_max', 0.05),
-                    K=best_hyperparams['K'],
+                    iterations_per_temperature=base_hyperparams.get('iterations', 4000),
+                    max_time_seconds=base_hyperparams.get('max_time', 120),  # Shorter for benchmark
+                    start_temp=base_hyperparams.get('start_temp', 500),
+                    end_temp=base_hyperparams.get('end_temp', 20),
+                    high_temp_compound_prob=base_hyperparams.get('high_prob', 0.2),
+                    medium_temp_compound_prob=base_hyperparams.get('med_prob', 0.7),
+                    low_temp_compound_prob=base_hyperparams.get('low_prob', 0.8),
+                    high_temp_threshold_pct=base_hyperparams.get('high_threshold', 0.5),
+                    medium_temp_threshold_pct=base_hyperparams.get('med_threshold', 0.15),
+                    plateau_count_min=base_hyperparams.get('plateau_min', 6),
+                    plateau_count_max=base_hyperparams.get('plateau_max', 18),
+                    ruin_percentage_min=base_hyperparams.get('ruin_min', 0.002),
+                    ruin_percentage_max=base_hyperparams.get('ruin_max', 0.015),
+                    K=base_hyperparams.get('K', 75),
+                    tabu_tenure=tenure_value,  # This is what we're testing!
                     log_file_path=run_log_path
                 )
                 end_time = time.time()
@@ -521,9 +528,9 @@ def run_scaling_test(best_hyperparams: dict, num_runs_per_size: int = 5) -> None
                 improvement = initial_score - final_score
                 improvement_pct = (improvement / initial_score) * 100
                 
-                size_results.append(final_score)
-                size_runtimes.append(runtime)
-                size_improvements.append(improvement)
+                tenure_results.append(final_score)
+                tenure_runtimes.append(runtime)
+                tenure_improvements.append(improvement)
                 
                 print(f" Initial: {initial_score:.0f} → Final: {final_score:.0f} "
                       f"(↓{improvement:.0f}, {improvement_pct:.1f}%, {runtime:.1f}s)")
@@ -531,129 +538,149 @@ def run_scaling_test(best_hyperparams: dict, num_runs_per_size: int = 5) -> None
                 summary_log.write(f"Run {run}: Initial={initial_score:.0f}, Final={final_score:.0f}, "
                                 f"Improvement={improvement:.0f} ({improvement_pct:.1f}%), Runtime={runtime:.1f}s\n")
             
-            # Calculate statistics for this size
-            mean_final = statistics.mean(size_results)
-            std_final = statistics.stdev(size_results) if len(size_results) > 1 else 0
-            mean_initial = statistics.mean(size_initial_scores)
-            mean_improvement = statistics.mean(size_improvements)
+            # Calculate statistics for this tenure value
+            mean_final = statistics.mean(tenure_results)
+            std_final = statistics.stdev(tenure_results) if len(tenure_results) > 1 else 0
+            mean_initial = statistics.mean(tenure_initial_scores)
+            mean_improvement = statistics.mean(tenure_improvements)
             mean_improvement_pct = (mean_improvement / mean_initial) * 100
-            mean_runtime = statistics.mean(size_runtimes)
-            best_final = min(size_results)
+            mean_runtime = statistics.mean(tenure_runtimes)
+            best_final = min(tenure_results)
+            worst_final = max(tenure_results)
             
-            all_results[size_name] = {
-                'n_cases': n_cases,
-                'n_days': n_days,
+            all_results[tenure_value] = {
+                'tenure': tenure_value,
                 'mean_initial': mean_initial,
                 'mean_final': mean_final,
                 'std_final': std_final,
                 'best_final': best_final,
+                'worst_final': worst_final,
                 'mean_improvement': mean_improvement,
                 'mean_improvement_pct': mean_improvement_pct,
                 'mean_runtime': mean_runtime,
-                'all_finals': size_results,
-                'all_improvements': size_improvements
+                'all_finals': tenure_results,
+                'all_improvements': tenure_improvements
             }
             
-            print(f"\n  📊 {size_name} Summary:")
+            print(f"\n  📊 Tenure {tenure_value} Summary:")
             print(f"    Mean Initial Score: {mean_initial:.0f}")
             print(f"    Mean Final Score: {mean_final:.0f} ± {std_final:.0f}")
             print(f"    Mean Improvement: {mean_improvement:.0f} ({mean_improvement_pct:.1f}%)")
             print(f"    Best Run: {best_final:.0f}")
+            print(f"    Worst Run: {worst_final:.0f}")
             print(f"    Average Runtime: {mean_runtime:.1f}s")
             
-            summary_log.write(f"\nSize Summary: Mean Initial={mean_initial:.0f}, Mean Final={mean_final:.0f}±{std_final:.0f}\n")
-            summary_log.write(f"Mean Improvement: {mean_improvement:.0f} ({mean_improvement_pct:.1f}%), Runtime: {mean_runtime:.1f}s\n\n")
+            summary_log.write(f"\nTenure Summary: Mean Initial={mean_initial:.0f}, Mean Final={mean_final:.0f}±{std_final:.0f}\n")
+            summary_log.write(f"Mean Improvement: {mean_improvement:.0f} ({mean_improvement_pct:.1f}%), Runtime: {mean_runtime:.1f}s\n")
+            summary_log.write(f"Best: {best_final:.0f}, Worst: {worst_final:.0f}\n\n")
         
-        # Final comparison and scaling analysis
+        # Final comparison and analysis
         print("\n" + "=" * 80)
-        print("SCALING TEST RESULTS COMPARISON:")
+        print("TABU TENURE BENCHMARK RESULTS:")
         print("=" * 80)
         
-        print(f"{'Size':<15} {'Cases':<6} {'Days':<5} {'Mean Final':<12} {'±Std':<10} {'Best':<12} {'Improvement':<12} {'Runtime':<10}")
-        print("-" * 95)
+        print(f"{'Tenure':<8} {'Mean Final':<12} {'±Std':<10} {'Best':<8} {'Worst':<8} {'Improvement':<12} {'Runtime':<10}")
+        print("-" * 80)
         
         summary_log.write("=" * 80 + "\n")
-        summary_log.write("SCALING TEST RESULTS:\n")
+        summary_log.write("TABU TENURE BENCHMARK RESULTS:\n")
         summary_log.write("=" * 80 + "\n")
-        summary_log.write(f"{'Size':<15} {'Cases':<6} {'Days':<5} {'Mean Final':<12} {'±Std':<10} {'Best':<12} {'Improvement':<12} {'Runtime':<10}\n")
-        summary_log.write("-" * 95 + "\n")
+        summary_log.write(f"{'Tenure':<8} {'Mean Final':<12} {'±Std':<10} {'Best':<8} {'Worst':<8} {'Improvement':<12} {'Runtime':<10}\n")
+        summary_log.write("-" * 80 + "\n")
         
-        for size_name, results in all_results.items():
-            result_line = (f"{size_name:<15} {results['n_cases']:<6} {results['n_days']:<5} "
-                          f"{results['mean_final']:<12.0f} ±{results['std_final']:<9.0f} "
-                          f"{results['best_final']:<12.0f} {results['mean_improvement_pct']:<12.1f}% "
-                          f"{results['mean_runtime']:<10.1f}s")
+        # Sort by mean final score for easy comparison
+        sorted_results = sorted(all_results.items(), key=lambda x: x[1]['mean_final'])
+        
+        for tenure_value, results in sorted_results:
+            result_line = (f"{tenure_value:<8} {results['mean_final']:<12.0f} ±{results['std_final']:<9.0f} "
+                          f"{results['best_final']:<8.0f} {results['worst_final']:<8.0f} "
+                          f"{results['mean_improvement_pct']:<12.1f}% {results['mean_runtime']:<10.1f}s")
             print(result_line)
             summary_log.write(result_line + "\n")
         
-        # Scaling analysis
-        scaling_analysis = f"""
+        # Find best performing tenure
+        best_tenure = sorted_results[0][0]
+        best_results = sorted_results[0][1]
+        
+        # Analysis
+        analysis = f"""
 {("=" * 80)}
-📈 SCALING ANALYSIS:
+📈 TABU TENURE ANALYSIS:
 {("=" * 80)}
 
-ALGORITHM PERFORMANCE ACROSS SCALES:
+BEST PERFORMING TENURE: {best_tenure}
+  Mean Final Score: {best_results['mean_final']:.0f} ± {best_results['std_final']:.0f}
+  Mean Improvement: {best_results['mean_improvement_pct']:.1f}%
+  Average Runtime: {best_results['mean_runtime']:.1f}s
+
+TENURE INSIGHTS:
 """
         
-        sizes = list(all_results.keys())
-        if len(sizes) >= 2:
-            small_runtime = all_results[sizes[0]]['mean_runtime']
-            large_runtime = all_results[sizes[-1]]['mean_runtime']
-            small_cases = all_results[sizes[0]]['n_cases']
-            large_cases = all_results[sizes[-1]]['n_cases']
+        # Performance trend analysis
+        tenure_vs_performance = [(t, r['mean_final']) for t, r in all_results.items()]
+        tenure_vs_performance.sort()
+        
+        low_tenures = [r for t, r in tenure_vs_performance if t <= 20]
+        high_tenures = [r for t, r in tenure_vs_performance if t >= 30]
+        
+        if low_tenures and high_tenures:
+            avg_low = statistics.mean(low_tenures)
+            avg_high = statistics.mean(high_tenures)
             
-            runtime_ratio = large_runtime / small_runtime
-            size_ratio = large_cases / small_cases
-            
-            scaling_analysis += f"""
-Runtime Scaling:
-  {sizes[0]}: {small_runtime:.1f}s ({small_cases} cases)
-  {sizes[-1]}: {large_runtime:.1f}s ({large_cases} cases)
-  Scale Factor: {size_ratio:.1f}x cases → {runtime_ratio:.1f}x runtime
-  Scaling Rate: O(n^{math.log(runtime_ratio)/math.log(size_ratio):.2f})
+            if avg_low < avg_high:
+                analysis += f"  Lower tenure values (≤20) perform better on average: {avg_low:.0f} vs {avg_high:.0f}\n"
+            else:
+                analysis += f"  Higher tenure values (≥30) perform better on average: {avg_high:.0f} vs {avg_low:.0f}\n"
+        
+        # Standard deviation analysis
+        most_consistent = min(all_results.items(), key=lambda x: x[1]['std_final'])
+        least_consistent = max(all_results.items(), key=lambda x: x[1]['std_final'])
+        
+        analysis += f"  Most consistent: Tenure {most_consistent[0]} (±{most_consistent[1]['std_final']:.0f})\n"
+        analysis += f"  Least consistent: Tenure {least_consistent[0]} (±{least_consistent[1]['std_final']:.0f})\n"
+        
+        # Runtime analysis
+        fastest = min(all_results.items(), key=lambda x: x[1]['mean_runtime'])
+        slowest = max(all_results.items(), key=lambda x: x[1]['mean_runtime'])
+        
+        analysis += f"  Fastest: Tenure {fastest[0]} ({fastest[1]['mean_runtime']:.1f}s avg)\n"
+        analysis += f"  Slowest: Tenure {slowest[0]} ({slowest[1]['mean_runtime']:.1f}s avg)\n"
+        
+        analysis += f"""
+RECOMMENDATION:
+  Use tabu_tenure = {best_tenure} for optimal performance
+  This provides the best balance of solution quality and consistency.
 
-Quality Scaling:
-"""
-            
-            for size_name, results in all_results.items():
-                scaling_analysis += f"  {size_name}: {results['mean_improvement_pct']:.1f}% average improvement\n"
-            
-            # Best configuration summary
-            scaling_analysis += f"""
-
-🏆 OPTIMIZED CONFIGURATION SUMMARY:
-Best hyperparameters consistently perform well across all scales.
-Algorithm maintains {min(r['mean_improvement_pct'] for r in all_results.values()):.1f}%-{max(r['mean_improvement_pct'] for r in all_results.values()):.1f}% improvement across problem sizes.
 {("=" * 80)}
 """
         
-        print(scaling_analysis)
-        summary_log.write(scaling_analysis + "\n")
+        print(analysis)
+        summary_log.write(analysis + "\n")
     
-    print(f"\nScaling test results saved to: {results_dir}/")
+    print(f"\nTabu tenure benchmark results saved to: {results_dir}/")
     print(f"Summary: {summary_log_path}")
 
 
-# To use this, define your best hyperparameters and run:
-def run_final_scaling_test():
-    """Run the final scaling test with your optimized hyperparameters."""
+def run_tabu_tenure_test():
+    """Run the tabu tenure benchmark with your current best hyperparameters."""
     
-    # UPDATE THESE WITH YOUR ACTUAL BEST VALUES FROM TUNING
-    best_hyperparams = {
-        'method': 'heuristic',  # or 'graph' or 'ilp'
-        'iterations': 4000,     # from your first tuning
-        'start_temp': 500,      # from your first tuning  
-        'end_temp': 20,         # from your first tuning
-        'high_prob': 0.2,       # from move probability tuning
-        'med_prob': 0.7,        # from move probability tuning
-        'low_prob': 0.8,        # from move probability tuning
-        'high_threshold': 0.5,  # from threshold tuning
-        'med_threshold': 0.15,  # from threshold tuning
-        'K': 75,               # from cooling rate tuning (or your best K)
-        'plateau_min': 6,       # from R&R tuning
-        'plateau_max': 18,      # from R&R tuning
-        'ruin_min': 0.002,      # from R&R tuning
-        'ruin_max': 0.015,       # from R&R tuning
+    # Base hyperparameters (excluding tabu_tenure which we're testing)
+    base_hyperparams = {
+        'iterations': 4000,
+        'max_time': 20,        # Shorter for benchmark
+        'start_temp': 500,
+        'end_temp': 20,
+        'high_prob': 0.2,
+        'med_prob': 0.7,
+        'low_prob': 0.8,
+        'high_threshold': 0.5,
+        'med_threshold': 0.15,
+        'K': 75,
+        'plateau_min': 6,
+        'plateau_max': 18,
+        'ruin_min': 0.002,
+        'ruin_max': 0.015,
     }
     
-    run_scaling_test(best_hyperparams, num_runs_per_size=1)
+    run_tabu_tenure_benchmark(base_hyperparams, num_runs_per_tenure=1)
+

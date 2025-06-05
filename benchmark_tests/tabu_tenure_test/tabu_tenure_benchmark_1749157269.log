@@ -1,0 +1,55 @@
+TABU TENURE BENCHMARK
+================================================================================
+Problem size: 1000 cases, 60 days
+Runs per tenure: 1
+Base Hyperparameters:
+  iterations: 4000
+  max_time: 20
+  start_temp: 500
+  end_temp: 20
+  high_prob: 0.2
+  med_prob: 0.7
+  low_prob: 0.8
+  high_threshold: 0.5
+  med_threshold: 0.15
+  K: 75
+  plateau_min: 6
+  plateau_max: 18
+  ruin_min: 0.002
+  ruin_max: 0.015
+================================================================================
+
+TENURE TEST 1: 20
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=1250022193001271, Improvement=9338005563000194 (88.2%), Runtime=28.9s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=1250022193001271±0
+Mean Improvement: 9338005563000194 (88.2%), Runtime: 28.9s
+Best: 1250022193001271, Worst: 1250022193001271
+
+TENURE TEST 2: 40
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=1121022066001261, Improvement=9467005690000204 (89.4%), Runtime=30.2s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=1121022066001261±0
+Mean Improvement: 9467005690000204 (89.4%), Runtime: 30.2s
+Best: 1121022066001261, Worst: 1121022066001261
+
+TENURE TEST 3: 60
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=1137021828001280, Improvement=9451005928000184 (89.3%), Runtime=31.2s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=1137021828001280±0
+Mean Improvement: 9451005928000184 (89.3%), Runtime: 31.2s
+Best: 1137021828001280, Worst: 1137021828001280
+
+TENURE TEST 4: 80
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=1069021840001251, Improvement=9519005916000214 (89.9%), Runtime=32.1s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=1069021840001251±0
+Mean Improvement: 9519005916000214 (89.9%), Runtime: 32.1s
+Best: 1069021840001251, Worst: 1069021840001251
+
+TENURE TEST 5: 100
+--------------------------------------------------
