@@ -667,7 +667,7 @@ def run_tabu_tenure_test():
     # Base hyperparameters (excluding tabu_tenure which we're testing)
     base_hyperparams = {
         'iterations': 4000,
-        'max_time': 20,        # Shorter for benchmark
+        'max_time': 300,        # Shorter for benchmark
         'start_temp': 500,
         'end_temp': 20,
         'high_prob': 0.2,
