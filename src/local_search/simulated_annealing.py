@@ -369,11 +369,12 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
         
         if plateau_count >= current_plateau_limit:
-            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
+            temp_schedule= best_schedule_snapshot.restore_schedule(schedule)
+            r_r_success, num_inserted = apply_ruin_and_recreate(temp_schedule, compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
             plateau_count = 0
             if r_r_success:
                 log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
-                current_score = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))[0]
+                current_score = calculate_full_score(temp_schedule)[0]
                 tabu_list.clear()
 
                 if current_score < best_score:
