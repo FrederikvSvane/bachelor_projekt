@@ -416,7 +416,7 @@ def run_tabu_tenure_benchmark(base_hyperparams: dict, num_runs_per_tenure: int =
     from src.util.data_generator import generate_test_data_parsed
     
     # Tabu tenure values to test
-    tenure_values = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+    tenure_values = [10, 30, 50]
     
     # Fixed problem size for consistent comparison
     n_cases = 1000
@@ -424,7 +424,7 @@ def run_tabu_tenure_benchmark(base_hyperparams: dict, num_runs_per_tenure: int =
     test_name = f"TabuTenure_{n_cases}cases_{n_days}days"
     
     # Create results directory
-    results_dir = f"benchmark_tests/tabu_tenure_test"
+    results_dir = f"benchmark_tests/tabu_tenure_test2"
     os.makedirs(results_dir, exist_ok=True)
     
     # Summary log
