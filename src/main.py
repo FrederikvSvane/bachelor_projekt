@@ -7,7 +7,7 @@ from src.util.parser import parse_input
 from src.base_model.schedule import Schedule, generate_schedule_using_double_flow
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import calculate_full_score
-from src.local_search.simulated_annealing import run_local_search, run_ruin_recreate_tuning
+from src.local_search.simulated_annealing import run_local_search
 from src.base_model.compatibility_checks import initialize_compatibility_matricies, case_room_matrix
 from src.construction.heuristic.linear_assignment import generate_schedule
 import random
