@@ -7,7 +7,7 @@ from src.util.parser import parse_input
 from src.base_model.schedule import Schedule, generate_schedule_using_double_flow
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import calculate_full_score
-from src.local_search.simulated_annealing import run_local_search, run_tabu_tenure_test
+from src.local_search.simulated_annealing import run_local_search, run_ruin_recreate_tuning
 from src.base_model.compatibility_checks import initialize_compatibility_matricies, case_room_matrix
 from src.construction.heuristic.linear_assignment import generate_schedule
 import random
@@ -110,26 +110,11 @@ def main():
 
         initial_schedule.trim_schedule_length_if_possible()
         initial_schedule.initialize_appointment_chains()
-
-        # log_file = None
-        # if args.log:
-        #     try:
-        #         log_file = open(args.log, 'w')
-        #     except Exception as e:
-        #         print(f"Error opening log file: {e}")
-
-        # if log_file:
-        #     log_file.write(f"graph took: {elapsed_time} seconds \n")
-        #     log_file.write(f"Score from graph: {calculate_full_score(initial_schedule)} \n")
-        #     log_file.write(f"Days: {initial_schedule.work_days}")
-        #     log_file.flush()  # Ensure data is written immediately
-
-        #run_tabu_tenure_test()
     
         
         #_______________________
         
-        # If using ILP, skip local search and just visualize
+        # # If using ILP, skip local search and just visualize
         if args.method == 'ilp':
             result = calculate_full_score(initial_schedule)
             score = result[0]

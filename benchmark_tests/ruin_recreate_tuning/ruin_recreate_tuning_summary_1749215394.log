@@ -1,0 +1,10 @@
+RUIN & RECREATE PARAMETER TUNING
+Base configuration: Iters=4000, Start=500, End=20
+Parameter combinations tested: 8
+Runs per combination: 1
+Max time per run: 600 seconds
+================================================================================
+
+COMBINATION 1: Current_Baseline
+Parameters: Plateau=(6-18), Ruin=(0.002-0.015)
+------------------------------------------------------------
