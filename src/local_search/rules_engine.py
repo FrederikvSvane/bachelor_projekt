@@ -49,10 +49,6 @@ def _calculate_constraint_weights(schedule: Schedule) -> tuple[int, int, int]:
     hard_log = round(math.log10(exact_hard_weight))
     hard_weight = 10 ** hard_log
     
-    # print(f"Calculated constraint weights based on {n_judges} judges, {n_timeslots} timeslots, {n_days} days:")
-    # print(f"  - Soft constraint weight: {soft_weight}")
-    # print(f"  - Medium constraint weight: {medium_weight} (10^{medium_log})")
-    # print(f"  - Hard constraint weight: {hard_weight} (10^{hard_log})")
     
     return hard_weight, medium_weight, soft_weight
 
@@ -122,7 +118,6 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
 
     delta_score = hard_constraint_weight * hard_violations + medium_constraint_weight * medm_violations + soft_constraint_weight * soft_violations
 
-    #print(f"DELTA: Hard Violations: {hard_violations}, Medium Violations: {medm_violations}, Soft Violations: {soft_violations}")  
     return delta_score
 
  

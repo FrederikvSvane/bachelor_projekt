@@ -158,17 +158,17 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             # Always accept contracting move if it improves the score
             if post_contract_score < pre_contract_score:
                 current_score = post_contract_score
-                # log_output(f"Contracting move accepted: {pre_contract_score} -> {post_contract_score} "
-                        #   f"(Δ: {post_contract_score - pre_contract_score}, "
-                        #   f"moves: {len(contracting_move.individual_moves)}, "
-                        #   f"skipped: {len(contracting_move.skipped_meetings)})")
+                log_output(f"Contracting move accepted: {pre_contract_score} -> {post_contract_score} "
+                          f"(Δ: {post_contract_score - pre_contract_score}, "
+                          f"moves: {len(contracting_move.individual_moves)}, "
+                          f"skipped: {len(contracting_move.skipped_meetings)})")
                 
                 # Update best score if this is a new best
                 if current_score < best_score:
                     best_score = current_score
                     best_schedule_snapshot = ScheduleSnapshot(schedule)
                     best_score_improved_this_iteration = True
-                    # log_output(f"New best score found from contracting: {best_score}")
+                    log_output(f"New best score found from contracting: {best_score}")
                     
             else:
                 # Contracting move didn't improve - undo it
@@ -292,7 +292,39 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     best_score = current_score
                     best_schedule_snapshot = ScheduleSnapshot(schedule)
                     log_output(f"New best score found after R&R: {best_score}")
-    
+        
+        if time_used >= max_time_seconds:
+            pre_contract_score = current_score
+            temp_schedule = best_schedule_snapshot.restore_schedule(schedule)
+            contracting_move = generate_contracting_move(temp_schedule, debug=False)
+            post_contract_score = calculate_full_score(temp_schedule)[0]
+            
+            # Always accept contracting move if it improves the score
+            if post_contract_score < pre_contract_score:
+                current_score = post_contract_score
+                log_output(f"Contracting move accepted: {pre_contract_score} -> {post_contract_score} "
+                          f"(Δ: {post_contract_score - pre_contract_score}, "
+                          f"moves: {len(contracting_move.individual_moves)}, "
+                          f"skipped: {len(contracting_move.skipped_meetings)})")
+                best_schedule_snapshot = temp_schedule
+                
+                # Update best score if this is a new best
+                if current_score < best_score:
+                    best_score = current_score
+                    best_schedule_snapshot = temp_schedule
+                    best_score_improved_this_iteration = True
+                    log_output(f"New best score found from contracting: {best_score}")
+                    return temp_schedule.restore_schedule(schedule)
+                    
+            else:
+                # Contracting move didn't improve - undo it
+                from src.local_search.move import undo_contracting_move
+                undo_contracting_move(contracting_move, schedule)
+                log_output(f"Contracting move rejected: no improvement "
+                          f"(moves: {len(contracting_move.individual_moves)}, "
+                          f"skipped: {len(contracting_move.skipped_meetings)})")
+        
+                
     # Close log file if it was opened
     if log_file:
         log_file.close()
@@ -301,7 +333,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
 
 def run_local_search(schedule: Schedule, log_file_path: str = None, K: int = 75) -> Schedule:
     iterations_per_temperature = 4000
-    max_time_seconds = 120
+    max_time_seconds = 60
     start_temp = 500
     end_temp = 20
     
@@ -314,5 +346,5 @@ def run_local_search(schedule: Schedule, log_file_path: str = None, K: int = 75)
         K=K,
         log_file_path=log_file_path
     )
-    
+    s
     return optimized_schedule
