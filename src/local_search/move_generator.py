@@ -11,6 +11,8 @@ from src.local_search.rules_engine import calculate_delta_score
 from src.base_model.compatibility_checks import calculate_compatible_judges, calculate_compatible_rooms
 from src.local_search.rules_engine_helpers import populate_insert_move_appointments
 
+random.seed(13062025)
+
 def generate_single_random_move(
     schedule: Schedule,
     compatible_judges_dict: Dict[int, List[Judge]],
@@ -20,7 +22,8 @@ def generate_single_random_move(
     best_score: int = None
 ) -> Move:
     """Generate a random valid move with inline tabu checking."""
-    meetings: list[Meeting] = schedule.get_all_planned_meetings()
+    meetings: list[Meeting] = schedule.get_all_meetings()
+
 
     if not meetings:
         raise ValueError("No meetings found in the schedule.")

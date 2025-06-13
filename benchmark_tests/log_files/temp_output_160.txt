@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 167, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 144, in main
+    final_schedule = run_local_search(initial_schedule, args.log)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 383, in run_local_search
+    optimized_schedule = simulated_annealing(
+                         ^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 287, in simulated_annealing
+    delta = calculate_delta_score(schedule, move)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine.py", line 118, in calculate_delta_score
+    soft_violations += nr20_max_weekly_coverage_delta(schedule, move)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine.py", line 558, in nr20_max_weekly_coverage_delta
+    occupied, total = count_weekly_coverage_for_judge_week(schedule, judge_id, week_number)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine_helpers.py", line 406, in count_weekly_coverage_for_judge_week
+    if app.judge.judge_id == judge_id:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+All case IDs are present in case_room_matrix.
+Using heuristic-based scheduling method
+Hard violations: 2162, Medium violations: 4622, Soft violations: 273

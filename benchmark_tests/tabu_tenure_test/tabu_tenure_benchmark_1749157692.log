@@ -1,0 +1,139 @@
+TABU TENURE BENCHMARK
+================================================================================
+Problem size: 1000 cases, 60 days
+Runs per tenure: 1
+Base Hyperparameters:
+  iterations: 4000
+  max_time: 300
+  start_temp: 500
+  end_temp: 20
+  high_prob: 0.2
+  med_prob: 0.7
+  low_prob: 0.8
+  high_threshold: 0.5
+  med_threshold: 0.15
+  K: 75
+  plateau_min: 6
+  plateau_max: 18
+  ruin_min: 0.002
+  ruin_max: 0.015
+================================================================================
+
+TENURE TEST 1: 20
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20722001068, Improvement=10588007034000396 (100.0%), Runtime=302.6s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20722001068±0
+Mean Improvement: 10588007034000396 (100.0%), Runtime: 302.6s
+Best: 20722001068, Worst: 20722001068
+
+TENURE TEST 2: 40
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20800001197, Improvement=10588006956000268 (100.0%), Runtime=307.0s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20800001197±0
+Mean Improvement: 10588006956000268 (100.0%), Runtime: 307.0s
+Best: 20800001197, Worst: 20800001197
+
+TENURE TEST 3: 60
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20800001245, Improvement=10588006956000220 (100.0%), Runtime=304.5s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20800001245±0
+Mean Improvement: 10588006956000220 (100.0%), Runtime: 304.5s
+Best: 20800001245, Worst: 20800001245
+
+TENURE TEST 4: 80
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20956001230, Improvement=10588006800000236 (100.0%), Runtime=315.9s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20956001230±0
+Mean Improvement: 10588006800000236 (100.0%), Runtime: 315.9s
+Best: 20956001230, Worst: 20956001230
+
+TENURE TEST 5: 100
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=21034001228, Improvement=10588006722000236 (100.0%), Runtime=326.7s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=21034001228±0
+Mean Improvement: 10588006722000236 (100.0%), Runtime: 326.7s
+Best: 21034001228, Worst: 21034001228
+
+TENURE TEST 6: 120
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=78020878001044, Improvement=10510006878000420 (99.3%), Runtime=323.5s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=78020878001044±0
+Mean Improvement: 10510006878000420 (99.3%), Runtime: 323.5s
+Best: 78020878001044, Worst: 78020878001044
+
+TENURE TEST 7: 140
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20800001111, Improvement=10588006956000354 (100.0%), Runtime=306.8s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20800001111±0
+Mean Improvement: 10588006956000354 (100.0%), Runtime: 306.8s
+Best: 20800001111, Worst: 20800001111
+
+TENURE TEST 8: 160
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20722001040, Improvement=10588007034000424 (100.0%), Runtime=306.8s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20722001040±0
+Mean Improvement: 10588007034000424 (100.0%), Runtime: 306.8s
+Best: 20722001040, Worst: 20722001040
+
+TENURE TEST 9: 180
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20878001062, Improvement=10588006878000404 (100.0%), Runtime=304.8s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20878001062±0
+Mean Improvement: 10588006878000404 (100.0%), Runtime: 304.8s
+Best: 20878001062, Worst: 20878001062
+
+TENURE TEST 10: 200
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20878001070, Improvement=10588006878000396 (100.0%), Runtime=306.9s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20878001070±0
+Mean Improvement: 10588006878000396 (100.0%), Runtime: 306.9s
+Best: 20878001070, Worst: 20878001070
+
+================================================================================
+TABU TENURE BENCHMARK RESULTS:
+================================================================================
+Tenure   Mean Final   ±Std       Best     Worst    Improvement  Runtime   
+--------------------------------------------------------------------------------
+160      20722001040  ±0         20722001040 20722001040 100.0       % 306.8     s
+20       20722001068  ±0         20722001068 20722001068 100.0       % 302.6     s
+140      20800001111  ±0         20800001111 20800001111 100.0       % 306.8     s
+40       20800001197  ±0         20800001197 20800001197 100.0       % 307.0     s
+60       20800001245  ±0         20800001245 20800001245 100.0       % 304.5     s
+180      20878001062  ±0         20878001062 20878001062 100.0       % 304.8     s
+200      20878001070  ±0         20878001070 20878001070 100.0       % 306.9     s
+80       20956001230  ±0         20956001230 20956001230 100.0       % 315.9     s
+100      21034001228  ±0         21034001228 21034001228 100.0       % 326.7     s
+120      78020878001044 ±0         78020878001044 78020878001044 99.3        % 323.5     s
+
+================================================================================
+📈 TABU TENURE ANALYSIS:
+================================================================================
+
+BEST PERFORMING TENURE: 160
+  Mean Final Score: 20722001040 ± 0
+  Mean Improvement: 100.0%
+  Average Runtime: 306.8s
+
+TENURE INSIGHTS:
+  Lower tenure values (≤20) perform better on average: 20722001068 vs 8687527334470
+  Most consistent: Tenure 20 (±0)
+  Least consistent: Tenure 20 (±0)
+  Fastest: Tenure 20 (302.6s avg)
+  Slowest: Tenure 100 (326.7s avg)
+
+RECOMMENDATION:
+  Use tabu_tenure = 160 for optimal performance
+  This provides the best balance of solution quality and consistency.
+
+================================================================================
+

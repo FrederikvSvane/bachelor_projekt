@@ -19,6 +19,8 @@ from src.local_search.ruin_and_recreate import apply_ruin_and_recreate
 from src.util.schedule_visualizer import visualize
 from src.local_search.rules_engine import _calculate_constraint_weights
 
+random.seed(13062025)
+
 def _add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
     """
     Adds the reverse of the accepted move to the tabu list.
@@ -42,71 +44,6 @@ def _add_move_to_tabu_list(move: Move, tabu_list: deque) -> None:
          tabu_list.append(tabu_item)
          # print(f"DEBUG: Adding Tabu: {tabu_item}") # Optional debug print
          
-
-def _calculate_moves_in_parallel(pool, schedule: Schedule, moves_with_gen_int: List[tuple[Move, int]]) -> List[tuple[Move, int]]:
-    """
-    Calculate the delta scores for a list of moves in parallel
-    """
-    if not moves_with_gen_int:
-        return []
-
-    #print(f"Calculating delta scores for {len(moves_with_gen_int)} moves in parallel...")
-    actual_moves: List[Move] = [move for move, _ in moves_with_gen_int]
-
-    starmap_args: List[tuple[Schedule, Move]] = [(schedule, move) for move in actual_moves]
-
-    delta_scores: List[int] = pool.starmap(calculate_delta_score, starmap_args)
-
-    results_combined: List[tuple[Move, int]] = list(zip(actual_moves, delta_scores))
-
-    return results_combined
-    
-    
-def _find_best_move_parallel(pool, schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
-    n_cores = os.cpu_count()
-    print(f"Using {n_cores} CPU cores for parallel processing")
-    moves: list[(Move, int)] = generate_list_of_random_moves(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
-    
-    if not moves:
-        return None, 0
-
-    results = _calculate_moves_in_parallel(pool, schedule, moves)
-    results.sort(key=lambda x: x[1])  # Sort by delta score
-    
-    return results[0]
-
-def _find_best_move_sequential(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score) -> tuple[Move, int]:
-    """
-    Find the best move by generating random moves and calculating their delta scores.
-    """
-    moves: list[(Move, int)] = generate_list_of_random_moves(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
-    
-    if not moves:
-        return None, 0
-
-    sequential_results = []
-
-    # Sort moves by delta score
-    for move, _ in moves:
-        delta_score = calculate_delta_score(schedule, move)
-        sequential_results.append((move, delta_score))
-        
-    sequential_results.sort(key=lambda x: x[1])  # Sort by delta score
-    return sequential_results[0]
-        
-def _find_move_and_delta(schedule: Schedule, compatible_judges: list[Judge], compatible_rooms: list[Room]) -> tuple[Move, int]:
-    """
-    Generate a move and calculate its delta score.
-    """
-    move = generate_single_random_move(schedule, compatible_judges, compatible_rooms)
-    
-    if move is None:
-        return None, 0
-
-    delta_score = calculate_delta_score(schedule, move)
-    
-    return move, delta_score
-
 def _calculate_cooling_rate(K: int, start_temperature: float, end_temperature: float) -> float:
     """
     Calculate the cooling rate alpha for simulated annealing.
@@ -131,7 +68,14 @@ def extract_violations_from_score(score: int, schedule: Schedule, hard_weight, m
     return hard_count, medium_count, soft_count
 
 
-def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: int = 60 * 60, start_temp: float = 300, end_temp: float = 1, log_file_path: str = None) -> Schedule:
+def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max_time_seconds: float = float('inf'), start_temp: float = 300, end_temp: float = 1, 
+                       high_temp_compound_prob: float = 0.2, medium_temp_compound_prob: float = 0.7, low_temp_compound_prob: float = 0.8,
+                       high_temp_threshold_pct: float = 0.5, medium_temp_threshold_pct: float = 0.15,
+                       plateau_count_min: int = 6, plateau_count_max: int = 18,
+                       ruin_percentage_min: float = 0.002, ruin_percentage_max: float = 0.015,
+                       K: int = 75,
+                       tabu_tenure: int = 20,
+                       log_file_path: str = None) -> Schedule:
     from copy import deepcopy
     start_time = time.time()
     
@@ -159,6 +103,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     
 
     current_score, hard_violations, medium_violations, soft_violations = calculate_full_score(schedule)
+    initial_score = [current_score, hard_violations, medium_violations, soft_violations]
     best_score = current_score
     current_temperature = start_temp
     best_schedule_snapshot = ScheduleSnapshot(schedule)
@@ -166,25 +111,26 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
     hard_weight, medium_weight, soft_weight = _calculate_constraint_weights(schedule)
     
     full_temp_range = start_temp - end_temp
-    high_temp_threshold = full_temp_range * 0.6 # from 60% to 100% of the temperature range
-    medium_temp_threshold = full_temp_range * 0.1 # from 10% to 60% of the temperature range
+    high_temp_threshold = full_temp_range * high_temp_threshold_pct # from 50% to 100% of the temperature range
+    medium_temp_threshold = full_temp_range * medium_temp_threshold_pct # from 15% to 50% of the temperature range
     low_temp_threshold = full_temp_range * 0 # bottom 10% of the temperature range 
      
     plateau_count = 0
-    cooling_rate = _calculate_cooling_rate(100, start_temp, end_temp)  # Initial cooling rate
+    cooling_rate = _calculate_cooling_rate(K, start_temp, end_temp)  # Initial cooling rate # K is 100
     
-    tabu_list = deque(maxlen=20)
+    tabu_list = deque(maxlen=tabu_tenure)
     time_used = 0
     current_iteration = 0
     p_attempt_insert = 0.1
-    plateau_count_min, plateau_count_max = 3, 10
-    ruin_percentage_min, ruin_percentage_max = 0.01, 0.05
+    #plateau_count_min, plateau_count_max = 3, 10
+    #ruin_percentage_min, ruin_percentage_max = 0.01, 0.05
     
     log_output(f"Starting simulated annealing with parameters:")
     log_output(f"Iterations per temperature: {iterations_per_temperature}")
     log_output(f"Max time: {max_time_seconds} seconds")
     log_output(f"Start temperature: {start_temp}")
     log_output(f"End temperature: {end_temp}")
+    log_output(f"Move probabilities - High: {high_temp_compound_prob}, Medium: {medium_temp_compound_prob}, Low: {low_temp_compound_prob}")
     log_output(f"Initial score: {current_score}")
     log_output(f"Initial violations - Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}")
 
@@ -243,7 +189,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
             if move is None: # No insert move was generated, so we generate a random single or compound move
                 # HIGH TEMP
                 if current_temperature > high_temp_threshold: 
-                    p_do_compound_move = 0.2
+                    p_do_compound_move = high_temp_compound_prob  # Use parameter instead of hardcoded 0.2
                     if random.random() < p_do_compound_move: 
                         # compound move
                         p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
@@ -254,7 +200,7 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                         
                 # MEDIUM TEMP
                 elif medium_temp_threshold < current_temperature < high_temp_threshold: 
-                    p_do_compound_move = 0.6
+                    p_do_compound_move = medium_temp_compound_prob  # Use parameter instead of hardcoded 0.6
                     if random.random() < p_do_compound_move: 
                         # compound move
                         p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
@@ -265,14 +211,14 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                         
                 # LOW TEMP
                 else: 
-                    p_do_compound_move = 0.8
+                    p_do_compound_move = low_temp_compound_prob  # Use parameter instead of hardcoded 0.8
                     if random.random() < p_do_compound_move: 
                         # compound move
                         p_j, p_r, p_t, p_d = 0.5, 0.5, 0.5, 0.5
                         move = generate_compound_move(schedule, compatible_judges, compatible_rooms, p_j, p_r, p_t, p_d, tabu_list, current_score, best_score)
                     else: 
                         # single move
-                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms, tabu_list, current_score, best_score)
+                        move = generate_single_random_move(schedule, compatible_judges, compatible_rooms,   tabu_list, current_score, best_score)
                 
             delta = calculate_delta_score(schedule, move)
                 
@@ -327,15 +273,19 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
               f"(Hard: {hard_violations}, Medium: {medium_violations}, Soft: {soft_violations}), "
               f"{' - Plateau detected!' if plateau_count >= 3 else ''}")
 
+        if time_used >= max_time_seconds:
+            log_output(f"Initial score {initial_score}")
+            log_output(f"Final score [{current_score}, {hard_violations}, {medium_violations}, {soft_violations}]")
+            log_output(f"Days: {schedule.work_days}, Total meetings: {len(schedule.get_all_planned_meetings())}")
+
         
         if plateau_count >= current_plateau_limit:
-            log_output("\n \n _______________________________________________________________ \n Large plateau detected! Applying Ruin and Recreate... \n _______________________________________________________________ \n")
-            r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True, log_file=log_file)
+            temp_schedule= best_schedule_snapshot.restore_schedule(schedule)
+            r_r_success, num_inserted = apply_ruin_and_recreate(temp_schedule, compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
             plateau_count = 0
             if r_r_success:
                 log_output(f"Ruin and Recreate successful! {num_inserted} meetings inserted.\n \n")
-                result = calculate_full_score(best_schedule_snapshot.restore_schedule(schedule))
-                current_score = result[0]
+                current_score = calculate_full_score(temp_schedule)[0]
                 tabu_list.clear()
 
                 if current_score < best_score:
@@ -349,65 +299,20 @@ def simulated_annealing(schedule: Schedule, iterations_per_temperature: int, max
                     
     return best_schedule_snapshot.restore_schedule(schedule)
 
-def run_local_search(schedule: Schedule, log_file_path: str = None) -> Schedule:
-    iterations_per_temperature = 5000
-    max_time_seconds = 60 * 2
-    start_temp = 300
-    end_temp = 10
+def run_local_search(schedule: Schedule, log_file_path: str = None, K: int = 75) -> Schedule:
+    iterations_per_temperature = 4000
+    max_time_seconds = 120
+    start_temp = 500
+    end_temp = 20
     
     optimized_schedule = simulated_annealing(
         schedule, 
-        iterations_per_temperature, 
-        max_time_seconds, 
-        start_temp, 
-        end_temp,
+        iterations_per_temperature=iterations_per_temperature, 
+        max_time_seconds=max_time_seconds, 
+        start_temp=start_temp, 
+        end_temp=end_temp,
+        K=K,
         log_file_path=log_file_path
     )
     
-    return optimized_schedule
-
-
-
-def run_local_search_benchmark(schedule: Schedule, log_file_path: str = None) -> Schedule:
-    """
-    Run a benchmark of the local search algorithm with various configurations.
-    """
-
-    iterations_per_temperature = [1000, 2000, 3000, 4000, 5000]
-    max_time_seconds = 60 * 5
-    start_temps = [200, 300, 400, 500, 600]
-    end_temps = [1, 10, 20, 30, 40]
-    results = []
-
-    print("Running local search benchmark with the following configurations:")
-    print(f"Iterations per temperature: {iterations_per_temperature}")
-    print(f"Max time: {max_time_seconds} seconds")
-    print(f"Start temperatures: {start_temps}")
-    print(f"End temperatures: {end_temps}")
-    for iters in iterations_per_temperature:
-        for start_temp in start_temps:
-            for end_temp in end_temps:
-                print(f"Running with iters={iters}, start_temp={start_temp}, end_temp={end_temp}...")
-                log_file = f"local_search_benchmark_{iters}_{start_temp}_{end_temp}.log"
-                optimized_schedule = simulated_annealing(
-                    schedule, 
-                    iters, 
-                    max_time_seconds, 
-                    start_temp, 
-                    end_temp,
-                    log_file_path=log_file
-                )
-                
-                final_score = calculate_full_score(optimized_schedule)[0]
-                results.append((iters, start_temp, end_temp, final_score, optimized_schedule))
-                
-                print(f"Results for iters={iters}, start_temp={start_temp}, end_temp={end_temp}: Final score = {final_score}")
-
-    print("\nBenchmark results:")
-    for iters, start_temp, end_temp, score in results:
-        print(f"Iterations: {iters}, Start Temp: {start_temp}, End Temp: {end_temp}, Final Score: {score}")
-    
-    results.sort(key=lambda x: x[3])  # Sort by final score
-    optimized_schedule = results[0][4]  # Best schedule is the one with the lowest score  
-
     return optimized_schedule

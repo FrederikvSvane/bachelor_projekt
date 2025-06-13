@@ -1,0 +1,514 @@
+Starting simulated annealing with parameters:
+Iterations per temperature: 2000
+Max time: 600 seconds
+Start temperature: 400
+End temperature: 40
+Initial score: 11646020902001495
+Initial violations - Hard: 11646, Medium: 20902, Soft: 1495
+Iteration: 1, Time: 0.1s/600s, Temp: 390.80, Accepted: 838/2000, Score: 7171018722001493, Best: 7171018722001493, (Hard: 7171, Medium: 18722, Soft: 1493), 
+Iteration: 2, Time: 3.1s/600s, Temp: 381.82, Accepted: 605/2000, Score: 5281017858001387, Best: 5281017858001387, (Hard: 5281, Medium: 17858, Soft: 1387), 
+Iteration: 3, Time: 5.6s/600s, Temp: 373.04, Accepted: 513/2000, Score: 4148016990001366, Best: 4148016990001366, (Hard: 4148, Medium: 16990, Soft: 1366), 
+Iteration: 4, Time: 7.8s/600s, Temp: 364.47, Accepted: 409/2000, Score: 3501016346001345, Best: 3501016346001345, (Hard: 3501, Medium: 16346, Soft: 1345), 
+Iteration: 5, Time: 9.8s/600s, Temp: 356.09, Accepted: 392/2000, Score: 2930016160001323, Best: 2930016160001321, (Hard: 2930, Medium: 16160, Soft: 1321), 
+Iteration: 6, Time: 11.6s/600s, Temp: 347.90, Accepted: 372/2000, Score: 2561015862001328, Best: 2561015862001326, (Hard: 2561, Medium: 15862, Soft: 1326), 
+Iteration: 7, Time: 13.2s/600s, Temp: 339.90, Accepted: 382/2000, Score: 2265015560001321, Best: 2265015560001320, (Hard: 2265, Medium: 15560, Soft: 1320), 
+Iteration: 8, Time: 14.9s/600s, Temp: 332.09, Accepted: 365/2000, Score: 2110015458001315, Best: 2110015458001313, (Hard: 2110, Medium: 15458, Soft: 1313), 
+Iteration: 9, Time: 16.6s/600s, Temp: 324.45, Accepted: 326/2000, Score: 1913015441001287, Best: 1913015441001286, (Hard: 1913, Medium: 15441, Soft: 1286), 
+Iteration: 10, Time: 18.2s/600s, Temp: 316.99, Accepted: 341/2000, Score: 1774015405001278, Best: 1774015405001278, (Hard: 1774, Medium: 15405, Soft: 1278), 
+Iteration: 11, Time: 19.8s/600s, Temp: 309.71, Accepted: 296/2000, Score: 1659015384001274, Best: 1659015384001266, (Hard: 1659, Medium: 15384, Soft: 1266), 
+Iteration: 12, Time: 21.4s/600s, Temp: 302.59, Accepted: 320/2000, Score: 1584015436001286, Best: 1584015436001286, (Hard: 1584, Medium: 15436, Soft: 1286), 
+Iteration: 13, Time: 22.9s/600s, Temp: 295.63, Accepted: 307/2000, Score: 1490015255001303, Best: 1490015255001299, (Hard: 1490, Medium: 15255, Soft: 1299), 
+Iteration: 14, Time: 24.5s/600s, Temp: 288.83, Accepted: 288/2000, Score: 1433015167001284, Best: 1433015167001278, (Hard: 1433, Medium: 15167, Soft: 1278), 
+Iteration: 15, Time: 26.0s/600s, Temp: 282.19, Accepted: 294/2000, Score: 1391015165001286, Best: 1391015165001278, (Hard: 1391, Medium: 15165, Soft: 1278), 
+Iteration: 16, Time: 27.5s/600s, Temp: 275.70, Accepted: 291/2000, Score: 1327015137001277, Best: 1327015137001277, (Hard: 1327, Medium: 15137, Soft: 1277), 
+Iteration: 17, Time: 29.0s/600s, Temp: 269.37, Accepted: 317/2000, Score: 1293015077001270, Best: 1293015077001265, (Hard: 1293, Medium: 15077, Soft: 1265), 
+Iteration: 18, Time: 30.5s/600s, Temp: 263.17, Accepted: 304/2000, Score: 1218015030001255, Best: 1218015030001255, (Hard: 1218, Medium: 15030, Soft: 1255), 
+Iteration: 19, Time: 32.0s/600s, Temp: 257.12, Accepted: 301/2000, Score: 1155015037001276, Best: 1155015037001272, (Hard: 1155, Medium: 15037, Soft: 1272), 
+Iteration: 20, Time: 33.5s/600s, Temp: 251.21, Accepted: 280/2000, Score: 1129014985001263, Best: 1129014985001261, (Hard: 1129, Medium: 14985, Soft: 1261), 
+Iteration: 21, Time: 34.9s/600s, Temp: 245.44, Accepted: 273/2000, Score: 1114014928001242, Best: 1114014928001238, (Hard: 1114, Medium: 14928, Soft: 1238), 
+Iteration: 22, Time: 36.4s/600s, Temp: 239.79, Accepted: 277/2000, Score: 1094014902001243, Best: 1094014902001237, (Hard: 1094, Medium: 14902, Soft: 1237), 
+Iteration: 23, Time: 37.8s/600s, Temp: 234.28, Accepted: 302/2000, Score: 1054014897001245, Best: 1054014897001245, (Hard: 1054, Medium: 14897, Soft: 1245), 
+Iteration: 24, Time: 39.3s/600s, Temp: 228.89, Accepted: 289/2000, Score: 1043014897001251, Best: 1043014897001205, (Hard: 1043, Medium: 14897, Soft: 1205), 
+Iteration: 25, Time: 40.7s/600s, Temp: 223.63, Accepted: 283/2000, Score: 1036014869001248, Best: 1036014869001248, (Hard: 1036, Medium: 14869, Soft: 1248), 
+Iteration: 26, Time: 42.2s/600s, Temp: 218.49, Accepted: 297/2000, Score: 1005014868001245, Best: 1005014868001229, (Hard: 1005, Medium: 14868, Soft: 1229), 
+Contracting move rejected: no improvement (moves: 56, skipped: 1024)
+Iteration: 27, Time: 43.6s/600s, Temp: 213.47, Accepted: 296/2000, Score: 957014863001306, Best: 957014863001287, (Hard: 957, Medium: 14863, Soft: 1287), 
+Contracting move rejected: no improvement (moves: 86, skipped: 994)
+Iteration: 28, Time: 45.0s/600s, Temp: 208.56, Accepted: 204/2000, Score: 954014867001314, Best: 954014867001309, (Hard: 954, Medium: 14867, Soft: 1309), 
+Iteration: 29, Time: 46.9s/600s, Temp: 203.77, Accepted: 194/2000, Score: 920014888001281, Best: 920014888001280, (Hard: 920, Medium: 14888, Soft: 1280), 
+Iteration: 30, Time: 48.8s/600s, Temp: 199.08, Accepted: 195/2000, Score: 908014836001259, Best: 908014836001259, (Hard: 908, Medium: 14836, Soft: 1259), 
+Iteration: 31, Time: 50.6s/600s, Temp: 194.50, Accepted: 207/2000, Score: 885014793001257, Best: 885014793001241, (Hard: 885, Medium: 14793, Soft: 1241), 
+Iteration: 32, Time: 52.4s/600s, Temp: 190.03, Accepted: 189/2000, Score: 853014794001281, Best: 853014794001281, (Hard: 853, Medium: 14794, Soft: 1281), 
+Iteration: 33, Time: 54.2s/600s, Temp: 185.66, Accepted: 169/2000, Score: 847014788001287, Best: 847014788001273, (Hard: 847, Medium: 14788, Soft: 1273), 
+Iteration: 34, Time: 56.1s/600s, Temp: 181.40, Accepted: 219/2000, Score: 828014733001280, Best: 828014733001273, (Hard: 828, Medium: 14733, Soft: 1273), 
+Iteration: 35, Time: 58.0s/600s, Temp: 177.22, Accepted: 185/2000, Score: 805014689001278, Best: 805014689001230, (Hard: 805, Medium: 14689, Soft: 1230), 
+Iteration: 36, Time: 59.9s/600s, Temp: 173.15, Accepted: 191/2000, Score: 786014650001282, Best: 786014650001260, (Hard: 786, Medium: 14650, Soft: 1260), 
+Iteration: 37, Time: 61.6s/600s, Temp: 169.17, Accepted: 195/2000, Score: 772014620001277, Best: 772014620001269, (Hard: 772, Medium: 14620, Soft: 1269), 
+Iteration: 38, Time: 63.5s/600s, Temp: 165.28, Accepted: 203/2000, Score: 756014612001256, Best: 756014612001252, (Hard: 756, Medium: 14612, Soft: 1252), 
+Iteration: 39, Time: 65.3s/600s, Temp: 161.48, Accepted: 181/2000, Score: 695014607001266, Best: 695014607001260, (Hard: 695, Medium: 14607, Soft: 1260), 
+Iteration: 40, Time: 67.1s/600s, Temp: 157.77, Accepted: 173/2000, Score: 657014628001244, Best: 657014628001244, (Hard: 657, Medium: 14628, Soft: 1244), 
+Iteration: 41, Time: 69.1s/600s, Temp: 154.14, Accepted: 201/2000, Score: 627014621001242, Best: 627014621001225, (Hard: 627, Medium: 14621, Soft: 1225), 
+Iteration: 42, Time: 71.0s/600s, Temp: 150.60, Accepted: 171/2000, Score: 620014615001232, Best: 620014615001226, (Hard: 620, Medium: 14615, Soft: 1226), 
+Iteration: 43, Time: 73.0s/600s, Temp: 147.14, Accepted: 187/2000, Score: 604014610001242, Best: 604014610001232, (Hard: 604, Medium: 14610, Soft: 1232), 
+Iteration: 44, Time: 74.9s/600s, Temp: 143.75, Accepted: 176/2000, Score: 601014610001230, Best: 601014610001221, (Hard: 601, Medium: 14610, Soft: 1221), 
+Iteration: 45, Time: 76.7s/600s, Temp: 140.45, Accepted: 170/2000, Score: 575014484001227, Best: 575014484001210, (Hard: 575, Medium: 14484, Soft: 1210), 
+Iteration: 46, Time: 78.5s/600s, Temp: 137.22, Accepted: 191/2000, Score: 565014415001241, Best: 565014415001237, (Hard: 565, Medium: 14415, Soft: 1237), 
+Iteration: 47, Time: 80.5s/600s, Temp: 134.06, Accepted: 210/2000, Score: 523014373001236, Best: 523014373001235, (Hard: 523, Medium: 14373, Soft: 1235), 
+Iteration: 48, Time: 82.3s/600s, Temp: 130.98, Accepted: 180/2000, Score: 514014342001224, Best: 514014342001212, (Hard: 514, Medium: 14342, Soft: 1212), 
+Iteration: 49, Time: 84.1s/600s, Temp: 127.97, Accepted: 211/2000, Score: 511014342001205, Best: 511014342001205, (Hard: 511, Medium: 14342, Soft: 1205), 
+Iteration: 50, Time: 85.9s/600s, Temp: 125.03, Accepted: 182/2000, Score: 504014335001209, Best: 504014335001194, (Hard: 504, Medium: 14335, Soft: 1194), 
+Iteration: 51, Time: 87.8s/600s, Temp: 122.15, Accepted: 166/2000, Score: 499014252001222, Best: 499014252001210, (Hard: 499, Medium: 14252, Soft: 1210), 
+Iteration: 52, Time: 89.8s/600s, Temp: 119.35, Accepted: 175/2000, Score: 477014238001210, Best: 477014238001199, (Hard: 477, Medium: 14238, Soft: 1199), 
+Iteration: 53, Time: 91.7s/600s, Temp: 116.60, Accepted: 177/2000, Score: 475014236001224, Best: 475014236001224, (Hard: 475, Medium: 14236, Soft: 1224), 
+Iteration: 54, Time: 93.5s/600s, Temp: 113.92, Accepted: 189/2000, Score: 475014236001275, Best: 475014236001186, (Hard: 475, Medium: 14236, Soft: 1186), 
+Iteration: 55, Time: 95.3s/600s, Temp: 111.30, Accepted: 182/2000, Score: 474014235001263, Best: 474014235001231, (Hard: 474, Medium: 14235, Soft: 1231), 
+Iteration: 56, Time: 97.1s/600s, Temp: 108.74, Accepted: 205/2000, Score: 469014211001263, Best: 469014211001260, (Hard: 469, Medium: 14211, Soft: 1260), 
+Iteration: 57, Time: 98.9s/600s, Temp: 106.24, Accepted: 191/2000, Score: 463014218001275, Best: 463014218001227, (Hard: 463, Medium: 14218, Soft: 1227), 
+Iteration: 58, Time: 100.7s/600s, Temp: 103.80, Accepted: 188/2000, Score: 461014218001297, Best: 461014218001258, (Hard: 461, Medium: 14218, Soft: 1258), 
+Iteration: 59, Time: 102.7s/600s, Temp: 101.41, Accepted: 193/2000, Score: 457014214001293, Best: 457014214001241, (Hard: 457, Medium: 14214, Soft: 1241), 
+Iteration: 60, Time: 104.7s/600s, Temp: 99.08, Accepted: 210/2000, Score: 451014214001301, Best: 451014214001278, (Hard: 451, Medium: 14214, Soft: 1278), 
+Iteration: 61, Time: 106.5s/600s, Temp: 96.81, Accepted: 195/2000, Score: 450014213001306, Best: 450014213001288, (Hard: 450, Medium: 14213, Soft: 1288), 
+Iteration: 62, Time: 108.3s/600s, Temp: 94.58, Accepted: 190/2000, Score: 446014209001291, Best: 446014209001257, (Hard: 446, Medium: 14209, Soft: 1257), 
+Iteration: 63, Time: 110.2s/600s, Temp: 92.41, Accepted: 164/2000, Score: 436014202001272, Best: 436014202001271, (Hard: 436, Medium: 14202, Soft: 1271), 
+Iteration: 64, Time: 112.0s/600s, Temp: 90.28, Accepted: 172/2000, Score: 436014202001233, Best: 436014202001222, (Hard: 436, Medium: 14202, Soft: 1222), 
+Iteration: 65, Time: 113.8s/600s, Temp: 88.21, Accepted: 177/2000, Score: 423014124001247, Best: 423014124001216, (Hard: 423, Medium: 14124, Soft: 1216), 
+Iteration: 66, Time: 115.6s/600s, Temp: 86.18, Accepted: 160/2000, Score: 423014124001235, Best: 423014124001205, (Hard: 423, Medium: 14124, Soft: 1205), 
+Iteration: 67, Time: 117.3s/600s, Temp: 84.20, Accepted: 184/2000, Score: 422014124001218, Best: 422014124001182, (Hard: 422, Medium: 14124, Soft: 1182), 
+Iteration: 68, Time: 119.1s/600s, Temp: 82.26, Accepted: 193/2000, Score: 421014124001232, Best: 421014124001192, (Hard: 421, Medium: 14124, Soft: 1192), 
+Iteration: 69, Time: 120.9s/600s, Temp: 80.37, Accepted: 193/2000, Score: 415014124001249, Best: 415014124001217, (Hard: 415, Medium: 14124, Soft: 1217), 
+Iteration: 70, Time: 122.8s/600s, Temp: 78.52, Accepted: 181/2000, Score: 415014124001227, Best: 415014124001203, (Hard: 415, Medium: 14124, Soft: 1203), 
+Iteration: 71, Time: 124.6s/600s, Temp: 76.72, Accepted: 208/2000, Score: 415014124001224, Best: 415014124001174, (Hard: 415, Medium: 14124, Soft: 1174), 
+Iteration: 72, Time: 126.4s/600s, Temp: 74.95, Accepted: 179/2000, Score: 415014124001231, Best: 415014124001170, (Hard: 415, Medium: 14124, Soft: 1170), 
+Iteration: 73, Time: 128.2s/600s, Temp: 73.23, Accepted: 175/2000, Score: 415014124001231, Best: 415014124001170, (Hard: 415, Medium: 14124, Soft: 1170), 
+Iteration: 74, Time: 130.0s/600s, Temp: 71.55, Accepted: 188/2000, Score: 415014124001230, Best: 415014124001170, (Hard: 415, Medium: 14124, Soft: 1170), 
+Iteration: 75, Time: 131.7s/600s, Temp: 69.90, Accepted: 160/2000, Score: 414014070001212, Best: 414014070001199, (Hard: 414, Medium: 14070, Soft: 1199), 
+Iteration: 76, Time: 133.5s/600s, Temp: 68.29, Accepted: 169/2000, Score: 414014070001200, Best: 414014070001172, (Hard: 414, Medium: 14070, Soft: 1172), 
+Iteration: 77, Time: 135.3s/600s, Temp: 66.72, Accepted: 192/2000, Score: 414014070001206, Best: 414014070001144, (Hard: 414, Medium: 14070, Soft: 1144), 
+Iteration: 78, Time: 137.1s/600s, Temp: 65.19, Accepted: 217/2000, Score: 414014070001230, Best: 414014070001144, (Hard: 414, Medium: 14070, Soft: 1144), 
+Iteration: 79, Time: 138.9s/600s, Temp: 63.69, Accepted: 176/2000, Score: 414014070001226, Best: 414014070001144, (Hard: 414, Medium: 14070, Soft: 1144), 
+Iteration: 80, Time: 140.7s/600s, Temp: 62.23, Accepted: 184/2000, Score: 414014070001244, Best: 414014070001144, (Hard: 414, Medium: 14070, Soft: 1144),  - Plateau detected!
+Iteration: 81, Time: 142.5s/600s, Temp: 60.80, Accepted: 216/2000, Score: 412014070001239, Best: 412014070001228, (Hard: 412, Medium: 14070, Soft: 1228), 
+Iteration: 82, Time: 144.4s/600s, Temp: 59.40, Accepted: 189/2000, Score: 412014070001229, Best: 412014070001190, (Hard: 412, Medium: 14070, Soft: 1190), 
+Iteration: 83, Time: 146.2s/600s, Temp: 58.03, Accepted: 163/2000, Score: 412014070001240, Best: 412014070001177, (Hard: 412, Medium: 14070, Soft: 1177), 
+Iteration: 84, Time: 148.0s/600s, Temp: 56.70, Accepted: 202/2000, Score: 412014070001233, Best: 412014070001177, (Hard: 412, Medium: 14070, Soft: 1177), 
+Iteration: 85, Time: 149.8s/600s, Temp: 55.40, Accepted: 169/2000, Score: 412014070001220, Best: 412014070001177, (Hard: 412, Medium: 14070, Soft: 1177), 
+Iteration: 86, Time: 151.6s/600s, Temp: 54.12, Accepted: 181/2000, Score: 412014070001215, Best: 412014070001177, (Hard: 412, Medium: 14070, Soft: 1177),  - Plateau detected!
+Iteration: 87, Time: 153.4s/600s, Temp: 52.88, Accepted: 170/2000, Score: 409014070001233, Best: 409014070001222, (Hard: 409, Medium: 14070, Soft: 1222), 
+Iteration: 88, Time: 155.2s/600s, Temp: 51.66, Accepted: 185/2000, Score: 409014070001232, Best: 409014070001177, (Hard: 409, Medium: 14070, Soft: 1177), 
+Iteration: 89, Time: 157.0s/600s, Temp: 50.47, Accepted: 165/2000, Score: 409014070001231, Best: 409014070001177, (Hard: 409, Medium: 14070, Soft: 1177), 
+Iteration: 90, Time: 158.8s/600s, Temp: 49.31, Accepted: 191/2000, Score: 409014070001239, Best: 409014070001177, (Hard: 409, Medium: 14070, Soft: 1177), 
+Iteration: 91, Time: 160.6s/600s, Temp: 48.18, Accepted: 172/2000, Score: 409014070001241, Best: 409014070001177, (Hard: 409, Medium: 14070, Soft: 1177),  - Plateau detected!
+Iteration: 92, Time: 162.4s/600s, Temp: 47.07, Accepted: 176/2000, Score: 409014070001207, Best: 409014070001177, (Hard: 409, Medium: 14070, Soft: 1177),  - Plateau detected!
+Iteration: 93, Time: 164.2s/600s, Temp: 45.99, Accepted: 175/2000, Score: 409014070001211, Best: 409014070001164, (Hard: 409, Medium: 14070, Soft: 1164),  - Plateau detected!
+Iteration: 94, Time: 166.0s/600s, Temp: 44.93, Accepted: 170/2000, Score: 409014070001223, Best: 409014070001164, (Hard: 409, Medium: 14070, Soft: 1164),  - Plateau detected!
+Iteration: 95, Time: 167.9s/600s, Temp: 43.90, Accepted: 185/2000, Score: 409014070001236, Best: 409014070001164, (Hard: 409, Medium: 14070, Soft: 1164),  - Plateau detected!
+Iteration: 96, Time: 169.7s/600s, Temp: 42.89, Accepted: 183/2000, Score: 409014070001235, Best: 409014070001164, (Hard: 409, Medium: 14070, Soft: 1164),  - Plateau detected!
+Iteration: 97, Time: 171.5s/600s, Temp: 41.90, Accepted: 170/2000, Score: 409014070001246, Best: 409014070001164, (Hard: 409, Medium: 14070, Soft: 1164),  - Plateau detected!
+Iteration: 98, Time: 173.3s/600s, Temp: 40.94, Accepted: 174/2000, Score: 409014070001235, Best: 409014070001164, (Hard: 409, Medium: 14070, Soft: 1164),  - Plateau detected!
+
+ 
+ _______________________________________________________________ 
+ Large plateau detected! Applying Ruin and Recreate... 
+ _______________________________________________________________ 
+
+Calculating violations for 1080 meetings...
+Violation calculation took 17.31 seconds
+Removing 10 meetings with deltas: [(676, -10999999999999), (173, -10999999999996), (892, -1999999999999), (722, -1999994000000), (16, -999971000001), (444, -999952000005), (710, -18000000), (340, -1), (979, -1), (62, 1)]
+Ruined 10 meetings in 17.32 seconds
+Starting delta-based insertion for 10 meetings
+Pre-computed 1685 positions for 9 violating meetings
+  Meeting 710: Was violating (delta=-18000000.00, regret=77999998.00) - regret-based insertion
+    Best available position: Day 42, Slot 19, Delta: -59999999.00
+  ✓ Inserted violating meeting 710
+  Meeting 340: Was violating (delta=-1.00, regret=77999998.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: 17999999.00
+  ✓ Inserted violating meeting 340
+  Meeting 676: Was violating (delta=-10999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 676
+  Meeting 173: Was violating (delta=-10999999999996.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 173
+  Meeting 722: Was violating (delta=-1999994000000.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 722
+  Meeting 892: Was violating (delta=-1999999999999.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 892
+  Meeting 444: Was violating (delta=-999952000005.00, regret=0.00) - regret-based insertion
+    Best available position: Day 18, Slot 27, Delta: -48000001.00
+  ✓ Inserted violating meeting 444
+  Meeting 979: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+    Best available position: Day 22, Slot 25, Delta: -48000001.00
+  ✓ Inserted violating meeting 979
+  Meeting 16: Was violating (delta=-999971000001.00, regret=0.00) - regret-based insertion
+    Best available position: Day 22, Slot 25, Delta: -29000002.00
+  ✓ Inserted violating meeting 16
+  Meeting 62: Was good (delta=1.00) - trying original/greedy
+    Greedy insert: Day 29, Slot 10
+  ✓ Inserted good meeting 62
+Recreated 8 meetings in 27.36 seconds
+Total R&R time: 44.68 seconds
+Ruin and Recreate successful! 8 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 56, skipped: 1024)
+Reheating
+Iteration: 99, Time: 219.9s/600s, Temp: 400.00, Accepted: 176/2000, Score: 409014070001222, Best: 409014070001164, (Hard: 409, Medium: 14070, Soft: 1164), 
+Iteration: 100, Time: 221.7s/600s, Temp: 390.80, Accepted: 272/2000, Score: 409014070001262, Best: 409014070001164, (Hard: 409, Medium: 14070, Soft: 1164), 
+Iteration: 101, Time: 223.2s/600s, Temp: 381.82, Accepted: 271/2000, Score: 409014070001266, Best: 409014070001164, (Hard: 409, Medium: 14070, Soft: 1164),  - Plateau detected!
+
+ 
+ _______________________________________________________________ 
+ Large plateau detected! Applying Ruin and Recreate... 
+ _______________________________________________________________ 
+
+Calculating violations for 1080 meetings...
+Violation calculation took 18.03 seconds
+Removing 10 meetings with deltas: [(676, -10999999999999), (173, -10999999999996), (892, -1999999999999), (722, -1999994000000), (16, -999971000001), (444, -999952000005), (710, -18000000), (340, -1), (979, -1), (62, 1)]
+Ruined 10 meetings in 18.03 seconds
+Starting delta-based insertion for 10 meetings
+Pre-computed 1685 positions for 9 violating meetings
+  Meeting 710: Was violating (delta=-18000000.00, regret=77999998.00) - regret-based insertion
+    Best available position: Day 42, Slot 19, Delta: -59999999.00
+  ✓ Inserted violating meeting 710
+  Meeting 340: Was violating (delta=-1.00, regret=77999998.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: 17999999.00
+  ✓ Inserted violating meeting 340
+  Meeting 676: Was violating (delta=-10999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 676
+  Meeting 173: Was violating (delta=-10999999999996.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 173
+  Meeting 722: Was violating (delta=-1999994000000.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 722
+  Meeting 892: Was violating (delta=-1999999999999.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 892
+  Meeting 444: Was violating (delta=-999952000005.00, regret=0.00) - regret-based insertion
+    Best available position: Day 18, Slot 27, Delta: -48000001.00
+  ✓ Inserted violating meeting 444
+  Meeting 979: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+    Best available position: Day 22, Slot 25, Delta: -48000001.00
+  ✓ Inserted violating meeting 979
+  Meeting 16: Was violating (delta=-999971000001.00, regret=0.00) - regret-based insertion
+    Best available position: Day 22, Slot 25, Delta: -29000002.00
+  ✓ Inserted violating meeting 16
+  Meeting 62: Was good (delta=1.00) - trying original/greedy
+    Greedy insert: Day 29, Slot 10
+  ✓ Inserted good meeting 62
+Recreated 8 meetings in 28.43 seconds
+Total R&R time: 46.47 seconds
+Ruin and Recreate successful! 8 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 47, skipped: 1033)
+Iteration: 102, Time: 271.1s/600s, Temp: 373.04, Accepted: 266/2000, Score: 409014070001202, Best: 409014070001163, (Hard: 409, Medium: 14070, Soft: 1163), 
+Contracting move rejected: no improvement (moves: 73, skipped: 1007)
+Iteration: 103, Time: 272.6s/600s, Temp: 364.47, Accepted: 260/2000, Score: 409014070001215, Best: 409014070001163, (Hard: 409, Medium: 14070, Soft: 1163), 
+Contracting move rejected: no improvement (moves: 84, skipped: 996)
+Iteration: 104, Time: 273.9s/600s, Temp: 356.09, Accepted: 269/2000, Score: 409014070001228, Best: 409014070001163, (Hard: 409, Medium: 14070, Soft: 1163), 
+Contracting move rejected: no improvement (moves: 99, skipped: 981)
+Iteration: 105, Time: 275.4s/600s, Temp: 347.90, Accepted: 258/2000, Score: 409014070001253, Best: 409014070001163, (Hard: 409, Medium: 14070, Soft: 1163),  - Plateau detected!
+
+ 
+ _______________________________________________________________ 
+ Large plateau detected! Applying Ruin and Recreate... 
+ _______________________________________________________________ 
+
+Calculating violations for 1080 meetings...
+Violation calculation took 19.12 seconds
+Removing 10 meetings with deltas: [(676, -10999999999999), (173, -10999999999996), (892, -6999999999999), (722, -6999993999998), (16, -999971000001), (444, -999952000001), (1068, -42000000), (159, -3), (340, -1), (62, 1)]
+Ruined 10 meetings in 19.12 seconds
+Starting delta-based insertion for 10 meetings
+Pre-computed 2189 positions for 9 violating meetings
+  Meeting 444: Was violating (delta=-999952000001.00, regret=1.00) - regret-based insertion
+    Best available position: Day 34, Slot 9, Delta: -48000001.00
+  ✓ Inserted violating meeting 444
+  Meeting 1068: Was violating (delta=-42000000.00, regret=1.00) - regret-based insertion
+    Best available position: Day 45, Slot 1, Delta: -36000002.00
+  ✓ Inserted violating meeting 1068
+  Meeting 676: Was violating (delta=-10999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 676
+  Meeting 173: Was violating (delta=-10999999999996.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 173
+  Meeting 722: Was violating (delta=-6999993999998.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: 3.00
+  ✓ Inserted violating meeting 722
+  Meeting 159: Was violating (delta=-3.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 159
+  Meeting 892: Was violating (delta=-6999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 7, Delta: 6000006.00
+  ✓ Inserted violating meeting 892
+  Meeting 340: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+    Best available position: Day 21, Slot 13, Delta: -60000000.00
+  ✓ Inserted violating meeting 340
+  Meeting 16: Was violating (delta=-999971000001.00, regret=0.00) - regret-based insertion
+    Best available position: Day 1, Slot 37, Delta: -29000002.00
+  ✓ Inserted violating meeting 16
+  Meeting 62: Was good (delta=1.00) - trying original/greedy
+    Greedy insert: Day 11, Slot 13
+  ✓ Inserted good meeting 62
+Recreated 9 meetings in 39.35 seconds
+Total R&R time: 58.48 seconds
+Ruin and Recreate successful! 9 meetings inserted.
+ 
+
+Iteration: 106, Time: 335.4s/600s, Temp: 339.90, Accepted: 261/2000, Score: 409014070001312, Best: 409014070001163, (Hard: 409, Medium: 14070, Soft: 1163), 
+Iteration: 107, Time: 336.9s/600s, Temp: 332.09, Accepted: 289/2000, Score: 409014070001292, Best: 409014070001163, (Hard: 409, Medium: 14070, Soft: 1163), 
+Iteration: 108, Time: 338.3s/600s, Temp: 324.45, Accepted: 280/2000, Score: 409014070001291, Best: 409014070001163, (Hard: 409, Medium: 14070, Soft: 1163),  - Plateau detected!
+Iteration: 109, Time: 339.7s/600s, Temp: 316.99, Accepted: 239/2000, Score: 409014070001257, Best: 409014070001163, (Hard: 409, Medium: 14070, Soft: 1163),  - Plateau detected!
+
+ 
+ _______________________________________________________________ 
+ Large plateau detected! Applying Ruin and Recreate... 
+ _______________________________________________________________ 
+
+Calculating violations for 1080 meetings...
+Violation calculation took 19.11 seconds
+Removing 10 meetings with deltas: [(676, -10999999999999), (173, -10999999999996), (892, -6999999999999), (722, -6999993999998), (16, -999971000001), (444, -999952000001), (1068, -42000000), (159, -3), (340, -1), (62, 1)]
+Ruined 10 meetings in 19.12 seconds
+Starting delta-based insertion for 10 meetings
+Pre-computed 2189 positions for 9 violating meetings
+  Meeting 444: Was violating (delta=-999952000001.00, regret=1.00) - regret-based insertion
+    Best available position: Day 34, Slot 9, Delta: -48000001.00
+  ✓ Inserted violating meeting 444
+  Meeting 1068: Was violating (delta=-42000000.00, regret=1.00) - regret-based insertion
+    Best available position: Day 45, Slot 1, Delta: -36000002.00
+  ✓ Inserted violating meeting 1068
+  Meeting 676: Was violating (delta=-10999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 676
+  Meeting 173: Was violating (delta=-10999999999996.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 173
+  Meeting 722: Was violating (delta=-6999993999998.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: 3.00
+  ✓ Inserted violating meeting 722
+  Meeting 159: Was violating (delta=-3.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 159
+  Meeting 892: Was violating (delta=-6999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 7, Delta: 6000006.00
+  ✓ Inserted violating meeting 892
+  Meeting 340: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+    Best available position: Day 21, Slot 13, Delta: -60000000.00
+  ✓ Inserted violating meeting 340
+  Meeting 16: Was violating (delta=-999971000001.00, regret=0.00) - regret-based insertion
+    Best available position: Day 1, Slot 37, Delta: -29000002.00
+  ✓ Inserted violating meeting 16
+  Meeting 62: Was good (delta=1.00) - trying original/greedy
+    Greedy insert: Day 11, Slot 13
+  ✓ Inserted good meeting 62
+Recreated 9 meetings in 39.75 seconds
+Total R&R time: 58.87 seconds
+Ruin and Recreate successful! 9 meetings inserted.
+ 
+
+Iteration: 110, Time: 400.1s/600s, Temp: 309.71, Accepted: 278/2000, Score: 409014046001246, Best: 409014046001234, (Hard: 409, Medium: 14046, Soft: 1234), 
+Iteration: 111, Time: 401.4s/600s, Temp: 302.59, Accepted: 262/2000, Score: 409014046001226, Best: 409014046001189, (Hard: 409, Medium: 14046, Soft: 1189), 
+Iteration: 112, Time: 402.9s/600s, Temp: 295.63, Accepted: 263/2000, Score: 409014046001244, Best: 409014046001172, (Hard: 409, Medium: 14046, Soft: 1172), 
+Iteration: 113, Time: 404.3s/600s, Temp: 288.83, Accepted: 234/2000, Score: 409014046001242, Best: 409014046001172, (Hard: 409, Medium: 14046, Soft: 1172), 
+Iteration: 114, Time: 405.7s/600s, Temp: 282.19, Accepted: 233/2000, Score: 409014046001234, Best: 409014046001172, (Hard: 409, Medium: 14046, Soft: 1172), 
+Iteration: 115, Time: 407.1s/600s, Temp: 275.70, Accepted: 250/2000, Score: 409013986001237, Best: 409013986001229, (Hard: 409, Medium: 13986, Soft: 1229), 
+Iteration: 116, Time: 408.5s/600s, Temp: 269.37, Accepted: 249/2000, Score: 409013986001248, Best: 409013986001189, (Hard: 409, Medium: 13986, Soft: 1189), 
+Iteration: 117, Time: 409.9s/600s, Temp: 263.17, Accepted: 283/2000, Score: 409013986001251, Best: 409013986001189, (Hard: 409, Medium: 13986, Soft: 1189), 
+Iteration: 118, Time: 411.3s/600s, Temp: 257.12, Accepted: 252/2000, Score: 409013986001242, Best: 409013986001189, (Hard: 409, Medium: 13986, Soft: 1189), 
+Iteration: 119, Time: 412.7s/600s, Temp: 251.21, Accepted: 250/2000, Score: 409013986001243, Best: 409013986001189, (Hard: 409, Medium: 13986, Soft: 1189),  - Plateau detected!
+Iteration: 120, Time: 414.1s/600s, Temp: 245.44, Accepted: 255/2000, Score: 409013986001246, Best: 409013986001189, (Hard: 409, Medium: 13986, Soft: 1189),  - Plateau detected!
+Iteration: 121, Time: 415.5s/600s, Temp: 239.79, Accepted: 255/2000, Score: 409013986001214, Best: 409013986001189, (Hard: 409, Medium: 13986, Soft: 1189),  - Plateau detected!
+
+ 
+ _______________________________________________________________ 
+ Large plateau detected! Applying Ruin and Recreate... 
+ _______________________________________________________________ 
+
+Calculating violations for 1080 meetings...
+Violation calculation took 18.05 seconds
+Removing 10 meetings with deltas: [(676, -12999999999999), (173, -12999999999997), (892, -6999999999999), (722, -6999994000000), (16, -999971000001), (444, -999952000001), (377, -18000000), (159, -3), (340, -1), (645, -1)]
+Ruined 10 meetings in 18.05 seconds
+Starting delta-based insertion for 10 meetings
+Pre-computed 1818 positions for 10 violating meetings
+  Meeting 173: Was violating (delta=-12999999999997.00, regret=1.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -2.00
+  ✓ Inserted violating meeting 173
+  Meeting 676: Was violating (delta=-12999999999999.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 676
+  Meeting 722: Was violating (delta=-6999994000000.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 722
+  Meeting 159: Was violating (delta=-3.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 159
+  Meeting 892: Was violating (delta=-6999999999999.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 892
+  Meeting 377: Was violating (delta=-18000000.00, regret=0.00) - regret-based insertion
+    Best available position: Day 1, Slot 17, Delta: -60000000.00
+  ✓ Inserted violating meeting 377
+  Meeting 340: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+    Best available position: Day 9, Slot 13, Delta: -60000000.00
+  ✓ Inserted violating meeting 340
+  Meeting 645: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+    Best available position: Day 28, Slot 25, Delta: -54000001.00
+  ✓ Inserted violating meeting 645
+  Meeting 444: Was violating (delta=-999952000001.00, regret=0.00) - regret-based insertion
+    Best available position: Day 5, Slot 1, Delta: -48000001.00
+  ✓ Inserted violating meeting 444
+  Meeting 16: Was violating (delta=-999971000001.00, regret=0.00) - regret-based insertion
+    Best available position: Day 40, Slot 13, Delta: -29000002.00
+  ✓ Inserted violating meeting 16
+Recreated 6 meetings in 29.58 seconds
+Total R&R time: 47.63 seconds
+Ruin and Recreate successful! 6 meetings inserted.
+ 
+
+Iteration: 122, Time: 464.7s/600s, Temp: 234.28, Accepted: 235/2000, Score: 409013986001223, Best: 409013986001172, (Hard: 409, Medium: 13986, Soft: 1172), 
+Iteration: 123, Time: 466.1s/600s, Temp: 228.89, Accepted: 257/2000, Score: 409013986001226, Best: 409013986001172, (Hard: 409, Medium: 13986, Soft: 1172), 
+Iteration: 124, Time: 467.6s/600s, Temp: 223.63, Accepted: 255/2000, Score: 408013986001219, Best: 408013986001197, (Hard: 408, Medium: 13986, Soft: 1197), 
+Iteration: 125, Time: 469.0s/600s, Temp: 218.49, Accepted: 253/2000, Score: 408013986001204, Best: 408013986001156, (Hard: 408, Medium: 13986, Soft: 1156), 
+Iteration: 126, Time: 470.5s/600s, Temp: 213.47, Accepted: 242/2000, Score: 408013986001204, Best: 408013986001153, (Hard: 408, Medium: 13986, Soft: 1153), 
+Iteration: 127, Time: 471.9s/600s, Temp: 208.56, Accepted: 171/2000, Score: 408013986001208, Best: 408013986001153, (Hard: 408, Medium: 13986, Soft: 1153), 
+Iteration: 128, Time: 473.8s/600s, Temp: 203.77, Accepted: 167/2000, Score: 408013986001243, Best: 408013986001153, (Hard: 408, Medium: 13986, Soft: 1153), 
+Iteration: 129, Time: 475.7s/600s, Temp: 199.08, Accepted: 201/2000, Score: 408013986001240, Best: 408013986001153, (Hard: 408, Medium: 13986, Soft: 1153),  - Plateau detected!
+Iteration: 130, Time: 477.5s/600s, Temp: 194.50, Accepted: 191/2000, Score: 408013986001231, Best: 408013986001153, (Hard: 408, Medium: 13986, Soft: 1153),  - Plateau detected!
+Iteration: 131, Time: 479.4s/600s, Temp: 190.03, Accepted: 161/2000, Score: 408013986001225, Best: 408013986001153, (Hard: 408, Medium: 13986, Soft: 1153),  - Plateau detected!
+Iteration: 132, Time: 481.1s/600s, Temp: 185.66, Accepted: 204/2000, Score: 408013986001229, Best: 408013986001153, (Hard: 408, Medium: 13986, Soft: 1153),  - Plateau detected!
+
+ 
+ _______________________________________________________________ 
+ Large plateau detected! Applying Ruin and Recreate... 
+ _______________________________________________________________ 
+
+Calculating violations for 1080 meetings...
+Violation calculation took 17.92 seconds
+Removing 10 meetings with deltas: [(676, -17999999999999), (173, -17999999999997), (892, -1999999999999), (515, -1999999999999), (722, -1999994000000), (70, -1999981999999), (349, -24000000), (377, -18000000), (710, -18000000), (340, -1)]
+Ruined 10 meetings in 17.93 seconds
+Starting delta-based insertion for 10 meetings
+Pre-computed 1097 positions for 10 violating meetings
+  Meeting 515: Was violating (delta=-1999999999999.00, regret=1.00) - regret-based insertion
+    Best available position: Day 36, Slot 13, Delta: -60000000.00
+  ✓ Inserted violating meeting 515
+  Meeting 377: Was violating (delta=-18000000.00, regret=1.00) - regret-based insertion
+    Best available position: Day 1, Slot 11, Delta: -59999999.00
+  ✓ Inserted violating meeting 377
+  Meeting 710: Was violating (delta=-18000000.00, regret=1.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: 17999999.00
+  ✓ Inserted violating meeting 710
+  Meeting 340: Was violating (delta=-1.00, regret=1.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: 17999999.00
+  ✓ Inserted violating meeting 340
+  Meeting 676: Was violating (delta=-17999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 676
+  Meeting 173: Was violating (delta=-17999999999997.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 173
+  Meeting 722: Was violating (delta=-1999994000000.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 722
+  Meeting 70: Was violating (delta=-1999981999999.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 70
+  Meeting 892: Was violating (delta=-1999999999999.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 892
+  Meeting 349: Was violating (delta=-24000000.00, regret=0.00) - regret-based insertion
+    Best available position: Day 38, Slot 23, Delta: -54000000.00
+  ✓ Inserted violating meeting 349
+Recreated 6 meetings in 18.37 seconds
+Total R&R time: 36.30 seconds
+Ruin and Recreate successful! 6 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 53, skipped: 1027)
+Iteration: 133, Time: 519.3s/600s, Temp: 181.40, Accepted: 195/2000, Score: 408013986001198, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151), 
+Iteration: 134, Time: 521.1s/600s, Temp: 177.22, Accepted: 188/2000, Score: 408013986001233, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151), 
+Iteration: 135, Time: 523.0s/600s, Temp: 173.15, Accepted: 159/2000, Score: 408013986001229, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151), 
+Iteration: 136, Time: 524.8s/600s, Temp: 169.17, Accepted: 170/2000, Score: 408013986001233, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+Iteration: 137, Time: 526.6s/600s, Temp: 165.28, Accepted: 170/2000, Score: 408013986001235, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+Iteration: 138, Time: 528.4s/600s, Temp: 161.48, Accepted: 184/2000, Score: 408013986001249, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+Iteration: 139, Time: 530.3s/600s, Temp: 157.77, Accepted: 173/2000, Score: 408013986001235, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+Iteration: 140, Time: 532.2s/600s, Temp: 154.14, Accepted: 177/2000, Score: 408013986001239, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+
+ 
+ _______________________________________________________________ 
+ Large plateau detected! Applying Ruin and Recreate... 
+ _______________________________________________________________ 
+
+Calculating violations for 1080 meetings...
+Violation calculation took 17.62 seconds
+Removing 10 meetings with deltas: [(676, -17999999999999), (173, -17999999999997), (892, -4999999999999), (722, -4999994000000), (377, -18000008), (710, -18000000), (159, -3), (340, -1), (139, -1), (645, 0)]
+Ruined 10 meetings in 17.62 seconds
+Starting delta-based insertion for 10 meetings
+Pre-computed 852 positions for 9 violating meetings
+  Meeting 676: Was violating (delta=-17999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -2.00
+  ✓ Inserted violating meeting 676
+  Meeting 173: Was violating (delta=-17999999999997.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 173
+  Meeting 722: Was violating (delta=-4999994000000.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 722
+  Meeting 159: Was violating (delta=-3.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 159
+  Meeting 892: Was violating (delta=-4999999999999.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 892
+  Meeting 377: Was violating (delta=-18000008.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 377
+  Meeting 710: Was violating (delta=-18000000.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 710
+  Meeting 340: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 340
+  Meeting 139: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 23, Delta: 24000000.00
+  ✓ Inserted violating meeting 139
+  Meeting 645: Was good (delta=0.00) - trying original/greedy
+  ✗ Could not find position for good meeting 645
+Recreated 4 meetings in 14.46 seconds
+Total R&R time: 32.08 seconds
+Ruin and Recreate successful! 4 meetings inserted.
+ 
+
+Iteration: 141, Time: 566.3s/600s, Temp: 150.60, Accepted: 170/2000, Score: 408013986001236, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151), 
+Iteration: 142, Time: 568.1s/600s, Temp: 147.14, Accepted: 143/2000, Score: 408013986001241, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151), 
+Iteration: 143, Time: 569.9s/600s, Temp: 143.75, Accepted: 154/2000, Score: 408013986001231, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+Iteration: 144, Time: 571.8s/600s, Temp: 140.45, Accepted: 178/2000, Score: 408013986001225, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+Iteration: 145, Time: 573.7s/600s, Temp: 137.22, Accepted: 162/2000, Score: 408013986001211, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+Iteration: 146, Time: 575.6s/600s, Temp: 134.06, Accepted: 175/2000, Score: 408013986001217, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+Iteration: 147, Time: 577.5s/600s, Temp: 130.98, Accepted: 184/2000, Score: 408013986001237, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151),  - Plateau detected!
+
+ 
+ _______________________________________________________________ 
+ Large plateau detected! Applying Ruin and Recreate... 
+ _______________________________________________________________ 
+
+Calculating violations for 1080 meetings...
+Violation calculation took 17.76 seconds
+Removing 10 meetings with deltas: [(676, -17999999999999), (173, -17999999999997), (892, -4999999999999), (722, -4999994000000), (377, -18000008), (710, -18000000), (159, -3), (340, -1), (139, -1), (645, 0)]
+Ruined 10 meetings in 17.77 seconds
+Starting delta-based insertion for 10 meetings
+Pre-computed 852 positions for 9 violating meetings
+  Meeting 676: Was violating (delta=-17999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -2.00
+  ✓ Inserted violating meeting 676
+  Meeting 173: Was violating (delta=-17999999999997.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 173
+  Meeting 722: Was violating (delta=-4999994000000.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 722
+  Meeting 159: Was violating (delta=-3.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 159
+  Meeting 892: Was violating (delta=-4999999999999.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 892
+  Meeting 377: Was violating (delta=-18000008.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 377
+  Meeting 710: Was violating (delta=-18000000.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 710
+  Meeting 340: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 340
+  Meeting 139: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+    Best available position: Day 50, Slot 23, Delta: 24000000.00
+  ✓ Inserted violating meeting 139
+  Meeting 645: Was good (delta=0.00) - trying original/greedy
+  ✗ Could not find position for good meeting 645
+Recreated 4 meetings in 15.25 seconds
+Total R&R time: 33.02 seconds
+Ruin and Recreate successful! 4 meetings inserted.
+ 
+
+Iteration: 148, Time: 612.4s/600s, Temp: 127.97, Accepted: 170/2000, Score: 408013986001238, Best: 408013986001151, (Hard: 408, Medium: 13986, Soft: 1151), 

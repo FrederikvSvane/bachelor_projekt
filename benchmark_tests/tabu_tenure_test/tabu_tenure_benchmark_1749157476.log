@@ -1,0 +1,31 @@
+TABU TENURE BENCHMARK
+================================================================================
+Problem size: 1000 cases, 60 days
+Runs per tenure: 1
+Base Hyperparameters:
+  iterations: 4000
+  max_time: 20
+  start_temp: 500
+  end_temp: 20
+  high_prob: 0.2
+  med_prob: 0.7
+  low_prob: 0.8
+  high_threshold: 0.5
+  med_threshold: 0.15
+  K: 75
+  plateau_min: 6
+  plateau_max: 18
+  ruin_min: 0.002
+  ruin_max: 0.015
+================================================================================
+
+TENURE TEST 1: 20
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=599021447001272, Improvement=9989006309000192 (94.3%), Runtime=24.3s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=599021447001272±0
+Mean Improvement: 9989006309000192 (94.3%), Runtime: 24.3s
+Best: 599021447001272, Worst: 599021447001272
+
+TENURE TEST 2: 40
+--------------------------------------------------

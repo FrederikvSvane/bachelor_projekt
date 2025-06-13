@@ -1,0 +1,76 @@
+TABU TENURE BENCHMARK
+================================================================================
+Problem size: 1000 cases, 60 days
+Runs per tenure: 1
+Base Hyperparameters:
+  iterations: 4000
+  max_time: 300
+  start_temp: 500
+  end_temp: 20
+  high_prob: 0.2
+  med_prob: 0.7
+  low_prob: 0.8
+  high_threshold: 0.5
+  med_threshold: 0.15
+  K: 75
+  plateau_min: 6
+  plateau_max: 18
+  ruin_min: 0.002
+  ruin_max: 0.015
+================================================================================
+
+TENURE TEST 1: 10
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20722001195, Improvement=10588007034000270 (100.0%), Runtime=307.9s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20722001195±0
+Mean Improvement: 10588007034000270 (100.0%), Runtime: 307.9s
+Best: 20722001195, Worst: 20722001195
+
+TENURE TEST 2: 30
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20878001215, Improvement=10588006878000250 (100.0%), Runtime=327.2s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20878001215±0
+Mean Improvement: 10588006878000250 (100.0%), Runtime: 327.2s
+Best: 20878001215, Worst: 20878001215
+
+TENURE TEST 3: 50
+--------------------------------------------------
+Run 1: Initial=10588027756001464, Final=20878001059, Improvement=10588006878000406 (100.0%), Runtime=331.9s
+
+Tenure Summary: Mean Initial=10588027756001464, Mean Final=20878001059±0
+Mean Improvement: 10588006878000406 (100.0%), Runtime: 331.9s
+Best: 20878001059, Worst: 20878001059
+
+================================================================================
+TABU TENURE BENCHMARK RESULTS:
+================================================================================
+Tenure   Mean Final   ±Std       Best     Worst    Improvement  Runtime   
+--------------------------------------------------------------------------------
+10       20722001195  ±0         20722001195 20722001195 100.0       % 307.9     s
+50       20878001059  ±0         20878001059 20878001059 100.0       % 331.9     s
+30       20878001215  ±0         20878001215 20878001215 100.0       % 327.2     s
+
+================================================================================
+📈 TABU TENURE ANALYSIS:
+================================================================================
+
+BEST PERFORMING TENURE: 10
+  Mean Final Score: 20722001195 ± 0
+  Mean Improvement: 100.0%
+  Average Runtime: 307.9s
+
+TENURE INSIGHTS:
+  Lower tenure values (≤20) perform better on average: 20722001195 vs 20878001137
+  Most consistent: Tenure 10 (±0)
+  Least consistent: Tenure 10 (±0)
+  Fastest: Tenure 10 (307.9s avg)
+  Slowest: Tenure 50 (331.9s avg)
+
+RECOMMENDATION:
+  Use tabu_tenure = 10 for optimal performance
+  This provides the best balance of solution quality and consistency.
+
+================================================================================
+

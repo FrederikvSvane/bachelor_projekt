@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 166, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 144, in main
+    final_schedule = run_local_search(initial_schedule, args.log)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 383, in run_local_search
+    optimized_schedule = simulated_annealing(
+                         ^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 287, in simulated_annealing
+    delta = calculate_delta_score(schedule, move)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine.py", line 121, in calculate_delta_score
+    soft_violations += nr31_distance_between_meetings_delta(schedule, move)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine.py", line 741, in nr31_distance_between_meetings_delta
+    after_violations += calculate_gaps_between_appointments(schedule, judge, day)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine_helpers.py", line 257, in calculate_gaps_between_appointments
+    day_appointments = get_appointments_in_timeslot_range_in_day(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine_helpers.py", line 157, in get_appointments_in_timeslot_range_in_day
+    app 
+    ^^^
+KeyboardInterrupt
+All case IDs are present in case_room_matrix.
+Using heuristic-based scheduling method
+Hard violations: 2427, Medium violations: 6204, Soft violations: 336

@@ -1,0 +1,30 @@
+SCALING TEST - OPTIMIZED HYPERPARAMETERS
+================================================================================
+Optimized Hyperparameters:
+  method: heuristic
+  iterations: 4000
+  start_temp: 500
+  end_temp: 20
+  high_prob: 0.2
+  med_prob: 0.7
+  low_prob: 0.8
+  high_threshold: 0.5
+  med_threshold: 0.15
+  K: 75
+  plateau_min: 6
+  plateau_max: 18
+  ruin_min: 0.002
+  ruin_max: 0.015
+================================================================================
+
+SIZE TEST 1: Small_500
+Cases: 500, Work days: 30
+----------------------------------------------------------------------
+Run 1: Initial=54831371300694, Final=999800607, Improvement=54830371500087 (100.0%), Runtime=315.3s
+
+Size Summary: Mean Initial=54831371300694, Mean Final=999800607±0
+Mean Improvement: 54830371500087 (100.0%), Runtime: 315.3s
+
+SIZE TEST 2: Medium_1000
+Cases: 1000, Work days: 60
+----------------------------------------------------------------------

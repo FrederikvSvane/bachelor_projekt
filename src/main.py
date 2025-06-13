@@ -10,6 +10,9 @@ from src.local_search.rules_engine import calculate_full_score
 from src.local_search.simulated_annealing import run_local_search
 from src.base_model.compatibility_checks import initialize_compatibility_matricies, case_room_matrix
 from src.construction.heuristic.linear_assignment import generate_schedule
+import random
+
+random.seed(13062025)  # Set seed for reproducibility
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -31,6 +34,10 @@ def parse_arguments():
                       help='Path to output JSON file (default: output.json)')
     
     parser.add_argument('--log', type=str, help='Path to log file for simulated annealing output')
+
+    parser.add_argument('--time', type=int, help='Time for local search in seconds')
+
+    parser.add_argument('--K', type=int, default=100)
     
     return parser.parse_args()
 
@@ -95,13 +102,16 @@ def main():
             print("Using linear assignment + local search method")
             initial_schedule: Schedule = generate_schedule(parsed_data)
 
+
+        
+
+        initial_schedule.trim_schedule_length_if_possible()
+        initial_schedule.initialize_appointment_chains()
     
         
         #_______________________
-        initial_schedule.initialize_appointment_chains()
-        initial_schedule.trim_schedule_length_if_possible()
         
-        # Handle different methods
+        # # If using ILP or Graph, skip local search and just visualize
         if args.method == 'ilp' or args.method == 'graph':
             result = calculate_full_score(initial_schedule)
             score = result[0]
@@ -119,16 +129,17 @@ def main():
         else:
             # For hybrid and ls methods, apply local search
             result = calculate_full_score(initial_schedule)
+            visualize(initial_schedule)
             initial_score = result[0]
             hard_violations = result[1]
             medm_violations = result[2]
             soft_violations = result[3]
             print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
-            print(f"Initial score: {initial_score}")
             
             final_schedule = run_local_search(initial_schedule, args.log)
             visualize(final_schedule)
             
+            print(f"days: {final_schedule.work_days}")
             final_score = calculate_full_score(final_schedule)
             print(f"Initial score: {initial_score}")
             print(f"Final score: {final_score}")
@@ -137,7 +148,7 @@ def main():
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, 'w') as f:
-            json.dump(final_schedule.to_json(), f, indent=2)
+           json.dump(final_schedule.to_json(), f, indent=2)
         print(f"Schedule written to {args.output}")
 
         return 0

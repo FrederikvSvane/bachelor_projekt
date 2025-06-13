@@ -1,0 +1,414 @@
+Starting simulated annealing with parameters:
+Iterations per temperature: 4000
+Max time: inf seconds
+Start temperature: 500
+End temperature: 20
+Move probabilities - High: 0.2, Medium: 0.7, Low: 0.8
+Initial score: 26305001900
+Initial violations - Hard: 0, Medium: 26305, Soft: 1900
+Iteration: 1, Time: 0.1s/infs, Temp: 478.72, Accepted: 640/4000, Score: 26305001498, Best: 26305001449, (Hard: 0, Medium: 26305, Soft: 1449), 
+Iteration: 2, Time: 2.9s/infs, Temp: 458.34, Accepted: 720/4000, Score: 26305001505, Best: 26305001339, (Hard: 0, Medium: 26305, Soft: 1339), 
+Iteration: 3, Time: 5.5s/infs, Temp: 438.83, Accepted: 669/4000, Score: 26305001576, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337), 
+Iteration: 4, Time: 8.1s/infs, Temp: 420.15, Accepted: 622/4000, Score: 26305001639, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337), 
+Iteration: 5, Time: 10.7s/infs, Temp: 402.27, Accepted: 628/4000, Score: 26305001642, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337), 
+Iteration: 6, Time: 13.3s/infs, Temp: 385.14, Accepted: 640/4000, Score: 26305001702, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337),  - Plateau detected!
+Iteration: 7, Time: 15.9s/infs, Temp: 368.75, Accepted: 631/4000, Score: 26305001702, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337),  - Plateau detected!
+Iteration: 8, Time: 18.4s/infs, Temp: 353.05, Accepted: 606/4000, Score: 26305001718, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337),  - Plateau detected!
+Iteration: 9, Time: 21.0s/infs, Temp: 338.03, Accepted: 592/4000, Score: 26305001728, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337),  - Plateau detected!
+Iteration: 10, Time: 23.6s/infs, Temp: 323.64, Accepted: 561/4000, Score: 26305001743, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337),  - Plateau detected!
+Iteration: 11, Time: 26.2s/infs, Temp: 309.86, Accepted: 626/4000, Score: 26305001750, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337),  - Plateau detected!
+Iteration: 12, Time: 28.8s/infs, Temp: 296.67, Accepted: 638/4000, Score: 26305001782, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337),  - Plateau detected!
+Iteration: 13, Time: 31.3s/infs, Temp: 284.04, Accepted: 609/4000, Score: 26305001772, Best: 26305001337, (Hard: 0, Medium: 26305, Soft: 1337),  - Plateau detected!
+Ruin and Recreate successful! 12 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 121, skipped: 1527)
+Iteration: 14, Time: 74.5s/infs, Temp: 271.95, Accepted: 620/4000, Score: 26305001420, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 175, skipped: 1473)
+Iteration: 15, Time: 77.1s/infs, Temp: 260.38, Accepted: 643/4000, Score: 26305001493, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 221, skipped: 1427)
+Iteration: 16, Time: 79.7s/infs, Temp: 249.29, Accepted: 610/4000, Score: 26305001516, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 242, skipped: 1406)
+Iteration: 17, Time: 82.2s/infs, Temp: 238.68, Accepted: 598/4000, Score: 26305001553, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 250, skipped: 1398)
+Iteration: 18, Time: 84.9s/infs, Temp: 228.52, Accepted: 344/4000, Score: 26305001561, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 216, skipped: 1432)
+Iteration: 19, Time: 88.4s/infs, Temp: 218.80, Accepted: 374/4000, Score: 26305001582, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 225, skipped: 1423)
+Iteration: 20, Time: 92.0s/infs, Temp: 209.48, Accepted: 364/4000, Score: 26305001608, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 242, skipped: 1406)
+Iteration: 21, Time: 95.6s/infs, Temp: 200.57, Accepted: 372/4000, Score: 26305001650, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 255, skipped: 1393)
+Iteration: 22, Time: 99.2s/infs, Temp: 192.03, Accepted: 327/4000, Score: 26305001655, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 276, skipped: 1372)
+Iteration: 23, Time: 102.8s/infs, Temp: 183.85, Accepted: 329/4000, Score: 26305001622, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 266, skipped: 1382)
+Iteration: 24, Time: 106.4s/infs, Temp: 176.03, Accepted: 380/4000, Score: 26305001632, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 299, skipped: 1349)
+Iteration: 25, Time: 110.0s/infs, Temp: 168.54, Accepted: 336/4000, Score: 26305001658, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 293, skipped: 1355)
+Iteration: 26, Time: 113.6s/infs, Temp: 161.36, Accepted: 325/4000, Score: 26305001667, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 27, Time: 117.2s/infs, Temp: 154.49, Accepted: 362/4000, Score: 26305001656, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 303, skipped: 1345)
+Iteration: 28, Time: 120.7s/infs, Temp: 147.92, Accepted: 386/4000, Score: 26305001667, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 18 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 275, skipped: 1373)
+Iteration: 29, Time: 166.5s/infs, Temp: 141.62, Accepted: 372/4000, Score: 26305001725, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 277, skipped: 1371)
+Iteration: 30, Time: 170.0s/infs, Temp: 135.59, Accepted: 377/4000, Score: 26305001735, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 280, skipped: 1368)
+Iteration: 31, Time: 173.6s/infs, Temp: 129.82, Accepted: 351/4000, Score: 26305001721, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 284, skipped: 1364)
+Iteration: 32, Time: 177.2s/infs, Temp: 124.30, Accepted: 369/4000, Score: 26305001746, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 270, skipped: 1378)
+Iteration: 33, Time: 180.7s/infs, Temp: 119.00, Accepted: 378/4000, Score: 26305001745, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 294, skipped: 1354)
+Iteration: 34, Time: 184.3s/infs, Temp: 113.94, Accepted: 348/4000, Score: 26305001782, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 35, Time: 187.9s/infs, Temp: 109.09, Accepted: 361/4000, Score: 26305001758, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 278, skipped: 1370)
+Iteration: 36, Time: 191.5s/infs, Temp: 104.45, Accepted: 358/4000, Score: 26305001754, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 302, skipped: 1346)
+Iteration: 37, Time: 195.1s/infs, Temp: 100.00, Accepted: 376/4000, Score: 26305001770, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 289, skipped: 1359)
+Iteration: 38, Time: 198.7s/infs, Temp: 95.74, Accepted: 329/4000, Score: 26305001768, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 290, skipped: 1358)
+Iteration: 39, Time: 202.3s/infs, Temp: 91.67, Accepted: 343/4000, Score: 26305001770, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 280, skipped: 1368)
+Iteration: 40, Time: 205.8s/infs, Temp: 87.77, Accepted: 351/4000, Score: 26305001768, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 275, skipped: 1373)
+Iteration: 41, Time: 209.4s/infs, Temp: 84.03, Accepted: 337/4000, Score: 26305001784, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 281, skipped: 1367)
+Iteration: 42, Time: 213.0s/infs, Temp: 80.45, Accepted: 366/4000, Score: 26305001767, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 274, skipped: 1374)
+Iteration: 43, Time: 216.6s/infs, Temp: 77.03, Accepted: 353/4000, Score: 26305001802, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 274, skipped: 1374)
+Iteration: 44, Time: 220.1s/infs, Temp: 73.75, Accepted: 354/4000, Score: 26305001799, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 21 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 277, skipped: 1371)
+Iteration: 45, Time: 267.1s/infs, Temp: 70.61, Accepted: 343/4000, Score: 26305001755, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 46, Time: 270.7s/infs, Temp: 67.61, Accepted: 304/4000, Score: 26305001738, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 279, skipped: 1369)
+Iteration: 47, Time: 274.5s/infs, Temp: 64.73, Accepted: 303/4000, Score: 26305001734, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 262, skipped: 1386)
+Iteration: 48, Time: 278.3s/infs, Temp: 61.97, Accepted: 282/4000, Score: 26305001755, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 49, Time: 282.1s/infs, Temp: 59.33, Accepted: 320/4000, Score: 26305001761, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 277, skipped: 1371)
+Iteration: 50, Time: 285.8s/infs, Temp: 56.81, Accepted: 314/4000, Score: 26305001766, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 270, skipped: 1378)
+Iteration: 51, Time: 289.7s/infs, Temp: 54.39, Accepted: 297/4000, Score: 26305001773, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 275, skipped: 1373)
+Iteration: 52, Time: 293.5s/infs, Temp: 52.08, Accepted: 284/4000, Score: 26305001753, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 280, skipped: 1368)
+Iteration: 53, Time: 297.3s/infs, Temp: 49.86, Accepted: 324/4000, Score: 26305001760, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 278, skipped: 1370)
+Iteration: 54, Time: 301.1s/infs, Temp: 47.74, Accepted: 321/4000, Score: 26305001772, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 281, skipped: 1367)
+Iteration: 55, Time: 304.9s/infs, Temp: 45.70, Accepted: 326/4000, Score: 26305001771, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 253, skipped: 1395)
+Iteration: 56, Time: 308.7s/infs, Temp: 43.76, Accepted: 313/4000, Score: 26305001758, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 290, skipped: 1358)
+Iteration: 57, Time: 312.5s/infs, Temp: 41.90, Accepted: 294/4000, Score: 26305001758, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 283, skipped: 1365)
+Iteration: 58, Time: 316.3s/infs, Temp: 40.11, Accepted: 316/4000, Score: 26305001744, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 267, skipped: 1381)
+Iteration: 59, Time: 320.1s/infs, Temp: 38.41, Accepted: 295/4000, Score: 26305001754, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 248, skipped: 1400)
+Iteration: 60, Time: 323.8s/infs, Temp: 36.77, Accepted: 279/4000, Score: 26305001772, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 268, skipped: 1380)
+Iteration: 61, Time: 327.6s/infs, Temp: 35.21, Accepted: 296/4000, Score: 26305001779, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 23 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 273, skipped: 1375)
+Iteration: 62, Time: 374.8s/infs, Temp: 33.71, Accepted: 336/4000, Score: 26305001736, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 296, skipped: 1352)
+Iteration: 63, Time: 378.6s/infs, Temp: 32.27, Accepted: 274/4000, Score: 26305001721, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 298, skipped: 1350)
+Iteration: 64, Time: 382.4s/infs, Temp: 30.90, Accepted: 304/4000, Score: 26305001730, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 281, skipped: 1367)
+Iteration: 65, Time: 386.1s/infs, Temp: 29.58, Accepted: 279/4000, Score: 26305001724, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 259, skipped: 1389)
+Iteration: 66, Time: 389.9s/infs, Temp: 28.32, Accepted: 308/4000, Score: 26305001751, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 280, skipped: 1368)
+Iteration: 67, Time: 393.7s/infs, Temp: 27.12, Accepted: 311/4000, Score: 26305001724, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 272, skipped: 1376)
+Iteration: 68, Time: 397.5s/infs, Temp: 25.96, Accepted: 258/4000, Score: 26305001706, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 283, skipped: 1365)
+Iteration: 69, Time: 401.3s/infs, Temp: 24.86, Accepted: 325/4000, Score: 26305001709, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 260, skipped: 1388)
+Iteration: 70, Time: 405.1s/infs, Temp: 23.80, Accepted: 294/4000, Score: 26305001700, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 274, skipped: 1374)
+Iteration: 71, Time: 408.8s/infs, Temp: 22.79, Accepted: 309/4000, Score: 26305001707, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 293, skipped: 1355)
+Iteration: 72, Time: 412.6s/infs, Temp: 21.82, Accepted: 318/4000, Score: 26305001697, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 301, skipped: 1347)
+Iteration: 73, Time: 416.4s/infs, Temp: 20.89, Accepted: 313/4000, Score: 26305001686, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 293, skipped: 1355)
+Reheating
+Iteration: 74, Time: 420.2s/infs, Temp: 500.00, Accepted: 285/4000, Score: 26305001668, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 268, skipped: 1380)
+Iteration: 75, Time: 424.0s/infs, Temp: 478.72, Accepted: 579/4000, Score: 26305001689, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 3 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 267, skipped: 1381)
+Iteration: 76, Time: 470.3s/infs, Temp: 458.34, Accepted: 553/4000, Score: 26305001754, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 273, skipped: 1375)
+Iteration: 77, Time: 473.0s/infs, Temp: 438.83, Accepted: 580/4000, Score: 26305001771, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 292, skipped: 1356)
+Iteration: 78, Time: 475.6s/infs, Temp: 420.15, Accepted: 596/4000, Score: 26305001764, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 279, skipped: 1369)
+Iteration: 79, Time: 478.3s/infs, Temp: 402.27, Accepted: 598/4000, Score: 26305001760, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 272, skipped: 1376)
+Iteration: 80, Time: 480.9s/infs, Temp: 385.14, Accepted: 606/4000, Score: 26305001763, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 293, skipped: 1355)
+Iteration: 81, Time: 483.6s/infs, Temp: 368.75, Accepted: 609/4000, Score: 26305001787, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 283, skipped: 1365)
+Iteration: 82, Time: 486.2s/infs, Temp: 353.05, Accepted: 542/4000, Score: 26305001797, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 285, skipped: 1363)
+Iteration: 83, Time: 488.9s/infs, Temp: 338.03, Accepted: 583/4000, Score: 26305001809, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 295, skipped: 1353)
+Iteration: 84, Time: 491.6s/infs, Temp: 323.64, Accepted: 618/4000, Score: 26305001826, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 10 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 301, skipped: 1347)
+Iteration: 85, Time: 538.3s/infs, Temp: 309.86, Accepted: 583/4000, Score: 26305001739, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 86, Time: 540.9s/infs, Temp: 296.67, Accepted: 639/4000, Score: 26305001748, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 87, Time: 543.5s/infs, Temp: 284.04, Accepted: 571/4000, Score: 26305001736, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 317, skipped: 1331)
+Iteration: 88, Time: 546.2s/infs, Temp: 271.95, Accepted: 608/4000, Score: 26305001738, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 308, skipped: 1340)
+Iteration: 89, Time: 548.9s/infs, Temp: 260.38, Accepted: 582/4000, Score: 26305001753, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 299, skipped: 1349)
+Iteration: 90, Time: 551.5s/infs, Temp: 249.29, Accepted: 587/4000, Score: 26305001757, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 296, skipped: 1352)
+Iteration: 91, Time: 554.1s/infs, Temp: 238.68, Accepted: 571/4000, Score: 26305001751, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 297, skipped: 1351)
+Iteration: 92, Time: 556.7s/infs, Temp: 228.52, Accepted: 360/4000, Score: 26305001744, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 288, skipped: 1360)
+Iteration: 93, Time: 560.4s/infs, Temp: 218.80, Accepted: 323/4000, Score: 26305001743, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 289, skipped: 1359)
+Iteration: 94, Time: 564.0s/infs, Temp: 209.48, Accepted: 370/4000, Score: 26305001737, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 280, skipped: 1368)
+Iteration: 95, Time: 567.7s/infs, Temp: 200.57, Accepted: 325/4000, Score: 26305001753, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 289, skipped: 1359)
+Iteration: 96, Time: 571.2s/infs, Temp: 192.03, Accepted: 323/4000, Score: 26305001742, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 280, skipped: 1368)
+Iteration: 97, Time: 574.8s/infs, Temp: 183.85, Accepted: 367/4000, Score: 26305001753, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 16 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 292, skipped: 1356)
+Iteration: 98, Time: 621.8s/infs, Temp: 176.03, Accepted: 372/4000, Score: 26305001733, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 259, skipped: 1389)
+Iteration: 99, Time: 625.4s/infs, Temp: 168.54, Accepted: 362/4000, Score: 26305001728, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 246, skipped: 1402)
+Iteration: 100, Time: 629.0s/infs, Temp: 161.36, Accepted: 376/4000, Score: 26305001721, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 275, skipped: 1373)
+Iteration: 101, Time: 632.5s/infs, Temp: 154.49, Accepted: 358/4000, Score: 26305001747, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 266, skipped: 1382)
+Iteration: 102, Time: 636.1s/infs, Temp: 147.92, Accepted: 369/4000, Score: 26305001728, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 287, skipped: 1361)
+Iteration: 103, Time: 639.7s/infs, Temp: 141.62, Accepted: 331/4000, Score: 26305001737, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 279, skipped: 1369)
+Iteration: 104, Time: 643.3s/infs, Temp: 135.59, Accepted: 360/4000, Score: 26305001751, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 105, Time: 646.9s/infs, Temp: 129.82, Accepted: 366/4000, Score: 26305001733, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 295, skipped: 1353)
+Iteration: 106, Time: 650.4s/infs, Temp: 124.30, Accepted: 361/4000, Score: 26305001714, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 271, skipped: 1377)
+Iteration: 107, Time: 654.0s/infs, Temp: 119.00, Accepted: 345/4000, Score: 26305001702, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 272, skipped: 1376)
+Iteration: 108, Time: 657.6s/infs, Temp: 113.94, Accepted: 346/4000, Score: 26305001711, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 285, skipped: 1363)
+Iteration: 109, Time: 661.2s/infs, Temp: 109.09, Accepted: 374/4000, Score: 26305001738, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 270, skipped: 1378)
+Iteration: 110, Time: 664.8s/infs, Temp: 104.45, Accepted: 342/4000, Score: 26305001762, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 273, skipped: 1375)
+Iteration: 111, Time: 668.4s/infs, Temp: 100.00, Accepted: 339/4000, Score: 26305001744, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 278, skipped: 1370)
+Iteration: 112, Time: 672.0s/infs, Temp: 95.74, Accepted: 335/4000, Score: 26305001756, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 20 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 113, Time: 719.4s/infs, Temp: 91.67, Accepted: 365/4000, Score: 26305001733, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 299, skipped: 1349)
+Iteration: 114, Time: 722.9s/infs, Temp: 87.77, Accepted: 359/4000, Score: 26305001719, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 262, skipped: 1386)
+Iteration: 115, Time: 726.5s/infs, Temp: 84.03, Accepted: 371/4000, Score: 26305001716, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 242, skipped: 1406)
+Iteration: 116, Time: 730.1s/infs, Temp: 80.45, Accepted: 343/4000, Score: 26305001698, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 248, skipped: 1400)
+Iteration: 117, Time: 733.7s/infs, Temp: 77.03, Accepted: 351/4000, Score: 26305001711, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 266, skipped: 1382)
+Iteration: 118, Time: 737.3s/infs, Temp: 73.75, Accepted: 356/4000, Score: 26305001723, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 262, skipped: 1386)
+Iteration: 119, Time: 740.9s/infs, Temp: 70.61, Accepted: 362/4000, Score: 26305001719, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 261, skipped: 1387)
+Iteration: 120, Time: 744.5s/infs, Temp: 67.61, Accepted: 310/4000, Score: 26305001726, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 274, skipped: 1374)
+Iteration: 121, Time: 748.3s/infs, Temp: 64.73, Accepted: 294/4000, Score: 26305001739, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 262, skipped: 1386)
+Iteration: 122, Time: 752.1s/infs, Temp: 61.97, Accepted: 272/4000, Score: 26305001726, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 269, skipped: 1379)
+Iteration: 123, Time: 755.9s/infs, Temp: 59.33, Accepted: 306/4000, Score: 26305001707, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 272, skipped: 1376)
+Iteration: 124, Time: 759.7s/infs, Temp: 56.81, Accepted: 311/4000, Score: 26305001679, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 272, skipped: 1376)
+Iteration: 125, Time: 763.5s/infs, Temp: 54.39, Accepted: 318/4000, Score: 26305001694, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 269, skipped: 1379)
+Iteration: 126, Time: 767.3s/infs, Temp: 52.08, Accepted: 305/4000, Score: 26305001707, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 272, skipped: 1376)
+Iteration: 127, Time: 771.0s/infs, Temp: 49.86, Accepted: 299/4000, Score: 26305001721, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 278, skipped: 1370)
+Iteration: 128, Time: 774.8s/infs, Temp: 47.74, Accepted: 310/4000, Score: 26305001719, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 22 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 266, skipped: 1382)
+Iteration: 129, Time: 822.2s/infs, Temp: 45.70, Accepted: 312/4000, Score: 26305001748, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 255, skipped: 1393)
+Iteration: 130, Time: 826.0s/infs, Temp: 43.76, Accepted: 311/4000, Score: 26305001727, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 265, skipped: 1383)
+Iteration: 131, Time: 829.8s/infs, Temp: 41.90, Accepted: 302/4000, Score: 26305001687, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 257, skipped: 1391)
+Iteration: 132, Time: 833.6s/infs, Temp: 40.11, Accepted: 304/4000, Score: 26305001681, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 256, skipped: 1392)
+Iteration: 133, Time: 837.3s/infs, Temp: 38.41, Accepted: 288/4000, Score: 26305001686, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 269, skipped: 1379)
+Iteration: 134, Time: 841.2s/infs, Temp: 36.77, Accepted: 295/4000, Score: 26305001691, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 263, skipped: 1385)
+Iteration: 135, Time: 845.0s/infs, Temp: 35.21, Accepted: 307/4000, Score: 26305001694, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 263, skipped: 1385)
+Iteration: 136, Time: 848.8s/infs, Temp: 33.71, Accepted: 338/4000, Score: 26305001707, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 291, skipped: 1357)
+Iteration: 137, Time: 852.6s/infs, Temp: 32.27, Accepted: 274/4000, Score: 26305001711, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 273, skipped: 1375)
+Iteration: 138, Time: 856.4s/infs, Temp: 30.90, Accepted: 333/4000, Score: 26305001718, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 279, skipped: 1369)
+Iteration: 139, Time: 860.2s/infs, Temp: 29.58, Accepted: 299/4000, Score: 26305001702, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 272, skipped: 1376)
+Iteration: 140, Time: 864.0s/infs, Temp: 28.32, Accepted: 289/4000, Score: 26305001675, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 278, skipped: 1370)
+Iteration: 141, Time: 867.9s/infs, Temp: 27.12, Accepted: 317/4000, Score: 26305001686, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 281, skipped: 1367)
+Iteration: 142, Time: 871.7s/infs, Temp: 25.96, Accepted: 287/4000, Score: 26305001697, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 277, skipped: 1371)
+Iteration: 143, Time: 875.5s/infs, Temp: 24.86, Accepted: 275/4000, Score: 26305001700, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 251, skipped: 1397)
+Iteration: 144, Time: 879.3s/infs, Temp: 23.80, Accepted: 280/4000, Score: 26305001680, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 275, skipped: 1373)
+Iteration: 145, Time: 883.1s/infs, Temp: 22.79, Accepted: 319/4000, Score: 26305001681, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 23 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 281, skipped: 1367)
+Iteration: 146, Time: 930.3s/infs, Temp: 21.82, Accepted: 311/4000, Score: 26305001748, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 295, skipped: 1353)
+Iteration: 147, Time: 934.1s/infs, Temp: 20.89, Accepted: 299/4000, Score: 26305001759, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 276, skipped: 1372)
+Reheating
+Iteration: 148, Time: 937.9s/infs, Temp: 500.00, Accepted: 307/4000, Score: 26305001763, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 273, skipped: 1375)
+Iteration: 149, Time: 941.7s/infs, Temp: 478.72, Accepted: 563/4000, Score: 26305001780, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 274, skipped: 1374)
+Iteration: 150, Time: 944.3s/infs, Temp: 458.34, Accepted: 598/4000, Score: 26305001784, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 296, skipped: 1352)
+Iteration: 151, Time: 946.9s/infs, Temp: 438.83, Accepted: 615/4000, Score: 26305001795, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 5 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 311, skipped: 1337)
+Iteration: 152, Time: 994.0s/infs, Temp: 420.15, Accepted: 565/4000, Score: 26305001743, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 326, skipped: 1322)
+Iteration: 153, Time: 996.6s/infs, Temp: 402.27, Accepted: 553/4000, Score: 26305001727, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 296, skipped: 1352)
+Iteration: 154, Time: 999.3s/infs, Temp: 385.14, Accepted: 568/4000, Score: 26305001737, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 295, skipped: 1353)
+Iteration: 155, Time: 1001.9s/infs, Temp: 368.75, Accepted: 566/4000, Score: 26305001767, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 287, skipped: 1361)
+Iteration: 156, Time: 1004.5s/infs, Temp: 353.05, Accepted: 611/4000, Score: 26305001782, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 276, skipped: 1372)
+Iteration: 157, Time: 1007.2s/infs, Temp: 338.03, Accepted: 601/4000, Score: 26305001810, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 277, skipped: 1371)
+Iteration: 158, Time: 1009.9s/infs, Temp: 323.64, Accepted: 573/4000, Score: 26305001788, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 282, skipped: 1366)
+Iteration: 159, Time: 1012.5s/infs, Temp: 309.86, Accepted: 572/4000, Score: 26305001765, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 295, skipped: 1353)
+Iteration: 160, Time: 1015.2s/infs, Temp: 296.67, Accepted: 579/4000, Score: 26305001772, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 277, skipped: 1371)
+Iteration: 161, Time: 1017.7s/infs, Temp: 284.04, Accepted: 564/4000, Score: 26305001758, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 12 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 275, skipped: 1373)
+Iteration: 162, Time: 1064.3s/infs, Temp: 271.95, Accepted: 597/4000, Score: 26305001752, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 240, skipped: 1408)
+Iteration: 163, Time: 1066.9s/infs, Temp: 260.38, Accepted: 567/4000, Score: 26305001783, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 245, skipped: 1403)
+Iteration: 164, Time: 1069.5s/infs, Temp: 249.29, Accepted: 590/4000, Score: 26305001758, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 270, skipped: 1378)
+Iteration: 165, Time: 1072.1s/infs, Temp: 238.68, Accepted: 594/4000, Score: 26305001755, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 279, skipped: 1369)
+Iteration: 166, Time: 1074.7s/infs, Temp: 228.52, Accepted: 351/4000, Score: 26305001768, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 167, Time: 1078.3s/infs, Temp: 218.80, Accepted: 329/4000, Score: 26305001767, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 291, skipped: 1357)
+Iteration: 168, Time: 1081.9s/infs, Temp: 209.48, Accepted: 348/4000, Score: 26305001739, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 280, skipped: 1368)
+Iteration: 169, Time: 1085.5s/infs, Temp: 200.57, Accepted: 380/4000, Score: 26305001759, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 271, skipped: 1377)
+Iteration: 170, Time: 1089.1s/infs, Temp: 192.03, Accepted: 341/4000, Score: 26305001751, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 289, skipped: 1359)
+Iteration: 171, Time: 1092.7s/infs, Temp: 183.85, Accepted: 383/4000, Score: 26305001732, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 286, skipped: 1362)
+Iteration: 172, Time: 1096.3s/infs, Temp: 176.03, Accepted: 355/4000, Score: 26305001729, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 279, skipped: 1369)
+Iteration: 173, Time: 1099.9s/infs, Temp: 168.54, Accepted: 381/4000, Score: 26305001769, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 274, skipped: 1374)
+Iteration: 174, Time: 1103.5s/infs, Temp: 161.36, Accepted: 361/4000, Score: 26305001780, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Ruin and Recreate successful! 17 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 292, skipped: 1356)
+Iteration: 175, Time: 1151.7s/infs, Temp: 154.49, Accepted: 366/4000, Score: 26305001741, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 308, skipped: 1340)
+Iteration: 176, Time: 1155.3s/infs, Temp: 147.92, Accepted: 390/4000, Score: 26305001744, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334), 
+Contracting move rejected: no improvement (moves: 304, skipped: 1344)
+Iteration: 177, Time: 1158.9s/infs, Temp: 141.62, Accepted: 365/4000, Score: 26305001743, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 291, skipped: 1357)
+Iteration: 178, Time: 1162.5s/infs, Temp: 135.59, Accepted: 360/4000, Score: 26305001769, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 292, skipped: 1356)
+Iteration: 179, Time: 1166.2s/infs, Temp: 129.82, Accepted: 360/4000, Score: 26305001753, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 266, skipped: 1382)
+Iteration: 180, Time: 1169.8s/infs, Temp: 124.30, Accepted: 324/4000, Score: 26305001737, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 272, skipped: 1376)
+Iteration: 181, Time: 1173.4s/infs, Temp: 119.00, Accepted: 387/4000, Score: 26305001722, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 282, skipped: 1366)
+Iteration: 182, Time: 1177.0s/infs, Temp: 113.94, Accepted: 363/4000, Score: 26305001718, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 282, skipped: 1366)
+Iteration: 183, Time: 1180.6s/infs, Temp: 109.09, Accepted: 356/4000, Score: 26305001709, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 291, skipped: 1357)
+Iteration: 184, Time: 1184.2s/infs, Temp: 104.45, Accepted: 375/4000, Score: 26305001704, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 300, skipped: 1348)
+Iteration: 185, Time: 1187.7s/infs, Temp: 100.00, Accepted: 329/4000, Score: 26305001700, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 297, skipped: 1351)
+Iteration: 186, Time: 1191.3s/infs, Temp: 95.74, Accepted: 331/4000, Score: 26305001700, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 300, skipped: 1348)
+Iteration: 187, Time: 1194.9s/infs, Temp: 91.67, Accepted: 364/4000, Score: 26305001673, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 273, skipped: 1375)
+Iteration: 188, Time: 1198.5s/infs, Temp: 87.77, Accepted: 387/4000, Score: 26305001702, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!
+Contracting move rejected: no improvement (moves: 273, skipped: 1375)
+Iteration: 189, Time: 1202.0s/infs, Temp: 84.03, Accepted: 355/4000, Score: 26305001696, Best: 26305001334, (Hard: 0, Medium: 26305, Soft: 1334),  - Plateau detected!

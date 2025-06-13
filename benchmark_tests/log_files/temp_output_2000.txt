@@ -1,0 +1,479 @@
+All case IDs are present in case_room_matrix.
+Using heuristic-based scheduling method
+Hard violations: 22546, Medium violations: 56869, Soft violations: 2927
+Calculating violations for 2196 meetings...
+Violation calculation took 72.14 seconds
+Removing 30 meetings with deltas: [(912, -3999921999999), (638, -1999946000001), (1672, -1999946000000), (1166, -54000000), (426, -23999999), (1644, -15000001), (95, -14), (128, 3999999), (73, 4000000), (2097, 4000000), (561, 4000000), (1601, 4000001), (1467, 4000003), (1056, 5999998), (1345, 5999998), (1233, 5999998), (454, 5999998), (753, 5999998), (442, 5999999), (280, 5999999), (1801, 5999999), (757, 5999999), (1829, 5999999), (1040, 5999999), (2193, 5999999), (849, 5999999), (513, 5999999), (1573, 5999999), (1876, 5999999), (1767, 5999999)]
+Ruined 30 meetings in 72.16 seconds
+Starting delta-based insertion for 30 meetings
+Pre-computed 15310 positions for 7 violating meetings
+  Meeting 426: Was violating (delta=-23999999.00, regret=1.00) - regret-based insertion
+    Best available position: Day 2, Slot 25, Delta: -54000000.00
+  ✓ Inserted violating meeting 426
+  Meeting 912: Was violating (delta=-3999921999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 115, Slot 1, Delta: -78000002.00
+  ✓ Inserted violating meeting 912
+  Meeting 95: Was violating (delta=-14.00, regret=0.00) - regret-based insertion
+    Best available position: Day 2, Slot 1, Delta: -78000001.00
+  ✓ Inserted violating meeting 95
+  Meeting 1644: Was violating (delta=-15000001.00, regret=0.00) - regret-based insertion
+    Best available position: Day 10, Slot 1, Delta: -63000002.00
+  ✓ Inserted violating meeting 1644
+  Meeting 638: Was violating (delta=-1999946000001.00, regret=0.00) - regret-based insertion
+    Best available position: Day 73, Slot 19, Delta: -54000001.00
+  ✓ Inserted violating meeting 638
+  Meeting 1672: Was violating (delta=-1999946000000.00, regret=0.00) - regret-based insertion
+    Best available position: Day 120, Slot 19, Delta: -54000001.00
+  ✓ Inserted violating meeting 1672
+  Meeting 1166: Was violating (delta=-54000000.00, regret=0.00) - regret-based insertion
+    Best available position: Day 115, Slot 1, Delta: -24000002.00
+  ✓ Inserted violating meeting 1166
+  Meeting 1056: Was good (delta=5999998.00) - trying original/greedy
+    Restored to original position: Day 6, Slot 43
+  ✓ Inserted good meeting 1056
+  Meeting 1345: Was good (delta=5999998.00) - trying original/greedy
+    Restored to original position: Day 53, Slot 64
+  ✓ Inserted good meeting 1345
+  Meeting 1233: Was good (delta=5999998.00) - trying original/greedy
+    Restored to original position: Day 56, Slot 41
+  ✓ Inserted good meeting 1233
+  Meeting 454: Was good (delta=5999998.00) - trying original/greedy
+    Restored to original position: Day 100, Slot 1
+  ✓ Inserted good meeting 454
+  Meeting 753: Was good (delta=5999998.00) - trying original/greedy
+    Restored to original position: Day 110, Slot 47
+  ✓ Inserted good meeting 753
+  Meeting 442: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 1, Slot 9
+  ✓ Inserted good meeting 442
+  Meeting 280: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 2, Slot 5
+  ✓ Inserted good meeting 280
+  Meeting 1801: Was good (delta=5999999.00) - trying original/greedy
+    Greedy insert: Day 1, Slot 7
+  ✓ Inserted good meeting 1801
+  Meeting 757: Was good (delta=5999999.00) - trying original/greedy
+    Greedy insert: Day 1, Slot 13
+  ✓ Inserted good meeting 757
+  Meeting 1829: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 3, Slot 58
+  ✓ Inserted good meeting 1829
+  Meeting 1040: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 4, Slot 26
+  ✓ Inserted good meeting 1040
+  Meeting 2193: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 5, Slot 36
+  ✓ Inserted good meeting 2193
+  Meeting 849: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 5, Slot 48
+  ✓ Inserted good meeting 849
+  Meeting 513: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 5, Slot 48
+  ✓ Inserted good meeting 513
+  Meeting 1573: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 5, Slot 60
+  ✓ Inserted good meeting 1573
+  Meeting 1876: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 5, Slot 71
+  ✓ Inserted good meeting 1876
+  Meeting 1767: Was good (delta=5999999.00) - trying original/greedy
+    Restored to original position: Day 6, Slot 60
+  ✓ Inserted good meeting 1767
+  Meeting 128: Was good (delta=3999999.00) - trying original/greedy
+    Restored to original position: Day 54, Slot 55
+  ✓ Inserted good meeting 128
+  Meeting 73: Was good (delta=4000000.00) - trying original/greedy
+    Restored to original position: Day 13, Slot 1
+  ✓ Inserted good meeting 73
+  Meeting 2097: Was good (delta=4000000.00) - trying original/greedy
+    Restored to original position: Day 34, Slot 1
+  ✓ Inserted good meeting 2097
+  Meeting 561: Was good (delta=4000000.00) - trying original/greedy
+    Restored to original position: Day 51, Slot 18
+  ✓ Inserted good meeting 561
+  Meeting 1601: Was good (delta=4000001.00) - trying original/greedy
+    Restored to original position: Day 32, Slot 67
+  ✓ Inserted good meeting 1601
+  Meeting 1467: Was good (delta=4000003.00) - trying original/greedy
+    Restored to original position: Day 40, Slot 1
+  ✓ Inserted good meeting 1467
+Recreated 30 meetings in 503.23 seconds
+Total R&R time: 575.39 seconds
+Calculating violations for 2196 meetings...
+Process ForkProcess-179:
+Process ForkProcess-163:
+Process ForkProcess-174:
+Process ForkProcess-165:
+Process ForkProcess-173:
+Process ForkProcess-178:
+Process ForkProcess-172:
+Process ForkProcess-171:
+Process ForkProcess-177:
+Process ForkProcess-180:
+Process ForkProcess-176:
+Process ForkProcess-164:
+Process ForkProcess-162:
+Process ForkProcess-161:
+Process ForkProcess-170:
+Process ForkProcess-175:
+Process ForkProcess-166:
+Process ForkProcess-169:
+Process ForkProcess-168:
+Process ForkProcess-167:
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+KeyboardInterrupt
+KeyboardInterrupt
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+KeyboardInterrupt
+KeyboardInterrupt
+KeyboardInterrupt
+KeyboardInterrupt
+KeyboardInterrupt
+KeyboardInterrupt
+KeyboardInterrupt
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+KeyboardInterrupt
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+KeyboardInterrupt
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+KeyboardInterrupt
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 120, in get
+    return _ForkingPickler.loads(res)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/usr/lib/python3.13/enum.py", line 1311, in __hash__
+    return hash(self._name_)
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+KeyboardInterrupt
+KeyboardInterrupt
+KeyboardInterrupt
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+KeyboardInterrupt
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 100, in get
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "/usr/lib/python3.13/multiprocessing/synchronize.py", line 95, in __enter__
+    return self._semlock.__enter__()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 120, in get
+    return _ForkingPickler.loads(res)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/usr/lib/python3.13/enum.py", line 1310, in __hash__
+    def __hash__(self):
+    
+KeyboardInterrupt
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 242, in _process_worker
+    call_item = call_queue.get(block=True)
+  File "/usr/lib/python3.13/multiprocessing/queues.py", line 101, in get
+    res = self._recv_bytes()
+  File "/usr/lib/python3.13/multiprocessing/connection.py", line 216, in recv_bytes
+    buf = self._recv_bytes(maxlength)
+  File "/usr/lib/python3.13/multiprocessing/connection.py", line 430, in _recv_bytes
+    buf = self._recv(4)
+  File "/usr/lib/python3.13/multiprocessing/connection.py", line 395, in _recv
+    chunk = read(handle, remaining)
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 167, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 144, in main
+    final_schedule = run_local_search(initial_schedule, args.log)
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 383, in run_local_search
+    optimized_schedule = simulated_annealing(
+        schedule,
+    ...<5 lines>...
+        log_file_path=log_file_path
+    )
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 359, in simulated_annealing
+    r_r_success, num_inserted = apply_ruin_and_recreate(best_schedule_snapshot.restore_schedule(schedule), compatible_judges, compatible_rooms, current_ruin_percentage, in_parallel=True)
+                                ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/ruin_and_recreate.py", line 46, in apply_ruin_and_recreate
+    removed_meetings = _violation_based_ruin(schedule, compatible_judges_dict, compatible_rooms_dict, percentage, in_parallel, log_output)
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/ruin_and_recreate.py", line 107, in _violation_based_ruin
+    results = list(executor.map(_calculate_meeting_violations_parallel, args_list, timeout=120))
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 617, in _chain_from_iterable_of_lists
+    for element in iterable:
+                   ^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/_base.py", line 621, in result_iterator
+    yield _result_or_cancel(fs.pop(), end_time - time.monotonic())
+          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ~~~~~~~~~~^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/_base.py", line 451, in result
+    self._condition.wait(timeout)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/usr/lib/python3.13/threading.py", line 363, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt

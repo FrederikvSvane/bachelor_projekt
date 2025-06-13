@@ -1,0 +1,229 @@
+Starting simulated annealing with parameters:
+Iterations per temperature: 4000
+Max time: 600 seconds
+Start temperature: 200
+End temperature: 30
+Move probabilities - High: 0.1, Medium: 0.6, Low: 0.8
+Initial score: 11646020902001495
+Initial violations - Hard: 11646, Medium: 20902, Soft: 1495
+Iteration: 1, Time: 0.1s/600s, Temp: 196.20, Accepted: 1499/4000, Score: 5267017441001544, Best: 5267017441001544, (Hard: 5267, Medium: 17441, Soft: 1544), 
+Iteration: 2, Time: 5.6s/600s, Temp: 192.48, Accepted: 984/4000, Score: 3500016295001435, Best: 3500016295001435, (Hard: 3500, Medium: 16295, Soft: 1435), 
+Iteration: 3, Time: 9.4s/600s, Temp: 188.83, Accepted: 804/4000, Score: 2553015747001376, Best: 2553015747001376, (Hard: 2553, Medium: 15747, Soft: 1376), 
+Iteration: 4, Time: 12.7s/600s, Temp: 185.24, Accepted: 703/4000, Score: 2044015427001355, Best: 2044015427001355, (Hard: 2044, Medium: 15427, Soft: 1355), 
+Iteration: 5, Time: 15.8s/600s, Temp: 181.73, Accepted: 680/4000, Score: 1584015132001374, Best: 1584015132001374, (Hard: 1584, Medium: 15132, Soft: 1374), 
+Iteration: 6, Time: 18.7s/600s, Temp: 178.28, Accepted: 633/4000, Score: 1369014907001352, Best: 1369014907001350, (Hard: 1369, Medium: 14907, Soft: 1350), 
+Iteration: 7, Time: 21.6s/600s, Temp: 174.89, Accepted: 588/4000, Score: 1199014824001357, Best: 1199014824001356, (Hard: 1199, Medium: 14824, Soft: 1356), 
+Iteration: 8, Time: 24.3s/600s, Temp: 171.57, Accepted: 622/4000, Score: 1118014806001296, Best: 1118014806001285, (Hard: 1118, Medium: 14806, Soft: 1285), 
+Iteration: 9, Time: 27.0s/600s, Temp: 168.32, Accepted: 627/4000, Score: 1072014743001323, Best: 1072014743001320, (Hard: 1072, Medium: 14743, Soft: 1320), 
+Iteration: 10, Time: 29.6s/600s, Temp: 165.12, Accepted: 636/4000, Score: 1004014702001310, Best: 1004014702001300, (Hard: 1004, Medium: 14702, Soft: 1300), 
+Iteration: 11, Time: 32.3s/600s, Temp: 161.99, Accepted: 627/4000, Score: 977014651001304, Best: 977014651001294, (Hard: 977, Medium: 14651, Soft: 1294), 
+Contracting move rejected: no improvement (moves: 103, skipped: 977)
+Iteration: 12, Time: 34.9s/600s, Temp: 158.91, Accepted: 634/4000, Score: 933014561001323, Best: 933014561001316, (Hard: 933, Medium: 14561, Soft: 1316), 
+Iteration: 13, Time: 37.6s/600s, Temp: 155.90, Accepted: 601/4000, Score: 923014558001292, Best: 923014558001277, (Hard: 923, Medium: 14558, Soft: 1277), 
+Iteration: 14, Time: 40.2s/600s, Temp: 152.94, Accepted: 605/4000, Score: 923014528001269, Best: 923014528001253, (Hard: 923, Medium: 14528, Soft: 1253), 
+Iteration: 15, Time: 42.7s/600s, Temp: 150.04, Accepted: 589/4000, Score: 898014495001303, Best: 898014495001265, (Hard: 898, Medium: 14495, Soft: 1265), 
+Iteration: 16, Time: 45.3s/600s, Temp: 147.19, Accepted: 635/4000, Score: 868014469001301, Best: 868014469001268, (Hard: 868, Medium: 14469, Soft: 1268), 
+Iteration: 17, Time: 48.0s/600s, Temp: 144.39, Accepted: 570/4000, Score: 856014461001304, Best: 856014461001302, (Hard: 856, Medium: 14461, Soft: 1302), 
+Iteration: 18, Time: 50.6s/600s, Temp: 141.65, Accepted: 565/4000, Score: 815014457001306, Best: 815014457001305, (Hard: 815, Medium: 14457, Soft: 1305), 
+Iteration: 19, Time: 53.2s/600s, Temp: 138.97, Accepted: 622/4000, Score: 784014457001312, Best: 784014457001311, (Hard: 784, Medium: 14457, Soft: 1311), 
+Iteration: 20, Time: 55.7s/600s, Temp: 136.33, Accepted: 567/4000, Score: 759014456001295, Best: 759014456001287, (Hard: 759, Medium: 14456, Soft: 1287), 
+Iteration: 21, Time: 58.3s/600s, Temp: 133.74, Accepted: 572/4000, Score: 727014379001296, Best: 727014379001293, (Hard: 727, Medium: 14379, Soft: 1293), 
+Iteration: 22, Time: 60.9s/600s, Temp: 131.20, Accepted: 605/4000, Score: 702014370001296, Best: 702014370001291, (Hard: 702, Medium: 14370, Soft: 1291), 
+Iteration: 23, Time: 63.5s/600s, Temp: 128.71, Accepted: 605/4000, Score: 675014342001287, Best: 675014342001280, (Hard: 675, Medium: 14342, Soft: 1280), 
+Iteration: 24, Time: 66.1s/600s, Temp: 126.27, Accepted: 570/4000, Score: 641014320001286, Best: 641014320001271, (Hard: 641, Medium: 14320, Soft: 1271), 
+Iteration: 25, Time: 68.8s/600s, Temp: 123.87, Accepted: 558/4000, Score: 627014320001292, Best: 627014320001195, (Hard: 627, Medium: 14320, Soft: 1195), 
+Iteration: 26, Time: 71.3s/600s, Temp: 121.52, Accepted: 586/4000, Score: 615014320001297, Best: 615014320001291, (Hard: 615, Medium: 14320, Soft: 1291), 
+Iteration: 27, Time: 73.9s/600s, Temp: 119.21, Accepted: 543/4000, Score: 603014266001307, Best: 603014266001290, (Hard: 603, Medium: 14266, Soft: 1290), 
+Contracting move rejected: no improvement (moves: 73, skipped: 1007)
+Iteration: 28, Time: 76.5s/600s, Temp: 116.95, Accepted: 566/4000, Score: 590014187001321, Best: 590014187001320, (Hard: 590, Medium: 14187, Soft: 1320), 
+Iteration: 29, Time: 79.1s/600s, Temp: 114.73, Accepted: 588/4000, Score: 565014176001315, Best: 565014176001303, (Hard: 565, Medium: 14176, Soft: 1303), 
+Iteration: 30, Time: 81.7s/600s, Temp: 112.55, Accepted: 531/4000, Score: 560014149001304, Best: 560014149001289, (Hard: 560, Medium: 14149, Soft: 1289), 
+Iteration: 31, Time: 84.3s/600s, Temp: 110.42, Accepted: 550/4000, Score: 539014140001328, Best: 539014140001320, (Hard: 539, Medium: 14140, Soft: 1320), 
+Iteration: 32, Time: 86.8s/600s, Temp: 108.32, Accepted: 590/4000, Score: 527014134001328, Best: 527014134001295, (Hard: 527, Medium: 14134, Soft: 1295), 
+Iteration: 33, Time: 89.4s/600s, Temp: 106.27, Accepted: 550/4000, Score: 520014134001296, Best: 520014134001281, (Hard: 520, Medium: 14134, Soft: 1281), 
+Iteration: 34, Time: 92.0s/600s, Temp: 104.25, Accepted: 527/4000, Score: 514014134001303, Best: 514014134001292, (Hard: 514, Medium: 14134, Soft: 1292), 
+Iteration: 35, Time: 94.6s/600s, Temp: 102.27, Accepted: 577/4000, Score: 500014119001304, Best: 500014119001285, (Hard: 500, Medium: 14119, Soft: 1285), 
+Iteration: 36, Time: 97.2s/600s, Temp: 100.33, Accepted: 554/4000, Score: 499014119001302, Best: 499014119001297, (Hard: 499, Medium: 14119, Soft: 1297), 
+Iteration: 37, Time: 99.7s/600s, Temp: 98.42, Accepted: 365/4000, Score: 496014119001285, Best: 496014119001269, (Hard: 496, Medium: 14119, Soft: 1269), 
+Iteration: 38, Time: 103.3s/600s, Temp: 96.56, Accepted: 320/4000, Score: 493014119001282, Best: 493014119001202, (Hard: 493, Medium: 14119, Soft: 1202), 
+Iteration: 39, Time: 106.8s/600s, Temp: 94.72, Accepted: 350/4000, Score: 493014119001293, Best: 493014119001202, (Hard: 493, Medium: 14119, Soft: 1202), 
+Iteration: 40, Time: 110.4s/600s, Temp: 92.93, Accepted: 335/4000, Score: 491014119001296, Best: 491014119001264, (Hard: 491, Medium: 14119, Soft: 1264), 
+Iteration: 41, Time: 114.0s/600s, Temp: 91.16, Accepted: 334/4000, Score: 488014119001304, Best: 488014119001280, (Hard: 488, Medium: 14119, Soft: 1280), 
+Iteration: 42, Time: 117.6s/600s, Temp: 89.43, Accepted: 373/4000, Score: 488014119001281, Best: 488014119001228, (Hard: 488, Medium: 14119, Soft: 1228), 
+Iteration: 43, Time: 121.1s/600s, Temp: 87.73, Accepted: 363/4000, Score: 479014128001274, Best: 479014128001272, (Hard: 479, Medium: 14128, Soft: 1272), 
+Iteration: 44, Time: 124.6s/600s, Temp: 86.07, Accepted: 351/4000, Score: 479014119001295, Best: 479014119001227, (Hard: 479, Medium: 14119, Soft: 1227), 
+Iteration: 45, Time: 128.2s/600s, Temp: 84.44, Accepted: 335/4000, Score: 478014118001296, Best: 478014118001217, (Hard: 478, Medium: 14118, Soft: 1217), 
+Iteration: 46, Time: 131.7s/600s, Temp: 82.83, Accepted: 351/4000, Score: 478014118001309, Best: 478014118001217, (Hard: 478, Medium: 14118, Soft: 1217), 
+Iteration: 47, Time: 135.3s/600s, Temp: 81.26, Accepted: 360/4000, Score: 476014064001324, Best: 476014064001235, (Hard: 476, Medium: 14064, Soft: 1235), 
+Iteration: 48, Time: 138.8s/600s, Temp: 79.72, Accepted: 331/4000, Score: 474014064001299, Best: 474014064001267, (Hard: 474, Medium: 14064, Soft: 1267), 
+Iteration: 49, Time: 142.3s/600s, Temp: 78.21, Accepted: 367/4000, Score: 474014010001310, Best: 474014010001249, (Hard: 474, Medium: 14010, Soft: 1249), 
+Iteration: 50, Time: 145.9s/600s, Temp: 76.72, Accepted: 336/4000, Score: 474013981001285, Best: 474013981001257, (Hard: 474, Medium: 13981, Soft: 1257), 
+Iteration: 51, Time: 149.4s/600s, Temp: 75.26, Accepted: 340/4000, Score: 474013981001300, Best: 474013981001214, (Hard: 474, Medium: 13981, Soft: 1214), 
+Iteration: 52, Time: 153.0s/600s, Temp: 73.84, Accepted: 328/4000, Score: 472013981001280, Best: 472013981001266, (Hard: 472, Medium: 13981, Soft: 1266), 
+Iteration: 53, Time: 156.5s/600s, Temp: 72.43, Accepted: 339/4000, Score: 470013981001284, Best: 470013981001235, (Hard: 470, Medium: 13981, Soft: 1235), 
+Iteration: 54, Time: 160.1s/600s, Temp: 71.06, Accepted: 357/4000, Score: 470013981001284, Best: 470013981001224, (Hard: 470, Medium: 13981, Soft: 1224), 
+Iteration: 55, Time: 163.6s/600s, Temp: 69.71, Accepted: 376/4000, Score: 470013981001316, Best: 470013981001208, (Hard: 470, Medium: 13981, Soft: 1208), 
+Iteration: 56, Time: 167.1s/600s, Temp: 68.39, Accepted: 318/4000, Score: 470013981001304, Best: 470013981001208, (Hard: 470, Medium: 13981, Soft: 1208), 
+Iteration: 57, Time: 170.7s/600s, Temp: 67.09, Accepted: 335/4000, Score: 470013981001301, Best: 470013981001208, (Hard: 470, Medium: 13981, Soft: 1208), 
+Iteration: 58, Time: 174.3s/600s, Temp: 65.82, Accepted: 334/4000, Score: 469013981001324, Best: 469013981001255, (Hard: 469, Medium: 13981, Soft: 1255), 
+Iteration: 59, Time: 177.9s/600s, Temp: 64.57, Accepted: 336/4000, Score: 468013981001290, Best: 468013981001262, (Hard: 468, Medium: 13981, Soft: 1262), 
+Iteration: 60, Time: 181.4s/600s, Temp: 63.34, Accepted: 370/4000, Score: 468013981001293, Best: 468013981001231, (Hard: 468, Medium: 13981, Soft: 1231), 
+Iteration: 61, Time: 185.0s/600s, Temp: 62.14, Accepted: 343/4000, Score: 448013932001311, Best: 448013932001254, (Hard: 448, Medium: 13932, Soft: 1254), 
+Iteration: 62, Time: 188.5s/600s, Temp: 60.96, Accepted: 336/4000, Score: 437013860001291, Best: 437013860001287, (Hard: 437, Medium: 13860, Soft: 1287), 
+Iteration: 63, Time: 192.1s/600s, Temp: 59.80, Accepted: 346/4000, Score: 437013860001311, Best: 437013860001226, (Hard: 437, Medium: 13860, Soft: 1226), 
+Iteration: 64, Time: 195.7s/600s, Temp: 58.67, Accepted: 350/4000, Score: 436013860001295, Best: 436013860001287, (Hard: 436, Medium: 13860, Soft: 1287), 
+Iteration: 65, Time: 199.2s/600s, Temp: 57.55, Accepted: 319/4000, Score: 419013836001283, Best: 419013836001259, (Hard: 419, Medium: 13836, Soft: 1259), 
+Iteration: 66, Time: 202.8s/600s, Temp: 56.46, Accepted: 319/4000, Score: 413013836001283, Best: 413013836001229, (Hard: 413, Medium: 13836, Soft: 1229), 
+Iteration: 67, Time: 206.3s/600s, Temp: 55.39, Accepted: 364/4000, Score: 404013833001310, Best: 404013833001282, (Hard: 404, Medium: 13833, Soft: 1282), 
+Iteration: 68, Time: 209.9s/600s, Temp: 54.34, Accepted: 324/4000, Score: 398013827001262, Best: 398013827001256, (Hard: 398, Medium: 13827, Soft: 1256), 
+Iteration: 69, Time: 213.4s/600s, Temp: 53.31, Accepted: 323/4000, Score: 396013827001270, Best: 396013827001255, (Hard: 396, Medium: 13827, Soft: 1255), 
+Iteration: 70, Time: 216.9s/600s, Temp: 52.30, Accepted: 327/4000, Score: 396013827001269, Best: 396013827001188, (Hard: 396, Medium: 13827, Soft: 1188), 
+Iteration: 71, Time: 220.5s/600s, Temp: 51.30, Accepted: 328/4000, Score: 396013827001254, Best: 396013827001188, (Hard: 396, Medium: 13827, Soft: 1188), 
+Iteration: 72, Time: 224.0s/600s, Temp: 50.33, Accepted: 326/4000, Score: 396013827001249, Best: 396013827001182, (Hard: 396, Medium: 13827, Soft: 1182), 
+Iteration: 73, Time: 227.5s/600s, Temp: 49.37, Accepted: 317/4000, Score: 395013905001284, Best: 395013905001189, (Hard: 395, Medium: 13905, Soft: 1189), 
+Iteration: 74, Time: 231.0s/600s, Temp: 48.44, Accepted: 346/4000, Score: 395013905001296, Best: 395013905001189, (Hard: 395, Medium: 13905, Soft: 1189), 
+Iteration: 75, Time: 234.6s/600s, Temp: 47.52, Accepted: 349/4000, Score: 394013904001294, Best: 394013904001258, (Hard: 394, Medium: 13904, Soft: 1258), 
+Iteration: 76, Time: 238.2s/600s, Temp: 46.62, Accepted: 327/4000, Score: 394013904001255, Best: 394013904001215, (Hard: 394, Medium: 13904, Soft: 1215), 
+Iteration: 77, Time: 241.8s/600s, Temp: 45.73, Accepted: 339/4000, Score: 394013904001277, Best: 394013904001181, (Hard: 394, Medium: 13904, Soft: 1181), 
+Iteration: 78, Time: 245.4s/600s, Temp: 44.86, Accepted: 326/4000, Score: 394013904001259, Best: 394013904001181, (Hard: 394, Medium: 13904, Soft: 1181), 
+Iteration: 79, Time: 248.9s/600s, Temp: 44.01, Accepted: 356/4000, Score: 394013904001285, Best: 394013904001181, (Hard: 394, Medium: 13904, Soft: 1181), 
+Iteration: 80, Time: 252.4s/600s, Temp: 43.18, Accepted: 355/4000, Score: 356013982001286, Best: 356013982001279, (Hard: 356, Medium: 13982, Soft: 1279), 
+Iteration: 81, Time: 255.9s/600s, Temp: 42.36, Accepted: 353/4000, Score: 339013982001278, Best: 339013982001256, (Hard: 339, Medium: 13982, Soft: 1256), 
+Iteration: 82, Time: 259.4s/600s, Temp: 41.55, Accepted: 336/4000, Score: 339013982001261, Best: 339013982001212, (Hard: 339, Medium: 13982, Soft: 1212), 
+Iteration: 83, Time: 263.0s/600s, Temp: 40.76, Accepted: 292/4000, Score: 339013982001256, Best: 339013982001180, (Hard: 339, Medium: 13982, Soft: 1180), 
+Iteration: 84, Time: 266.5s/600s, Temp: 39.99, Accepted: 330/4000, Score: 339013982001289, Best: 339013982001180, (Hard: 339, Medium: 13982, Soft: 1180), 
+Iteration: 85, Time: 270.1s/600s, Temp: 39.23, Accepted: 344/4000, Score: 339013982001277, Best: 339013982001180, (Hard: 339, Medium: 13982, Soft: 1180), 
+Iteration: 86, Time: 273.6s/600s, Temp: 38.49, Accepted: 345/4000, Score: 335013978001288, Best: 335013978001244, (Hard: 335, Medium: 13978, Soft: 1244), 
+Iteration: 87, Time: 277.1s/600s, Temp: 37.76, Accepted: 383/4000, Score: 335013978001290, Best: 335013978001217, (Hard: 335, Medium: 13978, Soft: 1217), 
+Iteration: 88, Time: 280.7s/600s, Temp: 37.04, Accepted: 325/4000, Score: 335013949001287, Best: 335013949001257, (Hard: 335, Medium: 13949, Soft: 1257), 
+Iteration: 89, Time: 284.2s/600s, Temp: 36.34, Accepted: 359/4000, Score: 335013947001271, Best: 335013947001263, (Hard: 335, Medium: 13947, Soft: 1263), 
+Iteration: 90, Time: 287.8s/600s, Temp: 35.65, Accepted: 357/4000, Score: 335013947001257, Best: 335013947001187, (Hard: 335, Medium: 13947, Soft: 1187), 
+Iteration: 91, Time: 291.3s/600s, Temp: 34.97, Accepted: 319/4000, Score: 335013947001237, Best: 335013947001187, (Hard: 335, Medium: 13947, Soft: 1187), 
+Iteration: 92, Time: 294.8s/600s, Temp: 34.31, Accepted: 382/4000, Score: 335013947001271, Best: 335013947001169, (Hard: 335, Medium: 13947, Soft: 1169), 
+Iteration: 93, Time: 298.4s/600s, Temp: 33.66, Accepted: 315/4000, Score: 335013947001263, Best: 335013947001169, (Hard: 335, Medium: 13947, Soft: 1169), 
+Iteration: 94, Time: 301.9s/600s, Temp: 33.02, Accepted: 335/4000, Score: 335013947001255, Best: 335013947001169, (Hard: 335, Medium: 13947, Soft: 1169),  - Plateau detected!
+Iteration: 95, Time: 305.5s/600s, Temp: 32.39, Accepted: 335/4000, Score: 335013947001261, Best: 335013947001169, (Hard: 335, Medium: 13947, Soft: 1169),  - Plateau detected!
+Iteration: 96, Time: 308.9s/600s, Temp: 31.78, Accepted: 359/4000, Score: 335013947001261, Best: 335013947001169, (Hard: 335, Medium: 13947, Soft: 1169),  - Plateau detected!
+Iteration: 97, Time: 312.4s/600s, Temp: 31.17, Accepted: 370/4000, Score: 335013947001263, Best: 335013947001169, (Hard: 335, Medium: 13947, Soft: 1169),  - Plateau detected!
+Iteration: 98, Time: 315.9s/600s, Temp: 30.58, Accepted: 366/4000, Score: 334013947001250, Best: 334013947001245, (Hard: 334, Medium: 13947, Soft: 1245), 
+Iteration: 99, Time: 319.5s/600s, Temp: 30.00, Accepted: 356/4000, Score: 334013947001251, Best: 334013947001192, (Hard: 334, Medium: 13947, Soft: 1192), 
+Reheating
+Iteration: 100, Time: 323.0s/600s, Temp: 200.00, Accepted: 349/4000, Score: 334013947001245, Best: 334013947001170, (Hard: 334, Medium: 13947, Soft: 1170), 
+Iteration: 101, Time: 326.5s/600s, Temp: 196.20, Accepted: 557/4000, Score: 333013947001260, Best: 333013947001246, (Hard: 333, Medium: 13947, Soft: 1246), 
+Iteration: 102, Time: 329.0s/600s, Temp: 192.48, Accepted: 572/4000, Score: 333013947001275, Best: 333013947001180, (Hard: 333, Medium: 13947, Soft: 1180), 
+Iteration: 103, Time: 331.6s/600s, Temp: 188.83, Accepted: 553/4000, Score: 332013947001286, Best: 332013947001274, (Hard: 332, Medium: 13947, Soft: 1274), 
+Iteration: 104, Time: 334.1s/600s, Temp: 185.24, Accepted: 508/4000, Score: 332013947001308, Best: 332013947001207, (Hard: 332, Medium: 13947, Soft: 1207), 
+Iteration: 105, Time: 336.7s/600s, Temp: 181.73, Accepted: 538/4000, Score: 332013947001272, Best: 332013947001207, (Hard: 332, Medium: 13947, Soft: 1207), 
+Iteration: 106, Time: 339.2s/600s, Temp: 178.28, Accepted: 555/4000, Score: 332013947001289, Best: 332013947001201, (Hard: 332, Medium: 13947, Soft: 1201), 
+Iteration: 107, Time: 341.7s/600s, Temp: 174.89, Accepted: 552/4000, Score: 332013947001276, Best: 332013947001201, (Hard: 332, Medium: 13947, Soft: 1201), 
+Iteration: 108, Time: 344.3s/600s, Temp: 171.57, Accepted: 523/4000, Score: 332013947001316, Best: 332013947001197, (Hard: 332, Medium: 13947, Soft: 1197), 
+Iteration: 109, Time: 346.8s/600s, Temp: 168.32, Accepted: 567/4000, Score: 332013947001310, Best: 332013947001197, (Hard: 332, Medium: 13947, Soft: 1197), 
+Iteration: 110, Time: 349.3s/600s, Temp: 165.12, Accepted: 523/4000, Score: 332013947001297, Best: 332013947001197, (Hard: 332, Medium: 13947, Soft: 1197),  - Plateau detected!
+Iteration: 111, Time: 351.9s/600s, Temp: 161.99, Accepted: 496/4000, Score: 332013947001286, Best: 332013947001197, (Hard: 332, Medium: 13947, Soft: 1197),  - Plateau detected!
+
+ 
+ _______________________________________________________________ 
+ Large plateau detected! Applying Ruin and Recreate... 
+ _______________________________________________________________ 
+
+Calculating violations for 1080 meetings...
+Violation calculation took 19.42 seconds
+Removing 10 meetings with deltas: [(437, -6999999999999), (173, -5999957999999), (506, -1999921999999), (656, -999999999999), (139, -999999999999), (938, -999994000000), (892, -999983000001), (270, -999946000001), (349, -24000000), (279, -1)]
+Ruined 10 meetings in 19.43 seconds
+Starting delta-based insertion for 10 meetings
+Pre-computed 1889 positions for 10 violating meetings
+  Meeting 173: Was violating (delta=-5999957999999.00, regret=78000001.00) - regret-based insertion
+    Best available position: Day 43, Slot 1, Delta: -78000002.00
+  ✓ Inserted violating meeting 173
+  Meeting 506: Was violating (delta=-1999921999999.00, regret=78000000.00) - regret-based insertion
+    Best available position: Day 50, Slot 1, Delta: -1.00
+  ✓ Inserted violating meeting 506
+  Meeting 892: Was violating (delta=-999983000001.00, regret=1.00) - regret-based insertion
+    Best available position: Day 43, Slot 7, Delta: -72000000.00
+  ✓ Inserted violating meeting 892
+  Meeting 437: Was violating (delta=-6999999999999.00, regret=1.00) - regret-based insertion
+    Best available position: Day 26, Slot 43, Delta: -36000001.00
+  ✓ Inserted violating meeting 437
+  Meeting 938: Was violating (delta=-999994000000.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 938
+  Meeting 139: Was violating (delta=-999999999999.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 139
+  Meeting 270: Was violating (delta=-999946000001.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 270
+  Meeting 349: Was violating (delta=-24000000.00, regret=0.00) - regret-based insertion
+  ✗ Could not find position for violating meeting 349
+  Meeting 279: Was violating (delta=-1.00, regret=0.00) - regret-based insertion
+    Best available position: Day 38, Slot 31, Delta: -36000001.00
+  ✓ Inserted violating meeting 279
+  Meeting 656: Was violating (delta=-999999999999.00, regret=0.00) - regret-based insertion
+    Best available position: Day 30, Slot 45, Delta: -30000001.00
+  ✓ Inserted violating meeting 656
+Recreated 6 meetings in 33.39 seconds
+Total R&R time: 52.82 seconds
+Ruin and Recreate successful! 6 meetings inserted.
+ 
+
+Contracting move rejected: no improvement (moves: 84, skipped: 996)
+Iteration: 112, Time: 407.3s/600s, Temp: 158.91, Accepted: 529/4000, Score: 332013947001241, Best: 332013947001196, (Hard: 332, Medium: 13947, Soft: 1196), 
+Iteration: 113, Time: 409.8s/600s, Temp: 155.90, Accepted: 581/4000, Score: 332013947001306, Best: 332013947001196, (Hard: 332, Medium: 13947, Soft: 1196), 
+Iteration: 114, Time: 412.4s/600s, Temp: 152.94, Accepted: 524/4000, Score: 331013947001308, Best: 331013947001261, (Hard: 331, Medium: 13947, Soft: 1261), 
+Iteration: 115, Time: 414.9s/600s, Temp: 150.04, Accepted: 550/4000, Score: 331013947001323, Best: 331013947001231, (Hard: 331, Medium: 13947, Soft: 1231), 
+Iteration: 116, Time: 417.4s/600s, Temp: 147.19, Accepted: 506/4000, Score: 331013947001282, Best: 331013947001231, (Hard: 331, Medium: 13947, Soft: 1231), 
+Iteration: 117, Time: 419.9s/600s, Temp: 144.39, Accepted: 517/4000, Score: 331013947001292, Best: 331013947001230, (Hard: 331, Medium: 13947, Soft: 1230), 
+Iteration: 118, Time: 422.5s/600s, Temp: 141.65, Accepted: 535/4000, Score: 331013947001288, Best: 331013947001229, (Hard: 331, Medium: 13947, Soft: 1229), 
+Iteration: 119, Time: 425.0s/600s, Temp: 138.97, Accepted: 520/4000, Score: 331013947001298, Best: 331013947001228, (Hard: 331, Medium: 13947, Soft: 1228), 
+Iteration: 120, Time: 427.5s/600s, Temp: 136.33, Accepted: 525/4000, Score: 331013947001296, Best: 331013947001228, (Hard: 331, Medium: 13947, Soft: 1228), 
+Iteration: 121, Time: 430.1s/600s, Temp: 133.74, Accepted: 568/4000, Score: 331013947001320, Best: 331013947001221, (Hard: 331, Medium: 13947, Soft: 1221), 
+Iteration: 122, Time: 432.6s/600s, Temp: 131.20, Accepted: 507/4000, Score: 331013947001310, Best: 331013947001221, (Hard: 331, Medium: 13947, Soft: 1221), 
+Iteration: 123, Time: 435.1s/600s, Temp: 128.71, Accepted: 514/4000, Score: 331013947001326, Best: 331013947001221, (Hard: 331, Medium: 13947, Soft: 1221), 
+Iteration: 124, Time: 437.7s/600s, Temp: 126.27, Accepted: 540/4000, Score: 327013947001315, Best: 327013947001297, (Hard: 327, Medium: 13947, Soft: 1297), 
+Iteration: 125, Time: 440.2s/600s, Temp: 123.87, Accepted: 509/4000, Score: 327013947001299, Best: 327013947001238, (Hard: 327, Medium: 13947, Soft: 1238), 
+Iteration: 126, Time: 442.8s/600s, Temp: 121.52, Accepted: 540/4000, Score: 320013947001279, Best: 320013947001275, (Hard: 320, Medium: 13947, Soft: 1275), 
+Iteration: 127, Time: 445.4s/600s, Temp: 119.21, Accepted: 524/4000, Score: 317013947001290, Best: 317013947001252, (Hard: 317, Medium: 13947, Soft: 1252), 
+Iteration: 128, Time: 447.9s/600s, Temp: 116.95, Accepted: 551/4000, Score: 316013916001302, Best: 316013916001289, (Hard: 316, Medium: 13916, Soft: 1289), 
+Iteration: 129, Time: 450.5s/600s, Temp: 114.73, Accepted: 515/4000, Score: 316013916001332, Best: 316013916001223, (Hard: 316, Medium: 13916, Soft: 1223), 
+Iteration: 130, Time: 453.0s/600s, Temp: 112.55, Accepted: 500/4000, Score: 313013916001348, Best: 313013916001318, (Hard: 313, Medium: 13916, Soft: 1318), 
+Iteration: 131, Time: 455.5s/600s, Temp: 110.42, Accepted: 503/4000, Score: 300013911001296, Best: 300013911001285, (Hard: 300, Medium: 13911, Soft: 1285), 
+Iteration: 132, Time: 458.1s/600s, Temp: 108.32, Accepted: 532/4000, Score: 300013911001316, Best: 300013911001238, (Hard: 300, Medium: 13911, Soft: 1238), 
+Iteration: 133, Time: 460.7s/600s, Temp: 106.27, Accepted: 559/4000, Score: 295013911001276, Best: 295013911001253, (Hard: 295, Medium: 13911, Soft: 1253), 
+Iteration: 134, Time: 463.2s/600s, Temp: 104.25, Accepted: 539/4000, Score: 295013887001278, Best: 295013887001267, (Hard: 295, Medium: 13887, Soft: 1267), 
+Iteration: 135, Time: 465.7s/600s, Temp: 102.27, Accepted: 537/4000, Score: 292013883001300, Best: 292013883001239, (Hard: 292, Medium: 13883, Soft: 1239), 
+Iteration: 136, Time: 468.3s/600s, Temp: 100.33, Accepted: 533/4000, Score: 286013826001299, Best: 286013826001253, (Hard: 286, Medium: 13826, Soft: 1253), 
+Iteration: 137, Time: 470.9s/600s, Temp: 98.42, Accepted: 351/4000, Score: 279013819001266, Best: 279013819001256, (Hard: 279, Medium: 13819, Soft: 1256), 
+Iteration: 138, Time: 474.6s/600s, Temp: 96.56, Accepted: 336/4000, Score: 279013819001262, Best: 279013819001205, (Hard: 279, Medium: 13819, Soft: 1205), 
+Iteration: 139, Time: 478.2s/600s, Temp: 94.72, Accepted: 316/4000, Score: 279013819001256, Best: 279013819001184, (Hard: 279, Medium: 13819, Soft: 1184), 
+Iteration: 140, Time: 481.8s/600s, Temp: 92.93, Accepted: 332/4000, Score: 275013803001256, Best: 275013803001244, (Hard: 275, Medium: 13803, Soft: 1244), 
+Iteration: 141, Time: 485.3s/600s, Temp: 91.16, Accepted: 339/4000, Score: 269013821001274, Best: 269013821001272, (Hard: 269, Medium: 13821, Soft: 1272), 
+Iteration: 142, Time: 488.8s/600s, Temp: 89.43, Accepted: 360/4000, Score: 268013834001278, Best: 268013834001265, (Hard: 268, Medium: 13834, Soft: 1265), 
+Iteration: 143, Time: 492.4s/600s, Temp: 87.73, Accepted: 313/4000, Score: 240013834001266, Best: 240013834001251, (Hard: 240, Medium: 13834, Soft: 1251), 
+Iteration: 144, Time: 495.9s/600s, Temp: 86.07, Accepted: 328/4000, Score: 231013825001276, Best: 231013825001222, (Hard: 231, Medium: 13825, Soft: 1222), 
+Iteration: 145, Time: 499.5s/600s, Temp: 84.44, Accepted: 329/4000, Score: 227013803001294, Best: 227013803001273, (Hard: 227, Medium: 13803, Soft: 1273), 
+Iteration: 146, Time: 503.0s/600s, Temp: 82.83, Accepted: 322/4000, Score: 227013803001290, Best: 227013803001213, (Hard: 227, Medium: 13803, Soft: 1213), 
+Iteration: 147, Time: 506.6s/600s, Temp: 81.26, Accepted: 352/4000, Score: 227013803001290, Best: 227013803001213, (Hard: 227, Medium: 13803, Soft: 1213), 
+Iteration: 148, Time: 510.2s/600s, Temp: 79.72, Accepted: 336/4000, Score: 227013803001284, Best: 227013803001213, (Hard: 227, Medium: 13803, Soft: 1213), 
+Iteration: 149, Time: 513.7s/600s, Temp: 78.21, Accepted: 324/4000, Score: 227013803001273, Best: 227013803001213, (Hard: 227, Medium: 13803, Soft: 1213),  - Plateau detected!
+Iteration: 150, Time: 517.3s/600s, Temp: 76.72, Accepted: 347/4000, Score: 227013803001291, Best: 227013803001203, (Hard: 227, Medium: 13803, Soft: 1203),  - Plateau detected!
+Iteration: 151, Time: 520.8s/600s, Temp: 75.26, Accepted: 327/4000, Score: 227013803001295, Best: 227013803001203, (Hard: 227, Medium: 13803, Soft: 1203),  - Plateau detected!
+Iteration: 152, Time: 524.4s/600s, Temp: 73.84, Accepted: 354/4000, Score: 227013803001291, Best: 227013803001203, (Hard: 227, Medium: 13803, Soft: 1203),  - Plateau detected!
+Iteration: 153, Time: 527.9s/600s, Temp: 72.43, Accepted: 330/4000, Score: 227013803001274, Best: 227013803001203, (Hard: 227, Medium: 13803, Soft: 1203),  - Plateau detected!
+Iteration: 154, Time: 531.5s/600s, Temp: 71.06, Accepted: 355/4000, Score: 227013803001300, Best: 227013803001199, (Hard: 227, Medium: 13803, Soft: 1199), 
+Iteration: 155, Time: 535.0s/600s, Temp: 69.71, Accepted: 346/4000, Score: 227013803001286, Best: 227013803001199, (Hard: 227, Medium: 13803, Soft: 1199), 
+Iteration: 156, Time: 538.4s/600s, Temp: 68.39, Accepted: 326/4000, Score: 227013803001275, Best: 227013803001199, (Hard: 227, Medium: 13803, Soft: 1199), 
+Iteration: 157, Time: 542.1s/600s, Temp: 67.09, Accepted: 312/4000, Score: 227013803001311, Best: 227013803001199, (Hard: 227, Medium: 13803, Soft: 1199),  - Plateau detected!
+Iteration: 158, Time: 545.6s/600s, Temp: 65.82, Accepted: 327/4000, Score: 216013803001299, Best: 216013803001267, (Hard: 216, Medium: 13803, Soft: 1267), 
+Iteration: 159, Time: 549.2s/600s, Temp: 64.57, Accepted: 347/4000, Score: 216013803001304, Best: 216013803001226, (Hard: 216, Medium: 13803, Soft: 1226), 
+Iteration: 160, Time: 552.7s/600s, Temp: 63.34, Accepted: 359/4000, Score: 216013803001288, Best: 216013803001226, (Hard: 216, Medium: 13803, Soft: 1226), 
+Iteration: 161, Time: 556.3s/600s, Temp: 62.14, Accepted: 366/4000, Score: 212013803001279, Best: 212013803001245, (Hard: 212, Medium: 13803, Soft: 1245), 
+Iteration: 162, Time: 559.8s/600s, Temp: 60.96, Accepted: 357/4000, Score: 212013803001278, Best: 212013803001205, (Hard: 212, Medium: 13803, Soft: 1205), 
+Iteration: 163, Time: 563.3s/600s, Temp: 59.80, Accepted: 361/4000, Score: 212013803001307, Best: 212013803001205, (Hard: 212, Medium: 13803, Soft: 1205), 
+Iteration: 164, Time: 566.8s/600s, Temp: 58.67, Accepted: 321/4000, Score: 210013803001286, Best: 210013803001250, (Hard: 210, Medium: 13803, Soft: 1250), 
+Iteration: 165, Time: 570.4s/600s, Temp: 57.55, Accepted: 330/4000, Score: 210013803001298, Best: 210013803001213, (Hard: 210, Medium: 13803, Soft: 1213), 
+Iteration: 166, Time: 574.0s/600s, Temp: 56.46, Accepted: 359/4000, Score: 210013803001304, Best: 210013803001213, (Hard: 210, Medium: 13803, Soft: 1213), 
+Iteration: 167, Time: 577.5s/600s, Temp: 55.39, Accepted: 359/4000, Score: 210013803001299, Best: 210013803001213, (Hard: 210, Medium: 13803, Soft: 1213), 
+Iteration: 168, Time: 581.1s/600s, Temp: 54.34, Accepted: 347/4000, Score: 210013803001306, Best: 210013803001213, (Hard: 210, Medium: 13803, Soft: 1213),  - Plateau detected!
+Iteration: 169, Time: 584.6s/600s, Temp: 53.31, Accepted: 297/4000, Score: 210013803001290, Best: 210013803001213, (Hard: 210, Medium: 13803, Soft: 1213),  - Plateau detected!
+Iteration: 170, Time: 588.2s/600s, Temp: 52.30, Accepted: 334/4000, Score: 210013803001299, Best: 210013803001212, (Hard: 210, Medium: 13803, Soft: 1212), 
+Iteration: 171, Time: 591.7s/600s, Temp: 51.30, Accepted: 359/4000, Score: 210013803001283, Best: 210013803001212, (Hard: 210, Medium: 13803, Soft: 1212), 
+Iteration: 172, Time: 595.3s/600s, Temp: 50.33, Accepted: 374/4000, Score: 185013718001316, Best: 185013718001314, (Hard: 185, Medium: 13718, Soft: 1314), 
+Iteration: 173, Time: 598.8s/600s, Temp: 49.37, Accepted: 333/4000, Score: 168013701001286, Best: 168013701001276, (Hard: 168, Medium: 13701, Soft: 1276), 
+Iteration: 174, Time: 602.4s/600s, Temp: 48.44, Accepted: 361/4000, Score: 162013695001299, Best: 162013695001223, (Hard: 162, Medium: 13695, Soft: 1223), 

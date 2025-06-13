@@ -33,7 +33,7 @@ def apply_ruin_and_recreate(schedule: Schedule,
     """
     # Define local log function that captures log_file through closure
     def log_output(message):
-        #print(message)  # Uncomment if you want console output too
+        print(message)  # Uncomment if you want console output too
         if log_file:
             log_file.write(message + "\n")
             log_file.flush()  # Ensure data is written immediately
@@ -41,6 +41,7 @@ def apply_ruin_and_recreate(schedule: Schedule,
     start_time = time.time()
 
     # Ruin phase - remove meetings with highest violations
+
     removed_meetings = _violation_based_ruin(schedule, compatible_judges_dict, compatible_rooms_dict, percentage, in_parallel, log_output)
     
     # Stop if no meetings were removed

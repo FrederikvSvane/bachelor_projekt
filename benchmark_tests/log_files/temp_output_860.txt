@@ -1,0 +1,52 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 167, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/main.py", line 144, in main
+    final_schedule = run_local_search(initial_schedule, args.log)
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 383, in run_local_search
+    optimized_schedule = simulated_annealing(
+        schedule,
+    ...<5 lines>...
+        log_file_path=log_file_path
+    )
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/simulated_annealing.py", line 287, in simulated_annealing
+    delta = calculate_delta_score(schedule, move)
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine.py", line 118, in calculate_delta_score
+    soft_violations += nr20_max_weekly_coverage_delta(schedule, move)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine.py", line 572, in nr20_max_weekly_coverage_delta
+    occupied, total = count_weekly_coverage_for_judge_week(schedule, judge_id, week_number)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/marcus/projects/dtu/bachelor_projekt/src/local_search/rules_engine_helpers.py", line 406, in count_weekly_coverage_for_judge_week
+    if app.judge.judge_id == judge_id:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+All case IDs are present in case_room_matrix.
+Using heuristic-based scheduling method
+Hard violations: 8825, Medium violations: 26355, Soft violations: 1273
+Starting simulated annealing with parameters:
+Iterations per temperature: 4000
+Max time: inf seconds
+Start temperature: 500
+End temperature: 20
+Move probabilities - High: 0.2, Medium: 0.7, Low: 0.8
+Initial score: 8825026355001273
+Initial violations - Hard: 8825, Medium: 26355, Soft: 1273
+Iteration: 1, Time: 0.0s/infs, Temp: 478.72, Accepted: 1554/4000, Score: 2848023056001232, Best: 2848023056001232, (Hard: 2848, Medium: 23056, Soft: 1232), 
+Iteration: 2, Time: 4.2s/infs, Temp: 458.34, Accepted: 1100/4000, Score: 1380021874001123, Best: 1380021874001123, (Hard: 1380, Medium: 21874, Soft: 1123), 
+Iteration: 3, Time: 7.3s/infs, Temp: 438.83, Accepted: 972/4000, Score: 730021425001099, Best: 730021425001098, (Hard: 730, Medium: 21425, Soft: 1098), 
+Iteration: 4, Time: 10.1s/infs, Temp: 420.15, Accepted: 909/4000, Score: 441021231001078, Best: 441021231001074, (Hard: 441, Medium: 21231, Soft: 1074), 
+Iteration: 5, Time: 12.6s/infs, Temp: 402.27, Accepted: 904/4000, Score: 318021222001092, Best: 318021222001079, (Hard: 318, Medium: 21222, Soft: 1079), 
+Iteration: 6, Time: 15.0s/infs, Temp: 385.14, Accepted: 849/4000, Score: 223021213001068, Best: 223021213001054, (Hard: 223, Medium: 21213, Soft: 1054), 
+Iteration: 7, Time: 17.5s/infs, Temp: 368.75, Accepted: 867/4000, Score: 172021123001054, Best: 172021123001048, (Hard: 172, Medium: 21123, Soft: 1048), 
+Iteration: 8, Time: 19.9s/infs, Temp: 353.05, Accepted: 867/4000, Score: 153021123001055, Best: 153021123001015, (Hard: 153, Medium: 21123, Soft: 1015), 
+Iteration: 9, Time: 22.2s/infs, Temp: 338.03, Accepted: 896/4000, Score: 139021043001057, Best: 139021043001043, (Hard: 139, Medium: 21043, Soft: 1043), 
+Iteration: 10, Time: 24.6s/infs, Temp: 323.64, Accepted: 889/4000, Score: 126021049001045, Best: 126021049001042, (Hard: 126, Medium: 21049, Soft: 1042), 
+Iteration: 11, Time: 26.9s/infs, Temp: 309.86, Accepted: 837/4000, Score: 118021043001098, Best: 118021043001090, (Hard: 118, Medium: 21043, Soft: 1090), 
+Iteration: 12, Time: 29.3s/infs, Temp: 296.67, Accepted: 811/4000, Score: 114020965001085, Best: 114020965001011, (Hard: 114, Medium: 20965, Soft: 1011), 
+Iteration: 13, Time: 31.6s/infs, Temp: 284.04, Accepted: 795/4000, Score: 108020938001055, Best: 108020938000964, (Hard: 108, Medium: 20938, Soft: 964), 
+Iteration: 14, Time: 34.0s/infs, Temp: 271.95, Accepted: 862/4000, Score: 106020938001072, Best: 106020938000992, (Hard: 106, Medium: 20938, Soft: 992), 
+Iteration: 15, Time: 36.3s/infs, Temp: 260.38, Accepted: 887/4000, Score: 78020938001101, Best: 78020938001029, (Hard: 78, Medium: 20938, Soft: 1029), 

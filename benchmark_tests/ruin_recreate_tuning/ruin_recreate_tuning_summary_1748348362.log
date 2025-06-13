@@ -1,0 +1,12 @@
+RUIN AND RECREATE PARAMETER TUNING
+Base configuration: Iters=4000, Start=500, End=20, K=100
+Move probabilities: High=0.2, Med=0.7, Low=0.8
+R&R combinations tested: 8
+Runs per combination: 1
+Max time per run: 600 seconds
+==========================================================================================
+
+COMBINATION 1: Current_Baseline
+Plateau thresholds: min=3, max=10
+Ruin percentages: min=0.005, max=0.020
+----------------------------------------------------------------------

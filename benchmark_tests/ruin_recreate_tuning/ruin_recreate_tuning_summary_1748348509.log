@@ -1,0 +1,110 @@
+RUIN AND RECREATE PARAMETER TUNING
+Base configuration: Iters=4000, Start=500, End=20, K=100
+Move probabilities: High=0.2, Med=0.7, Low=0.8
+R&R combinations tested: 8
+Runs per combination: 1
+Max time per run: 600 seconds
+==========================================================================================
+
+COMBINATION 1: Current_Baseline
+Plateau thresholds: min=3, max=10
+Ruin percentages: min=0.005, max=0.020
+----------------------------------------------------------------------
+Run 1: Score=156013581001278, Runtime=617.5s
+Statistics: Mean=156013581001278, Std=0, Min=156013581001278, Max=156013581001278
+Average Runtime: 617.5s
+
+COMBINATION 2: Impatient
+Plateau thresholds: min=1, max=5
+Ruin percentages: min=0.005, max=0.020
+----------------------------------------------------------------------
+Run 1: Score=156013635001337, Runtime=630.5s
+Statistics: Mean=156013635001337, Std=0, Min=156013635001337, Max=156013635001337
+Average Runtime: 630.5s
+
+COMBINATION 3: Patient
+Plateau thresholds: min=5, max=15
+Ruin percentages: min=0.005, max=0.020
+----------------------------------------------------------------------
+Run 1: Score=156013581001193, Runtime=887.7s
+Statistics: Mean=156013581001193, Std=0, Min=156013581001193, Max=156013581001193
+Average Runtime: 887.7s
+
+COMBINATION 4: Small_Ruin
+Plateau thresholds: min=3, max=10
+Ruin percentages: min=0.002, max=0.010
+----------------------------------------------------------------------
+Run 1: Score=156013581001194, Runtime=603.7s
+Statistics: Mean=156013581001194, Std=0, Min=156013581001194, Max=156013581001194
+Average Runtime: 603.7s
+
+COMBINATION 5: Large_Ruin
+Plateau thresholds: min=3, max=10
+Ruin percentages: min=0.010, max=0.025
+----------------------------------------------------------------------
+Run 1: Score=156013581001194, Runtime=605.7s
+Statistics: Mean=156013581001194, Std=0, Min=156013581001194, Max=156013581001194
+Average Runtime: 605.7s
+
+COMBINATION 6: Aggressive_Both
+Plateau thresholds: min=2, max=6
+Ruin percentages: min=0.010, max=0.025
+----------------------------------------------------------------------
+Run 1: Score=156013635001286, Runtime=609.1s
+Statistics: Mean=156013635001286, Std=0, Min=156013635001286, Max=156013635001286
+Average Runtime: 609.1s
+
+COMBINATION 7: Conservative_Both
+Plateau thresholds: min=6, max=18
+Ruin percentages: min=0.002, max=0.015
+----------------------------------------------------------------------
+Run 1: Score=156013503001223, Runtime=603.8s
+Statistics: Mean=156013503001223, Std=0, Min=156013503001223, Max=156013503001223
+Average Runtime: 603.8s
+
+COMBINATION 8: Frequent_Variable
+Plateau thresholds: min=1, max=8
+Ruin percentages: min=0.005, max=0.025
+----------------------------------------------------------------------
+Run 1: Score=156013581001285, Runtime=620.9s
+Statistics: Mean=156013581001285, Std=0, Min=156013581001285, Max=156013581001285
+Average Runtime: 620.9s
+
+==========================================================================================
+FINAL RESULTS RANKING:
+==========================================================================================
+Rank Configuration        Plateau Range   Ruin Range      Mean Score   ±Std       Best        
+----------------------------------------------------------------------------------------------------
+1    Conservative_Both    6-18            0.002-0.015     156013503001223 ±0         156013503001223
+2    Patient              5-15            0.005-0.020     156013581001193 ±0         156013581001193
+3    Small_Ruin           3-10            0.002-0.010     156013581001194 ±0         156013581001194
+4    Large_Ruin           3-10            0.010-0.025     156013581001194 ±0         156013581001194
+5    Current_Baseline     3-10            0.005-0.020     156013581001278 ±0         156013581001278
+6    Frequent_Variable    1-8             0.005-0.025     156013581001285 ±0         156013581001285
+7    Aggressive_Both      2-6             0.010-0.025     156013635001286 ±0         156013635001286
+8    Impatient            1-5             0.005-0.020     156013635001337 ±0         156013635001337
+
+==========================================================================================
+🏆 BEST RUIN AND RECREATE CONFIGURATION:
+==========================================================================================
+Configuration: Conservative_Both
+
+RUIN AND RECREATE SETTINGS:
+Plateau Count Range: 6 - 18
+  (Wait 6-18 iterations without improvement before R&R)
+Ruin Percentage Range: 0.002 - 0.015
+  (0.2% - 1.5% of meetings destroyed)
+
+PERFORMANCE:
+Mean Score: 156013503001223 ± 0
+Best Run: 156013503001223
+Consistency: 0.00% variation
+Average Runtime: 603.8 seconds
+
+INTERPRETATION:
+Less frequent R&R (more patience) works better - algorithm can improve locally
+Smaller ruin percentages work better - gentle diversification is sufficient
+
+Improvement over baseline: 78000055 points (0.00%)
+==========================================================================================
+

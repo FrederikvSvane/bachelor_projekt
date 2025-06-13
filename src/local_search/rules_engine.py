@@ -57,7 +57,7 @@ def _calculate_constraint_weights(schedule: Schedule) -> tuple[int, int, int]:
     return hard_weight, medium_weight, soft_weight
 
 
-def calculate_full_score(schedule: Schedule) -> int:
+def calculate_full_score(schedule: Schedule) -> list[int]:
     if hard_constraint_weight is None:
         _initialize_constraint_weights(schedule)
     # Hard
@@ -115,7 +115,7 @@ def calculate_delta_score(schedule: Schedule, move: Move) -> int:
     # Soft rules
     soft_violations = 0  
     soft_violations += nr19_case_has_specific_judge_delta(schedule, move)
-    soft_violations += nr20_max_weekly_coverage_delta(schedule, move)
+    #soft_violations += nr20_max_weekly_coverage_delta(schedule, move)
     soft_violations += nr21_all_meetings_planned_for_case_delta(schedule, move)
     soft_violations += nr29_room_stability_per_day_delta(schedule, move)
     soft_violations += nr31_distance_between_meetings_delta(schedule, move)
@@ -711,7 +711,7 @@ def nr31_distance_between_meetings_full(schedule: Schedule):
     judges = schedule.get_all_judges()
     for judge in judges:
         violations += calculate_gaps_between_appointments(schedule, judge.judge_id)
-        
+    
     return (offset + step * violations)
 
 def nr31_distance_between_meetings_delta(schedule: Schedule, move: Move):
@@ -728,7 +728,7 @@ def nr31_distance_between_meetings_delta(schedule: Schedule, move: Move):
     affected_pairs = get_affected_judge_day_pairs(schedule, move)
     for day, judge in affected_pairs:
         before_violations += calculate_gaps_between_appointments(schedule, judge, day)  
-        
+    
     do_move(move, schedule)
     
     new_last_day = schedule.work_days
@@ -739,6 +739,7 @@ def nr31_distance_between_meetings_delta(schedule: Schedule, move: Move):
     after_violations = 0
     for day, judge in affected_pairs:
         after_violations += calculate_gaps_between_appointments(schedule, judge, day)
+    
     undo_move(move, schedule)
     
     return (offset + step * (after_violations - before_violations))
