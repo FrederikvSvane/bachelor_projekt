@@ -21,7 +21,7 @@ def parse_arguments():
     group.add_argument('--test', nargs='+', type=int, 
                        help='Generate test data with [n_cases] [n_work_days]')
     
-    parser.add_argument('--method', type=str, choices=['graph', 'ilp', 'heuristic'], default='graph',
+    parser.add_argument('--method', type=str, choices=['ilp', 'hybrid', 'graph', 'ls'], default='graph',
                         help='Method to use for scheduling (default: graph)')
     
     parser.add_argument('--ilp-params', nargs=2, type=float, metavar=('TIME_LIMIT', 'GAP_PERCENT'),
@@ -85,11 +85,14 @@ def main():
                 initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data, time_limit=time_limit, gap_rel=gap_percent)
             else:
                 initial_schedule: Schedule = generate_schedule_using_ilp(parsed_data)
-        elif args.method == 'graph':
-            print("Using graph-based scheduling method")
+        elif args.method == 'hybrid':
+            print("Using hybrid method (graph + local search)")
             initial_schedule: Schedule = generate_schedule_using_double_flow(parsed_data)
-        elif args.method == 'heuristic':
-            print("Using heuristic-based scheduling method")
+        elif args.method == 'graph':
+            print("Using graph-based scheduling method (no post-processing)")
+            initial_schedule: Schedule = generate_schedule_using_double_flow(parsed_data)
+        elif args.method == 'ls':
+            print("Using linear assignment + local search method")
             initial_schedule: Schedule = generate_schedule(parsed_data)
 
     
@@ -98,23 +101,23 @@ def main():
         initial_schedule.initialize_appointment_chains()
         initial_schedule.trim_schedule_length_if_possible()
         
-        # If using ILP, skip local search and just visualize
-        if args.method == 'ilp':
+        # Handle different methods
+        if args.method == 'ilp' or args.method == 'graph':
             result = calculate_full_score(initial_schedule)
             score = result[0]
             hard_violations = result[1]
             medm_violations = result[2]
             soft_violations = result[3]
             print(f"Hard violations: {hard_violations}, Medium violations: {medm_violations}, Soft violations: {soft_violations}")
-            print(f"ILP Schedule score: {score}")
+            print(f"{args.method.upper()} Schedule score: {score}")
             
-            # Visualize the ILP solution
+            # Visualize the solution
             visualize(initial_schedule)
             # visualize(initial_schedule, view_by="room")
             
             final_schedule = initial_schedule
         else:
-            # For other methods, apply local search
+            # For hybrid and ls methods, apply local search
             result = calculate_full_score(initial_schedule)
             initial_score = result[0]
             hard_violations = result[1]
@@ -124,6 +127,7 @@ def main():
             print(f"Initial score: {initial_score}")
             
             final_schedule = run_local_search(initial_schedule, args.log)
+            visualize(final_schedule)
             
             final_score = calculate_full_score(final_schedule)
             print(f"Initial score: {initial_score}")
